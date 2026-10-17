@@ -245,6 +245,13 @@ class IOSCard(QFrame):
         if self._pill:
             ss = ss.replace("border-radius: 22px",
                             f"border-radius: {self.PILL_RADIUS_PX}px")
+        # NOTE: child widgets (QLabel rows, etc.) inherit an opaque
+        # background from the global QWidget rule, which paints a sharp
+        # white rectangle over the card's rounded corners. Force them
+        # transparent so the card's own rounded background shows through.
+        # (Custom-painted children like IOSSwitch draw their own visuals
+        # in paintEvent, so transparency does not break them.)
+        ss += " IOSCard QWidget { background: transparent; }"
         self.setStyleSheet(ss)
 
 
