@@ -52,61 +52,66 @@ class HomePage(Page):
                 credits.setText(credits_html(c.text_secondary, c.accent))
 
     def _trim_to_logo_header(self):
-        """Match the clean new-home look: big logo + title, no button clutter.
+        """Round 2 (user order 2026-10-18): vertical-centered hero.
 
-        Hides the Discord/GitHub buttons beside the title and the credits
-        button wall, so the classic home reads as just logo + text (+ the
-        presets widget below).
+        Layout from top to bottom, all centered:
+          1. WorkSlop (WS) icon
+          2. "WorkSlop Desktop" title directly below the icon
+          3. "Developer Adnan.120hz · TikTok · GitHub · Official Website"
+             below the title.
+        The old horizontal band (horizontalWidget_14) is hidden and
+        replaced in place. The generated file is not edited.
         """
-        # Branding: the generated UI still carries the upstream
-        # "GoldenNugget" caption and the resource used to hold the
-        # upstream flask logo. Rebrand at runtime (the generated file is
-        # not edited by hand): WorkSlop title + WS icon.
-        title = getattr(self.ui, "label_2", None)
-        if title is not None:
-            title.setText("WorkSlop Desktop")
-            # Developer credit block (user order 2026-10-03), recolored
-            # per flavor by set_full_nugget(). It rides on the SAME
-            # horizontal band as the WS icon and the brand title —
-            # beside the title, never as a block below it (this classic
-            # Home serves both UI-2 and Full Nugget UI-3; the iOS-style
-            # Home of UI-1 is a different page and stays untouched).
-            from src.gui.brand_credits import make_credits_label
-            if getattr(self, "credits_lbl", None) is None:
-                from PySide6.QtCore import Qt
-                from PySide6.QtWidgets import QHBoxLayout
-                c0 = ColorThemeManager.instance().colors
-                self.credits_lbl = make_credits_label(
-                    title.parentWidget(), c0.text_secondary, c0.accent,
-                    align_center=False)
-                host = title.parentWidget().layout()
-                idx = host.indexOf(title)
-                row = QHBoxLayout()
-                row.setContentsMargins(0, 0, 0, 0)
-                row.setSpacing(12)
-                row.addWidget(title)
-                row.addWidget(self.credits_lbl)
-                row.addStretch(1)
-                host.insertLayout(idx, row)
-                title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-                self.credits_lbl.setAlignment(
-                    Qt.AlignLeft | Qt.AlignVCenter)
-                # The one-line band (icon + title + credits) must fit
-                # the classic Home (932px in the WorkSlop-icon flavor,
-                # 964px in Full Nugget): trim the generated 50px band
-                # spacing and size the credit font so the full line —
-                # through "Official Website" — stays on screen
-                # (measured: 14px Inter fits both flavors).
-                band = getattr(self.ui, "horizontalWidget_14", None)
-                if band is not None and band.layout() is not None:
-                    band.layout().setSpacing(24)
-                self.credits_lbl.setStyleSheet(
-                    "background: transparent; font-size: 14px;"
-                    " font-weight: 500;")
+        from PySide6.QtCore import Qt, QSize
+        from PySide6.QtGui import QIcon
+        from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget
+        from src.gui.brand_credits import make_credits_label
+
+        c0 = ColorThemeManager.instance().colors
+
+        # Hide the old horizontal band.
+        band = getattr(self.ui, "horizontalWidget_14", None)
+        host_layout = self.ui.verticalLayout_2
+        hero = None
+        if band is not None:
+            idx = host_layout.indexOf(band)
+            band.setVisible(False)
+            host_layout.removeWidget(band)
+
+            hero = QWidget(self.ui.homePage)
+            hero.setObjectName("wsHero")
+            vbox = QVBoxLayout(hero)
+            vbox.setContentsMargins(0, 8, 0, 8)
+            vbox.setSpacing(10)
+            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+
+            # 1. WS icon, centered.
+            icon_lbl = QLabel(hero)
+            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(140, 140)))
+            icon_lbl.setAlignment(Qt.AlignHCenter)
+            icon_lbl.setStyleSheet("background: transparent;")
+            vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
+
+            # 2. Title directly below the icon.
+            title = QLabel("WorkSlop Desktop", hero)
+            title.setAlignment(Qt.AlignHCenter)
+            title.setStyleSheet(
+                f"background: transparent; color: {c0.text_primary};"
+                " font-size: 30px; font-weight: 700;")
+            vbox.addWidget(title, 0, Qt.AlignHCenter)
+
+            # 3. Developer credit + links below the title.
+            self.credits_lbl = make_credits_label(
+                hero, c0.text_secondary, c0.accent, align_center=True)
+            self.credits_lbl.setStyleSheet(
+                "background: transparent; font-size: 15px; font-weight: 500;")
+            vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
+
+            host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)
+
+        # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)
         if hero_btn is not None:
-            from PySide6.QtCore import QSize
-            from PySide6.QtGui import QIcon
             hero_btn.setIcon(QIcon(":/credits/workslop.png"))
             hero_btn.setIconSize(QSize(170, 170))
         for name in ("discordBtn", "starOnGithubBtn"):

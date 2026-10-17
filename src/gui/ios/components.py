@@ -219,16 +219,30 @@ class IOSSectionHeader(QLabel):
 
 
 class IOSCard(QFrame):
-    def __init__(self, parent=None):
+    """White card surface. Pass pill=True for single-row toggle rows to get
+    a full-capsule shape (round 2 fluid-corner order)."""
+
+    PILL_RADIUS_PX = 30
+
+    def __init__(self, parent=None, pill: bool = False):
         super().__init__(parent)
         self.setObjectName("iosCard")
         self.setFrameShape(QFrame.StyledPanel)
+        self._pill = bool(pill)
         self._retheme()
         _auto_retheme(self)
         # Don't create a default layout - let the caller decide
 
+    def set_pill(self, pill: bool):
+        self._pill = bool(pill)
+        self._retheme()
+
     def _retheme(self):
-        self.setStyleSheet(t("card"))
+        ss = t("card")
+        if self._pill:
+            ss = ss.replace("border-radius: 22px",
+                            f"border-radius: {self.PILL_RADIUS_PX}px")
+        self.setStyleSheet(ss)
 
 
 class IOSCollapsibleSection(QWidget):

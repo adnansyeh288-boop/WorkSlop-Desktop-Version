@@ -256,6 +256,28 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.ios_pages.addWidget(self.ios_backup)
         self.ios_pages.addWidget(self.ios_themes_hub)
         self.ios_pages.addWidget(self.ios_appdata)
+        # Round 2 tutorials (user order 2026-10-18): 16 = recovery enter,
+        # 17 = recovery exit, 18 = DFU guide, 19 = restore guide,
+        # 20 = beta guide, 21 = WorkSlop app guide.
+        from src.gui.tutorials import TutorialPage
+        self.tut_rec_enter = TutorialPage(self, "rec_enter")
+        self.tut_rec_exit = TutorialPage(self, "rec_exit")
+        self.tut_dfu = TutorialPage(self, "dfu")
+        self.tut_restore = TutorialPage(self, "restore")
+        self.tut_beta = TutorialPage(self, "beta")
+        self.tut_app = TutorialPage(self, "app")
+        for _tp in (self.tut_rec_enter, self.tut_rec_exit, self.tut_dfu,
+                    self.tut_restore, self.tut_beta, self.tut_app):
+            self.ios_pages.addWidget(_tp)
+            _tp.request_recovery.connect(self._on_tutorial_recovery_action)
+        self._tut_pages = {
+            "rec_enter": (self.tut_rec_enter, 16),
+            "rec_exit": (self.tut_rec_exit, 17),
+            "dfu_guide": (self.tut_dfu, 18),
+            "restore_guide": (self.tut_restore, 19),
+            "beta_guide": (self.tut_beta, 20),
+            "app_guide": (self.tut_app, 21),
+        }
 
         # Shared reusable header: one instance for every iOS subpage,
         # reconfigured on page change (title / back / right action).
@@ -339,19 +361,31 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.shell_layout.setContentsMargins(0, 0, 0, 0)
         self.shell_layout.setSpacing(0)
         self.shell_layout.addWidget(self.ui.deviceBar)
+        # Round 2 (user order 2026-10-18): menus move to the TOP. The top
+        # nav bar carries every tweak family as its own pill (no "All
+        # Tweaks" grouping); a slim side rail holds the overflow menus
+        # (Backup/Apply/Settings + recovery & tutorial menus).
+        from src.gui.topnav import TopNavBar
+        from src.gui.siderail import SideRail
+        self.topnav = TopNavBar(self)
+        self.topnav.menu_selected.connect(self._on_topnav_menu)
+        self.shell_layout.addWidget(self.topnav)
         self.body_row = QtWidgets.QHBoxLayout()
-        self.body_row.setContentsMargins(0, 0, 0, 0)
-        self.body_row.setSpacing(0)
-        # Classic (Nugget) sidebar: visible in CLASSIC mode only. Its page
-        # buttons are shown/hidden by the device-refresh flow and HotLoad
-        # gating exactly as in the v4-era dual shell.
-        self.body_row.addWidget(self.ui.sidebar)
-        # WorkSlop v4 sidebar rail: visible in IOS mode (the main UI).
+        self.body_row.setContentsMargins(12, 10, 12, 12)
+        self.body_row.setSpacing(12)
+        # Legacy sidebars are retired from the layout (round 2): their
+        # button objects stay alive as the visibility source of truth for
+        # the device-refresh flow, but they are no longer shown.
+        self.ui.sidebar.hide()
+        # WorkSlop v4 sidebar rail: retired as well (round 2 top-nav).
         from src.gui.ios.sidebar import WorkSlopSidebar
         self.workslop_sidebar = WorkSlopSidebar(self)
         self.workslop_sidebar.menu_selected.connect(self._on_workslop_menu)
-        self.body_row.addWidget(self.workslop_sidebar)
+        self.workslop_sidebar.hide()
         self.body_row.addWidget(self.content_stack, 1)
+        self.siderail = SideRail(self)
+        self.siderail.menu_selected.connect(self._on_rail_menu)
+        self.body_row.addWidget(self.siderail)
         self._style_device_pill()
         self.shell_layout.addLayout(self.body_row)
         self.setCentralWidget(shell)

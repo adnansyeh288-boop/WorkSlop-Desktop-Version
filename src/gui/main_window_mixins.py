@@ -724,70 +724,131 @@ class NavigationMixin:
         self._sync_sidebar_selection()
 
     def _sync_sidebar_selection(self):
-        """Move the checked highlight of the ACTIVE shell's rail to the
-        active view: the WorkSlop v4 sidebar in IOS mode, the generated
-        Nugget sidebar buttons in CLASSIC mode."""
-        classic = True  # single UI: always the classic shell
-        if classic:
-            btns = (self.ui.homePageBtn, self.ui.posterboardPageBtn,
-                    self.ui.springboardOptionsPageBtn,
-                    self.ui.internalOptionsPageBtn,
-                    self.ui.liquidGlassPageBtn, self.ui.daemonsPageBtn,
-                    self.ui.backupPageBtn, self.ui.applyPageBtn,
-                    self.ui.settingsPageBtn,
-                    self.ui.statusBarPageBtn, self.ui.iconThemesPageBtn,
-                    self.ui.gestaltPageBtn)
-            page_to_btn = {
-                0: 0,   # home
-                2: 1,   # posterboard
-                7: 2,   # springboard
-                8: 3,   # internal
-                9: 4,   # liquid glass
-                3: 5,   # daemons (iOS page hosted in classic)
-                13: 6,  # backup
-                6: 7,   # apply
-                4: 8,   # settings
-                5: 9,   # status bar
-                10: 10,  # icon themes
-                12: 11,  # mobilegestalt
-            }
-            idx = None
-            if self.content_stack.currentIndex() == 0:
-                idx = 0
-            elif self.content_stack.currentIndex() == 2:
-                idx = 5  # classic daemons page
-            elif self.content_stack.currentIndex() == 1:
-                idx = page_to_btn.get(self.ios_pages.currentIndex())
-            target = btns[idx] if idx is not None else None
-            for b in btns:
-                b.setChecked(b is target)
-            # Re-tint sidebar icons for contrast: white on the checked
-            # (blue) button, dark text color otherwise.
-            try:
-                from src.gui.theme import theme_icon
-                cc = ColorThemeManager.instance().colors
-                for b in btns:
-                    res = b.property("_ws_icon_res")
-                    if res:
-                        b.setIcon(theme_icon(
-                            res, "#FFFFFF" if b is target else cc.text_primary))
-            except Exception:
-                pass
-            return
+        """Move the checked highlight to the active view (round 2: top nav
+        bar + slim side rail). The legacy sidebar buttons stay the
+        visibility source of truth; their checked state is no longer used.
+        """
+        # ios_pages index -> (nav widget, menu_id)
         page_to_menu = {
-            0: "home",
-            1: "tweaks", 3: "tweaks", 5: "tweaks", 6: "tweaks",
-            7: "tweaks", 8: "tweaks", 9: "tweaks",
-            12: "gestalt",
-            2: "wallpaper",
-            13: "backup",
-            15: "appdata",
-            10: "themes", 11: "themes", 14: "themes",
-            4: "settings",
+            0: ("top", "home"),
+            2: ("top", "posterboard"),
+            4: ("rail", "settings"),
+            5: ("top", "statusbar"),
+            6: ("rail", "apply"),
+            7: ("top", "springboard"),
+            8: ("top", "internal"),
+            9: ("top", "liquidglass"),
+            10: ("top", "iconthemes"),
+            12: ("top", "gestalt"),
+            13: ("rail", "backup"),
+            16: ("rail", "rec_enter"),
+            17: ("rail", "rec_exit"),
+            18: ("rail", "dfu_guide"),
+            19: ("rail", "restore_guide"),
+            20: ("rail", "beta_guide"),
+            21: ("rail", "app_guide"),
         }
-        menu = page_to_menu.get(self.ios_pages.currentIndex())
-        if menu is not None and hasattr(self, "workslop_sidebar"):
-            self.workslop_sidebar.select(menu)
+        target = None
+        if self.content_stack.currentIndex() == 0:
+            target = ("top", "home")
+        elif self.content_stack.currentIndex() == 2:
+            target = ("top", "daemons")   # classic daemons page
+        elif self.content_stack.currentIndex() == 1:
+            target = page_to_menu.get(self.ios_pages.currentIndex())
+        # clear all, then check the target
+        for mid in self.topnav.menu_ids():
+            btn = self.topnav._buttons[mid]
+            if ("top", mid) != target:
+                btn.setChecked(False)
+        for mid, btn in self.siderail._buttons.items():
+            if ("rail", mid) != target:
+                btn.setChecked(False)
+        if target is not None:
+            where, mid = target
+            if where == "top":
+                self.topnav.select(mid)
+            else:
+                self.siderail.select(mid)
+        # mirror legacy-button visibility into the new nav
+        self._mirror_nav_visibility()
+
+    def _mirror_nav_visibility(self):
+        """Mirror the legacy sidebar buttons' visibility (device-gated
+        features) into the top nav bar. The old buttons remain the source
+        of truth in the device-refresh flow."""
+        for mid in self.topnav.menu_ids():
+            btn = self.topnav._buttons[mid]
+            legacy_name = btn.property("legacy_btn")
+            legacy = getattr(self.ui, legacy_name, None)
+            if legacy is not None:
+                # isVisibleTo would be False while the sidebar is hidden,
+                # so read the explicit visible flag instead.
+                btn.setVisible(legacy.isVisible())
+        # The rail menus are never device-gated.
+        for _mid, btn in self.siderail._buttons.items():
+            btn.setVisible(True)
+
+    # -- round 2 top-nav / rail navigation --------------------------------
+    def _on_topnav_menu(self, menu_id: str):
+        handler = {
+            "home": self.show_home,
+            "posterboard": self.on_posterboardPageBtn_clicked,
+            "gestalt": self.on_mobileGestaltPageBtn_clicked,
+            "statusbar": self.on_statusBarPageBtn_clicked,
+            "springboard": self.on_springboardOptionsPageBtn_clicked,
+            "internal": self.on_internalOptionsPageBtn_clicked,
+            "liquidglass": self.on_liquidGlassPageBtn_clicked,
+            "daemons": self.on_daemonsPageBtn_clicked,
+            "iconthemes": self.on_iconThemesPageBtn_clicked,
+        }.get(menu_id)
+        if handler is not None:
+            handler()
+
+    def _on_rail_menu(self, menu_id: str):
+        if menu_id == "backup":
+            self.on_backupPageBtn_clicked()
+        elif menu_id == "apply":
+            self.on_applyPageBtn_clicked()
+        elif menu_id == "settings":
+            self.on_settingsPageBtn_clicked()
+        elif menu_id in self._tut_pages:
+            page, idx = self._tut_pages[menu_id]
+            page.reset_picker()
+            self.show_ios_page(idx)
+            self._sync_sidebar_selection()
+
+    def _on_tutorial_recovery_action(self, action: str):
+        """Run the REAL recovery enter/exit off the GUI thread."""
+        from src.gui.recovery_tools import RecoveryWorker
+        from PySide6.QtWidgets import QMessageBox
+        udid = ""
+        try:
+            dev = self.data_singleton.current_device
+            udid = getattr(dev, "udid", "") or ""
+        except Exception:
+            pass
+        if action == "enter" and not udid:
+            QMessageBox.warning(
+                self, "No device",
+                "Connect an iPhone first (select it in the top bar).")
+            return
+        name = ("Entering recovery mode" if action == "enter"
+                else "Exiting recovery mode")
+        self.statusBar().showMessage(f"{name}... do not unplug the iPhone.",
+                                     10000)
+        self._recovery_worker = RecoveryWorker(action, udid, self)
+        self._recovery_worker.progress.connect(
+            lambda msg: self.statusBar().showMessage(msg, 10000))
+        def _done(ok: bool, msg: str):
+            if ok:
+                QMessageBox.information(self, "Recovery", msg)
+            else:
+                QMessageBox.critical(
+                    self, "Recovery failed",
+                    f"{name} failed:\n\n{msg}")
+            self._recovery_worker = None
+        self._recovery_worker.finished.connect(_done)
+        self._recovery_worker.start()
 
 
     def show_home(self):

@@ -49,7 +49,7 @@ STYLES = {
         QLineEdit {{
             background-color: {bg_input};
             border: 1px solid {border};
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_primary};
             font-size: 15px;
             padding: 12px 16px;
@@ -58,7 +58,7 @@ STYLES = {
         }}
         QPushButton {{
             background-color: {text_primary};
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_inverse};
             font-size: 15px;
             font-weight: 700;
@@ -75,7 +75,7 @@ STYLES = {
         QSpinBox {{
             background-color: {bg_input};
             border: 1px solid {border};
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_primary};
             font-size: 15px;
             padding: 12px 16px;
@@ -85,7 +85,7 @@ STYLES = {
         QSpinBox::up-button, QSpinBox::down-button {{ width: 0; }}
         QPushButton {{
             background-color: {text_primary};
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_inverse};
             font-size: 15px;
             font-weight: 700;
@@ -118,12 +118,14 @@ STYLES = {
         QPushButton#iosCollapsibleHeader:checked {{ color: {text_primary}; }}
     """,
 
-    # Sky card: solid white surface, fluid 18px radius, one thin
+    # Sky card: solid white surface, fluid 22px radius, one thin
     # light-blue border. No glass, no translucency — text stays crisp.
+    # (Round 2: 18px -> 22px; single-row toggle rows use IOSCard(pill=True)
+    # for a full 30px capsule.)
     "card": """
         IOSCard {{
             background-color: {bg_secondary};
-            border-radius: 18px;
+            border-radius: 22px;
             border: 1px solid {card_border};
         }}
     """,
@@ -138,7 +140,7 @@ STYLES = {
             font-weight: 400;
             border: none;
             padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 18px;
         }}
         QPushButton:hover {{
             background: rgba(255, 255, 255, 0.08);
@@ -167,11 +169,11 @@ STYLES = {
     "settings_row": """
         QPushButton {{
             background-color: {bg_secondary};
-            border-radius: 10px;
+            border-radius: 20px;
             color: {text_primary};
             font-size: 15px;
             text-align: left;
-            padding: 14px 16px;
+            padding: 14px 20px;
             border: none;
         }}
         QPushButton:hover {{ background-color: {surface_hover}; }}
@@ -180,7 +182,7 @@ STYLES = {
     "primary_button": """
         QPushButton {{
             background-color: {text_primary};
-            border-radius: 14px;
+            border-radius: 20px;
             color: {text_inverse};
             font-size: 15px;
             font-weight: 700;
@@ -195,7 +197,7 @@ STYLES = {
     "danger_button": """
         QPushButton {{
             background-color: {error};
-            border-radius: 14px;
+            border-radius: 20px;
             color: #ffffff;
             font-size: 15px;
             font-weight: 700;
@@ -215,7 +217,7 @@ STYLES = {
         QLabel#confirmRow {{ font-size: 14px; color: {text_primary}; }}
         QPushButton {{
             background-color: {text_primary};
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_inverse};
             font-size: 15px;
             font-weight: 700;
@@ -241,7 +243,7 @@ STYLES = {
         QFrame#presetPopup {{
             background-color: {bg_elevated};
             border: 1px solid {card_border};
-            border-radius: 14px;
+            border-radius: 20px;
         }}
     """,
 
@@ -251,7 +253,7 @@ STYLES = {
         QPushButton#presetRow {{
             background-color: transparent;
             border: none;
-            border-radius: 10px;
+            border-radius: 18px;
             text-align: left;
             padding: 0px;
         }}
@@ -267,7 +269,7 @@ STYLES = {
             background-color: {surface_hover};
             color: {text_primary};
             border: none;
-            border-radius: 8px;
+            border-radius: 18px;
             font-size: 13px;
             padding: 0px 10px;
         }}
@@ -280,7 +282,7 @@ STYLES = {
             background-color: {error_hover};
             color: {text_inverse};
             border: none;
-            border-radius: 8px;
+            border-radius: 18px;
             font-size: 13px;
             font-weight: 600;
             padding: 0px 14px;
@@ -304,20 +306,20 @@ STYLES = {
             background-color: {bg_secondary};
             color: {text_primary};
             border: none;
-            border-radius: 8px;
+            border-radius: 18px;
             padding: 4px;
         }}
         QListWidget::item:selected {{
             background-color: {scrollbar_pressed};
             color: {text_inverse};
-            border-radius: 8px;
+            border-radius: 18px;
         }}
     """,
 
     "mini_button": """
         QPushButton {{
             background-color: {bg_tertiary};
-            border-radius: 8px;
+            border-radius: 18px;
             color: {text_primary};
             border: none;
             padding: 6px 12px;
@@ -330,7 +332,7 @@ STYLES = {
         QComboBox {{
             background-color: {bg_secondary};
             border: none;
-            border-radius: 8px;
+            border-radius: 18px;
             color: {text_primary};
             padding: 8px 12px;
             font-size: 10.5pt;
@@ -344,7 +346,7 @@ STYLES = {
             border: 1px solid {divider};
             selection-background-color: {accent};
             selection-color: {text_inverse};
-            border-radius: 8px;
+            border-radius: 18px;
             padding: 4px;
         }}
     """,
@@ -355,14 +357,14 @@ STYLES = {
     "tab_button_inactive": "color: {text_secondary}; background: transparent; border: none; font-weight: 600; font-size: 14px;",
     "tab_button_active": "color: {accent}; background: transparent; border: none; font-weight: 600; font-size: 14px;",
 
-    "add_icon": "background-color: {bg_secondary}; border: 2px dashed {divider}; border-radius: 12px; color: {accent}; font-size: 28px; font-weight: 300;",
+    "add_icon": "background-color: {bg_secondary}; border: 2px dashed {divider}; border-radius: 20px; color: {accent}; font-size: 28px; font-weight: 300;",
 
     "tendie_preview_btn": """
         QToolButton {{
             background-color: {bg_secondary};
             color: {accent};
             border: 1px solid {divider};
-            border-radius: 8px;
+            border-radius: 18px;
             padding: 6px 12px;
             font-size: 13px;
         }}
@@ -374,19 +376,19 @@ STYLES = {
             background-color: {bg_secondary};
             color: {error};
             border: 1px solid {divider};
-            border-radius: 8px;
+            border-radius: 18px;
             padding: 6px 12px;
             font-size: 13px;
         }}
         QToolButton:hover {{ background-color: {error}; color: {text_inverse}; }}
     """,
 
-    "template_preview": "background-color: {bg_secondary}; border: 1px solid {divider}; border-radius: 12px;",
+    "template_preview": "background-color: {bg_secondary}; border: 1px solid {divider}; border-radius: 20px;",
 
     "reset_pb_button": """
         QPushButton {{
             background-color: {bg_tertiary};
-            border-radius: 8px;
+            border-radius: 18px;
             color: {error};
             border: none;
             padding: 10px 16px;
@@ -395,13 +397,13 @@ STYLES = {
         QPushButton:hover {{ background-color: {surface_hover}; }}
     """,
 
-    "download_card_icon": "background-color: {accent}; border-radius: 10px; color: white; font-size: 20px;",
+    "download_card_icon": "background-color: {accent}; border-radius: 18px; color: white; font-size: 20px;",
 
     "thumb_button": """
         QPushButton {{
             background-color: {bg_secondary};
             color: {accent};
-            border-radius: 8px;
+            border-radius: 18px;
             border: none;
             padding: 8px 16px;
             font-size: 14px;
@@ -421,7 +423,7 @@ STYLES = {
         QComboBox {{
             background-color: {bg_secondary};
             border: none;
-            border-radius: 10px;
+            border-radius: 18px;
             color: {text_primary};
             padding: 10px 14px;
             font-size: 10.5pt;
@@ -439,7 +441,7 @@ STYLES = {
         QPushButton {{
             background-color: {bg_secondary};
             color: {text_primary};
-            border-radius: 10px;
+            border-radius: 18px;
             border: none;
             font-size: 16px;
             padding: 10px;
@@ -482,7 +484,7 @@ STYLES = {
     "wp_card": """
         QFrame {{
             background-color: {bg_secondary};
-            border-radius: 12px;
+            border-radius: 20px;
             border: none;
         }}
         QFrame:hover {{ background-color: {surface_hover}; }}
@@ -498,12 +500,12 @@ STYLES = {
         QProgressBar {{
             background-color: {bg_tertiary};
             border: none;
-            border-radius: 8px;
+            border-radius: 18px;
             height: 8px;
         }}
         QProgressBar::chunk {{
             background-color: {accent};
-            border-radius: 8px;
+            border-radius: 18px;
         }}
     """,
 
@@ -518,7 +520,7 @@ STYLES = {
     "picker_frame": """
         QFrame {{
             background-color: {bg_secondary};
-            border-radius: 12px;
+            border-radius: 20px;
             border: 2px solid transparent;
         }}
         QFrame:hover {{ border-color: {accent}; }}
@@ -549,51 +551,51 @@ STYLES = {
     "global": """
         QWidget {{ color: {text_primary}; background-color: {bg_primary}; spacing: 0px; font-family: '{font_family}'; }}
         QWidget:focus {{ outline: none; }}
-        QWidget[cls=central] {{ background: transparent; border-radius: 0px; }}
+        QWidget[cls=central] {{ background: transparent; border-radius: 14px; }}
         QLabel {{ font-size: 14px; }}
         QLabel[cls=dim] {{ color: {text_secondary}; }}
         QLabel[cls=term] {{ color: {brand}; }}
-        QToolButton {{ background-color: {bg_tertiary}; border: none; color: {text_primary}; font-size: 14px; min-height: 35px; icon-size: 16px; padding-left: 10px; padding-right: 10px; border-radius: 10px; }}
+        QToolButton {{ background-color: {bg_tertiary}; border: none; color: {text_primary}; font-size: 14px; min-height: 35px; icon-size: 16px; padding-left: 10px; padding-right: 10px; border-radius: 18px; }}
         QToolButton[cls=sidebarBtn] {{ background-color: transparent; icon-size: 20px; }}
         QToolButton:pressed {{ background-color: {scrollbar_pressed}; color: {text_primary}; }}
         QToolButton:checked {{ background-color: {accent}; color: #FFFFFF; }}
         QCheckBox {{ spacing: 8px; font-size: 14px; }}
-        QCheckBox::indicator {{ width: 18px; height: 18px; border-radius: 8px; border: 1px solid {border}; background-color: {bg_tertiary}; }}
+        QCheckBox::indicator {{ width: 18px; height: 18px; border-radius: 18px; border: 1px solid {border}; background-color: {bg_tertiary}; }}
         QCheckBox::indicator:checked {{ background-color: {accent}; border: 1px solid {accent}; }}
         QRadioButton {{ spacing: 8px; font-size: 14px; }}
-        QLineEdit {{ border: 1px solid {border}; border-radius: 10px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; selection-background-color: {accent}; selection-color: #FFFFFF; }}
+        QLineEdit {{ border: 1px solid {border}; border-radius: 18px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; selection-background-color: {accent}; selection-color: #FFFFFF; }}
         QLineEdit:focus {{ border: 2px solid {accent}; padding: 7px 11px; }}
-        QTextEdit {{ border: 1px solid {border}; border-radius: 10px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; selection-background-color: {accent}; selection-color: #FFFFFF; }}
+        QTextEdit {{ border: 1px solid {border}; border-radius: 18px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; selection-background-color: {accent}; selection-color: #FFFFFF; }}
         QTextEdit:focus {{ border: 2px solid {accent}; }}
-        QSpinBox {{ border: 1px solid {border}; border-radius: 10px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; }}
-        QComboBox {{ border: 1px solid {border}; border-radius: 10px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; }}
-        QComboBox QAbstractItemView {{ background-color: {bg_elevated}; border: 1px solid {border}; border-radius: 10px; color: {text_primary}; selection-background-color: {accent}; selection-color: #FFFFFF; padding: 4px; }}
-        QToolTip {{ background-color: {text_primary}; color: #FFFFFF; border: none; border-radius: 8px; padding: 6px 10px; font-size: 13px; }}
-        QMenu {{ background-color: {bg_elevated}; border: 1px solid {border}; border-radius: 12px; padding: 6px; color: {text_primary}; }}
-        QMenu::item {{ border-radius: 8px; padding: 8px 16px; }}
+        QSpinBox {{ border: 1px solid {border}; border-radius: 18px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; }}
+        QComboBox {{ border: 1px solid {border}; border-radius: 18px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; }}
+        QComboBox QAbstractItemView {{ background-color: {bg_elevated}; border: 1px solid {border}; border-radius: 18px; color: {text_primary}; selection-background-color: {accent}; selection-color: #FFFFFF; padding: 4px; }}
+        QToolTip {{ background-color: {text_primary}; color: #FFFFFF; border: none; border-radius: 18px; padding: 6px 10px; font-size: 13px; }}
+        QMenu {{ background-color: {bg_elevated}; border: 1px solid {border}; border-radius: 20px; padding: 6px; color: {text_primary}; }}
+        QMenu::item {{ border-radius: 18px; padding: 8px 16px; }}
         QMenu::item:selected {{ background-color: {surface_hover}; }}
         QScrollBar:vertical {{ background: transparent; width: 10px; }}
         QScrollBar:horizontal {{ background: transparent; height: 10px; }}
-        QScrollBar::handle {{ background: {scrollbar}; border-radius: 5px; }}
+        QScrollBar::handle {{ background: {scrollbar}; border-radius: 14px; }}
         QScrollBar::handle:pressed {{ background: {scrollbar_pressed}; }}
         QScrollBar::add-line, QScrollBar::sub-line {{ background: none; }}
         QScrollBar::add-page, QScrollBar::sub-page {{ background: none; }}
-        QSlider::groove:horizontal {{ background-color: {scrollbar}; height: 4px; border-radius: 2px; }}
-        QSlider::handle:horizontal {{ background-color: {text_primary}; width: 10px; border-radius: 5px; }}
+        QSlider::groove:horizontal {{ background-color: {scrollbar}; height: 4px; border-radius: 14px; }}
+        QSlider::handle:horizontal {{ background-color: {text_primary}; width: 10px; border-radius: 14px; }}
         QSlider::handle:horizontal:pressed {{ background-color: {accent}; }}
         QSlider::tick:horizontal {{ background-color: {scrollbar_pressed}; width: 1px; }}
-        QProgressBar {{ background-color: {bg_tertiary}; border: none; border-radius: 8px; text-align: center; color: {text_primary}; font-size: 12px; }}
-        QProgressBar::chunk {{ background-color: {accent}; border-radius: 8px; }}
+        QProgressBar {{ background-color: {bg_tertiary}; border: none; border-radius: 18px; text-align: center; color: {text_primary}; font-size: 12px; }}
+        QProgressBar::chunk {{ background-color: {accent}; border-radius: 18px; }}
         QDialog {{ background-color: {bg_primary}; border: 1px solid {border}; border-radius: 16px; }}
         QMessageBox {{ background-color: {bg_primary}; }}
-        QPushButton {{ background-color: {accent}; border: none; border-radius: 10px; color: #FFFFFF; font-size: 14px; font-weight: 600; padding: 9px 18px; }}
+        QPushButton {{ background-color: {accent}; border: none; border-radius: 18px; color: #FFFFFF; font-size: 14px; font-weight: 600; padding: 9px 18px; }}
         QPushButton:hover {{ background-color: {accent_hover}; }}
         QPushButton:pressed {{ background-color: {accent_pressed}; }}
         QPushButton:disabled {{ background-color: {bg_tertiary}; color: {text_disabled}; }}
-        QTabWidget::pane {{ border: 1px solid {border}; border-radius: 12px; background-color: {bg_primary}; }}
+        QTabWidget::pane {{ border: 1px solid {border}; border-radius: 20px; background-color: {bg_primary}; }}
         QTabBar::tab {{ background-color: {bg_tertiary}; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 8px 16px; color: {text_secondary}; font-size: 13px; }}
         QTabBar::tab:selected {{ background-color: {bg_primary}; color: {text_primary}; font-weight: 600; }}
-        QGroupBox {{ border: 1px solid {border}; border-radius: 12px; margin-top: 12px; font-size: 13px; font-weight: 600; color: {text_primary}; }}
+        QGroupBox {{ border: 1px solid {border}; border-radius: 20px; margin-top: 12px; font-size: 13px; font-weight: 600; color: {text_primary}; }}
         QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 6px; }}
         QFrame[frameShape="4"] {{ color: {divider}; }}
         QFrame[frameShape="5"] {{ color: {divider}; }}
@@ -609,7 +611,7 @@ STYLES = {
         QComboBox {{
             background-color: transparent;
             border: none;
-            border-radius: 12px;
+            border-radius: 20px;
             color: {text_primary};
             padding: 4px 2px;
             font-size: 14px;
@@ -673,13 +675,13 @@ STYLES = {
         QProgressBar {{
             background-color: #E7EEF5;
             border: none;
-            border-radius: 6px;
+            border-radius: 14px;
             height: 6px;
             text-align: center;
             font-size: 8px;
             color: transparent;
         }}
-        QProgressBar::chunk {{ background-color: {accent}; border-radius: 6px; }}
+        QProgressBar::chunk {{ background-color: {accent}; border-radius: 14px; }}
     """,
     "action_tile_label": (
         "font-size: 11px; font-weight: 600; color: {text_primary}; "
@@ -698,7 +700,7 @@ STYLES = {
             background-color: transparent;
             color: #FFFFFF;
             border: 1px solid rgba(255, 255, 255, 0.65);
-            border-radius: 12px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 700;
             padding: 4px 14px;
@@ -735,7 +737,7 @@ STYLES = {
     """,
     "capacity_chip": (
         "background-color: #CFE7FD; color: {accent}; border: 1px solid #8FB9EA; "
-        "border-radius: 10px; font-size: 11px; font-weight: 800; padding: 3px 10px;"
+        "border-radius: 18px; font-size: 11px; font-weight: 800; padding: 3px 10px;"
     ),
     "phone_link_button": """
         QPushButton {{
@@ -797,7 +799,7 @@ STYLES = {
     "catalogue_card": """
         IOSCard {{
             background-color: #FFFFFF;
-            border-radius: 12px;
+            border-radius: 20px;
             border: 1px solid #E1ECF6;
         }}
     """,
@@ -808,12 +810,12 @@ STYLES = {
     "catalogue_badge": (
         "font-size: 10px; font-weight: 700; color: #B3261E; "
         "background-color: #FDECEA; border: 1px solid #F3C2BF; "
-        "border-radius: 8px; padding: 2px 8px;"
+        "border-radius: 18px; padding: 2px 8px;"
     ),
     "catalogue_chip": (
         "font-size: 11px; font-weight: 600; color: #0B4A8A; "
         "background-color: #EAF3FE; border: 1px solid #CFE3F8; "
-        "border-radius: 9px; padding: 3px 9px;"
+        "border-radius: 18px; padding: 3px 9px;"
     ),
     "home_tile_action": (
         "color: {accent}; font-size: 11px; font-weight: 800; "
@@ -821,6 +823,6 @@ STYLES = {
     ),
     "home_tile_icon": (
         "background-color: {bg_tertiary}; border: 1px solid {card_border}; "
-        "border-radius: 12px;"
+        "border-radius: 20px;"
     ),
 }
