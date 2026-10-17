@@ -310,7 +310,7 @@ STYLES = {
         QListWidget::item:selected {{
             background-color: {scrollbar_pressed};
             color: {text_inverse};
-            border-radius: 6px;
+            border-radius: 8px;
         }}
     """,
 
@@ -498,12 +498,12 @@ STYLES = {
         QProgressBar {{
             background-color: {bg_tertiary};
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             height: 8px;
         }}
         QProgressBar::chunk {{
             background-color: {accent};
-            border-radius: 4px;
+            border-radius: 8px;
         }}
     """,
 
@@ -558,7 +558,7 @@ STYLES = {
         QToolButton:pressed {{ background-color: {scrollbar_pressed}; color: {text_primary}; }}
         QToolButton:checked {{ background-color: {accent}; color: #FFFFFF; }}
         QCheckBox {{ spacing: 8px; font-size: 14px; }}
-        QCheckBox::indicator {{ width: 18px; height: 18px; border-radius: 6px; border: 1px solid {border}; background-color: {bg_tertiary}; }}
+        QCheckBox::indicator {{ width: 18px; height: 18px; border-radius: 8px; border: 1px solid {border}; background-color: {bg_tertiary}; }}
         QCheckBox::indicator:checked {{ background-color: {accent}; border: 1px solid {accent}; }}
         QRadioButton {{ spacing: 8px; font-size: 14px; }}
         QLineEdit {{ border: 1px solid {border}; border-radius: 10px; background-color: {bg_input}; color: {text_primary}; font-size: 14px; padding: 8px 12px; selection-background-color: {accent}; selection-color: #FFFFFF; }}
@@ -673,13 +673,13 @@ STYLES = {
         QProgressBar {{
             background-color: #E7EEF5;
             border: none;
-            border-radius: 3px;
+            border-radius: 6px;
             height: 6px;
             text-align: center;
             font-size: 8px;
             color: transparent;
         }}
-        QProgressBar::chunk {{ background-color: {accent}; border-radius: 3px; }}
+        QProgressBar::chunk {{ background-color: {accent}; border-radius: 6px; }}
     """,
     "action_tile_label": (
         "font-size: 11px; font-weight: 600; color: {text_primary}; "

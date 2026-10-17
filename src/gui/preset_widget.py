@@ -203,7 +203,7 @@ class PresetWidget(QWidget):
             github_btn.setStyleSheet(
                 "QToolButton { background: transparent; border: none; }"
                 "QToolButton:hover { background-color: #3b3b3b;"
-                " border-radius: 4px; }")
+                " border-radius: 8px; }")
             github_btn.setToolTip(
                 "github.com/adnan120hz/WorkSlop-Desktop-Version")
             github_btn.clicked.connect(lambda: open_new_tab(

@@ -1813,7 +1813,7 @@ class ApplyMixin:
                 background-color: {c.bg_secondary};
                 color: {c.text_primary};
                 border: 1px solid {c.border};
-                border-radius: 6px;
+                border-radius: 10px;
                 padding: 6px 16px;
                 min-width: 80px;
             }}

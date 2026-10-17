@@ -326,12 +326,12 @@ class WallpaperDownloaderDialog(QDialog):
             QScrollArea {{ background: transparent; border: none; }}
             QProgressBar {{
                 background-color: {c.bg_secondary};
-                border-radius: 4px;
+                border-radius: 8px;
                 border: none;
                 height: 7px;
                 text-align: center;
             }}
-            QProgressBar::chunk {{ background-color: {c.accent}; border-radius: 4px; }}
+            QProgressBar::chunk {{ background-color: {c.accent}; border-radius: 8px; }}
         """)
 
     # --- source / category handling ---

@@ -136,7 +136,7 @@ class AboutProgramDialog(QDialog):
             QScrollArea {{ background: transparent; border: none; }}
             QWidget {{ background: transparent; }}
             QScrollBar:vertical {{ width: 6px; background: transparent; }}
-            QScrollBar::handle {{ background: {c.border}; border-radius: 3px; min-height: 30px; }}
+            QScrollBar::handle {{ background: {c.border}; border-radius: 5px; min-height: 30px; }}
         """)
         
         credits_widget = QWidget()
