@@ -545,7 +545,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             QComboBox QAbstractItemView {{
                 background-color: {c.bg_tertiary};
                 border: 1px solid {c.border};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 selection-background-color: {c.accent};
             }}
@@ -617,7 +617,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
                 color: {c.text_primary};
                 background-color: transparent;
                 border: none;
-                border-radius: 12px;
+                border-radius: 20px;
                 font-size: 14px;
                 font-weight: 600;
                 text-align: left;

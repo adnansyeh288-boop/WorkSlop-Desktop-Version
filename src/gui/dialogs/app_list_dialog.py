@@ -240,7 +240,7 @@ class AppListExportDialog(QDialog):
             QLineEdit {{
                 background-color: {c.bg_input};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 14px;
                 padding: 10px 12px;
@@ -248,17 +248,17 @@ class AppListExportDialog(QDialog):
             QListWidget {{
                 background-color: {c.bg_secondary};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 14px;
                 padding: 6px;
             }}
-            QListWidget::item {{ padding: 8px 10px; border-radius: 8px; }}
+            QListWidget::item {{ padding: 8px 10px; border-radius: 18px; }}
             QListWidget::item:selected {{ background-color: {c.accent}; color: {c.text_inverse}; }}
             QPushButton {{
                 background-color: {c.accent};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_inverse};
                 font-size: 14px;
                 font-weight: 600;

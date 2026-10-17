@@ -237,7 +237,7 @@ class AboutProgramDialog(QDialog):
             QDialog {{ background-color: {c.bg_elevated}; }}
             QDialogButtonBox QPushButton {{
                 background-color: {c.accent};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 15px;
                 font-weight: 600;

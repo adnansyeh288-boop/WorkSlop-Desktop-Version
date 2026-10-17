@@ -32,7 +32,7 @@ class TemplatePreviewCard(QLabel):
     def _retheme(self):
         c = ColorThemeManager.instance().colors
         self.setStyleSheet(
-            f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 12px; border: 1px solid {c.border}; }}"
+            f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 20px; border: 1px solid {c.border}; }}"
         )
 
 
@@ -211,7 +211,7 @@ class IOSPosterboardPage(QWidget):
             QPushButton {{
                 background-color: {c.scrollbar};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.error};
                 font-size: 15px;
                 font-weight: 600;
@@ -246,7 +246,7 @@ class IOSPosterboardPage(QWidget):
         for card in self.findChildren(TemplatePreviewCard):
             if self._full_nugget:
                 card.setStyleSheet(
-                    "QLabel { background-color: #3b3b3b; border-radius: 12px;"
+                    "QLabel { background-color: #3b3b3b; border-radius: 20px;"
                     " border: 1px solid #4B4B4B; }")
             else:
                 card._retheme()
@@ -265,7 +265,7 @@ class IOSPosterboardPage(QWidget):
                 QPushButton {{
                     background-color: {c.bg_secondary};
                     border: 1px solid {c.border};
-                    border-radius: 10px;
+                    border-radius: 20px;
                     color: {c.text_primary};
                     font-size: 13px;
                     padding: 8px 12px;
@@ -277,7 +277,7 @@ class IOSPosterboardPage(QWidget):
                 QListWidget {{
                     background-color: {c.bg_input};
                     border: 1px solid {c.border};
-                    border-radius: 8px;
+                    border-radius: 18px;
                     color: {c.text_primary};
                     font-size: 13px;
                     padding: 4px;
@@ -295,7 +295,7 @@ class IOSPosterboardPage(QWidget):
             )
         if hasattr(self, '_download_icon'):
             self._download_icon.setStyleSheet(
-                f"QLabel {{ background-color: {c.accent}; border-radius: 12px; font-size: 24px; color: {c.text_inverse}; }}"
+                f"QLabel {{ background-color: {c.accent}; border-radius: 20px; font-size: 24px; color: {c.text_inverse}; }}"
             )
         if hasattr(self, '_download_title'):
             self._download_title.setStyleSheet(
@@ -311,7 +311,7 @@ class IOSPosterboardPage(QWidget):
             )
         if hasattr(self, '_add_icon'):
             self._add_icon.setStyleSheet(
-                f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 12px; border: 2px dashed {c.border}; font-size: 36px; color: {c.accent}; }}"
+                f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 20px; border: 2px dashed {c.border}; font-size: 36px; color: {c.accent}; }}"
             )
         if hasattr(self, '_add_label'):
             self._add_label.setStyleSheet(
@@ -342,7 +342,7 @@ class IOSPosterboardPage(QWidget):
                 btn.setStyleSheet(f"""
                     QPushButton {{
                         background-color: {c.bg_secondary};
-                        border-radius: 10px;
+                        border-radius: 20px;
                         color: {c.accent};
                         font-size: 15px;
                         padding: 12px 24px;
@@ -359,7 +359,7 @@ class IOSPosterboardPage(QWidget):
                 QComboBox {{
                     background-color: {c.bg_secondary};
                     border: none;
-                    border-radius: 10px;
+                    border-radius: 20px;
                     color: {c.text_primary};
                     font-size: 10.5pt;
                     padding: 8px 12px;
@@ -368,7 +368,7 @@ class IOSPosterboardPage(QWidget):
                 QComboBox QAbstractItemView {{
                     background-color: {c.surface_hover};
                     border: 1px solid {c.border};
-                    border-radius: 10px;
+                    border-radius: 20px;
                     color: {c.text_primary};
                     selection-background-color: {c.accent};
                 }}
@@ -853,9 +853,9 @@ class IOSPosterboardPage(QWidget):
             if not pixmap.isNull():
                 icon.setPixmap(pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
-                icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 10px;")
+                icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 20px;")
         except Exception:
-            icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 10px;")
+            icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 20px;")
         inner.addWidget(icon, 0, Qt.AlignCenter)
 
         self._load_tendie_preview_by_name(card, icon, tendie.name)
@@ -878,7 +878,7 @@ class IOSPosterboardPage(QWidget):
         preview_btn.setCursor(Qt.PointingHandCursor)
         preview_btn.setStyleSheet(
             f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.accent}; "
-            f"border: 1px solid {c.border}; border-radius: 12px; padding: 7px; }}"
+            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
             f"QToolButton:hover {{ background-color: {c.scrollbar_pressed}; }}"
         )
         preview_btn.clicked.connect(
@@ -891,7 +891,7 @@ class IOSPosterboardPage(QWidget):
         del_btn.setIcon(_QIcon(":/icon/trash.svg"))
         del_btn.setStyleSheet(
             f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.error}; "
-            f"border: 1px solid {c.border}; border-radius: 12px; padding: 7px; }}"
+            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
             f"QToolButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}"
         )
         del_btn.setCursor(Qt.PointingHandCursor)
@@ -987,7 +987,7 @@ class IOSPosterboardPage(QWidget):
             QCheckBox::indicator {{ width: 20px; height: 20px; }}
             QDialogButtonBox QPushButton {{
                 background-color: {c.accent};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 14px;
                 font-weight: 600;

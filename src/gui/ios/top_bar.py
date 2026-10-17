@@ -156,7 +156,7 @@ class WorkSlopTopBar(QWidget):
                 "border-right: 1px solid rgba(255, 255, 255, 0.14);")
         self._logo_mark.setStyleSheet(
             "background-color: #FFFFFF; color: #0B65D8; font-size: 15px; "
-            "font-weight: 900; border-radius: 10px;")
+            "font-weight: 900; border-radius: 20px;")
         self._logo_name.setStyleSheet(
             "color: #FFFFFF; font-size: 19px; font-weight: 900; "
             "letter-spacing: 0.2px; background: transparent;")
@@ -171,7 +171,7 @@ class WorkSlopTopBar(QWidget):
                     background-color: transparent;
                     border: none;
                     border-bottom: 3px solid transparent;
-                    border-radius: 10px;
+                    border-radius: 20px;
                     color: #EAF6FF;
                     font-size: 12px;
                     font-weight: 600;

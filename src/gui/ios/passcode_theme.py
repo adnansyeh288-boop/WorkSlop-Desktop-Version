@@ -415,7 +415,7 @@ class IOSPasscodeThemePage(QWidget):
         remove_btn.setCursor(Qt.PointingHandCursor)
         remove_btn.setStyleSheet(
             f"QPushButton {{ background-color: {c.surface_hover}; color: {c.error}; "
-            f"border: 1px solid {c.border}; border-radius: 12px; padding: 8px 14px; }}"
+            f"border: 1px solid {c.border}; border-radius: 20px; padding: 8px 14px; }}"
             f"QPushButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}")
         remove_btn.clicked.connect(self._remove_theme)
         row.addWidget(remove_btn)
@@ -557,7 +557,7 @@ class IOSPasscodeThemePage(QWidget):
             f"color: {c.text_secondary}; font-size: 15px; padding: 24px 0;")
         self._lang_combo.setStyleSheet(
             f"QComboBox {{ background-color: {c.bg_secondary}; color: {c.text_primary}; "
-            f"border: 1px solid {c.border}; border-radius: 10px; padding: 6px 10px; }}")
+            f"border: 1px solid {c.border}; border-radius: 20px; padding: 6px 10px; }}")
         self._bold_combo.setStyleSheet(self._lang_combo.styleSheet())
         self._target_combo.setStyleSheet(self._lang_combo.styleSheet())
         self._status_lbl.setStyleSheet(f"font-size: 13px; color: {c.accent};")

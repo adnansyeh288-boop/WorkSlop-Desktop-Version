@@ -65,7 +65,7 @@ class TendiePreviewDialog(QDialog):
         self._variant_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._variant_btn.setStyleSheet(
             f"QPushButton {{ background-color: {c.border}; color: {c.text_inverse}; "
-            "border: none; border-radius: 12px; padding: 10px 24px; "
+            "border: none; border-radius: 20px; padding: 10px 24px; "
             "font-size: 14px; }"
             f"QPushButton:hover {{ background-color: {c.scrollbar_pressed}; }}")
         self._variant_btn.clicked.connect(self._toggle_appearance)
@@ -76,7 +76,7 @@ class TendiePreviewDialog(QDialog):
         close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         close_btn.setStyleSheet(
             f"QPushButton {{ background-color: {c.border}; color: {c.text_inverse}; "
-            "border: none; border-radius: 12px; padding: 10px 24px; "
+            "border: none; border-radius: 20px; padding: 10px 24px; "
             "font-size: 14px; }"
             f"QPushButton:hover {{ background-color: {c.scrollbar_pressed}; }}")
         close_btn.clicked.connect(self.reject)
@@ -90,7 +90,7 @@ class TendiePreviewDialog(QDialog):
             f"color: {c.text_secondary}; font-size: 12px; background: transparent;")
         btn_style = (
             f"QPushButton {{ background-color: {c.border}; color: {c.text_inverse}; "
-            "border: none; border-radius: 12px; padding: 10px 24px; "
+            "border: none; border-radius: 20px; padding: 10px 24px; "
             "font-size: 14px; }"
             f"QPushButton:hover {{ background-color: {c.scrollbar_pressed}; }}")
         self._variant_btn.setStyleSheet(btn_style)

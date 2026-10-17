@@ -126,7 +126,7 @@ class RiskySection(QWidget):
     def _lineedit_style(self):
         return (
             "QLineEdit { background-color: rgba(255,255,255,0.08);"
-            " border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;"
+            " border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;"
             " padding: 8px 12px; font-size: 14px; color: white; }"
         )
 
@@ -136,7 +136,7 @@ class RiskySection(QWidget):
         lbl = QLabel("")
         lbl.setFixedSize(22, 22)
         lbl.setStyleSheet(
-            "QLabel { border: 2px solid red; border-radius: 11px; "
+            "QLabel { border: 2px solid red; border-radius: 20px; "
             "color: red; background-color: transparent; }")
         lbl.hide()
         return lbl

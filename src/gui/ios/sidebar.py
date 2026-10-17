@@ -133,7 +133,7 @@ class WorkSlopSidebar(QWidget):
                 QPushButton {{
                     background-color: transparent;
                     border: none;
-                    border-radius: 14px;
+                    border-radius: 20px;
                     color: {c.menu_text};
                     font-size: 14px;
                     font-weight: 600;

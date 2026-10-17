@@ -551,7 +551,7 @@ STYLES = {
     "global": """
         QWidget {{ color: {text_primary}; background-color: {bg_primary}; spacing: 0px; font-family: '{font_family}'; }}
         QWidget:focus {{ outline: none; }}
-        QWidget[cls=central] {{ background: transparent; border-radius: 14px; }}
+        QWidget[cls=central] {{ background: transparent; border-radius: 20px; }}
         QLabel {{ font-size: 14px; }}
         QLabel[cls=dim] {{ color: {text_secondary}; }}
         QLabel[cls=term] {{ color: {brand}; }}
@@ -576,12 +576,12 @@ STYLES = {
         QMenu::item:selected {{ background-color: {surface_hover}; }}
         QScrollBar:vertical {{ background: transparent; width: 10px; }}
         QScrollBar:horizontal {{ background: transparent; height: 10px; }}
-        QScrollBar::handle {{ background: {scrollbar}; border-radius: 14px; }}
+        QScrollBar::handle {{ background: {scrollbar}; border-radius: 20px; }}
         QScrollBar::handle:pressed {{ background: {scrollbar_pressed}; }}
         QScrollBar::add-line, QScrollBar::sub-line {{ background: none; }}
         QScrollBar::add-page, QScrollBar::sub-page {{ background: none; }}
-        QSlider::groove:horizontal {{ background-color: {scrollbar}; height: 4px; border-radius: 14px; }}
-        QSlider::handle:horizontal {{ background-color: {text_primary}; width: 10px; border-radius: 14px; }}
+        QSlider::groove:horizontal {{ background-color: {scrollbar}; height: 4px; border-radius: 20px; }}
+        QSlider::handle:horizontal {{ background-color: {text_primary}; width: 10px; border-radius: 20px; }}
         QSlider::handle:horizontal:pressed {{ background-color: {accent}; }}
         QSlider::tick:horizontal {{ background-color: {scrollbar_pressed}; width: 1px; }}
         QProgressBar {{ background-color: {bg_tertiary}; border: none; border-radius: 18px; text-align: center; color: {text_primary}; font-size: 12px; }}
@@ -675,13 +675,13 @@ STYLES = {
         QProgressBar {{
             background-color: #E7EEF5;
             border: none;
-            border-radius: 14px;
+            border-radius: 20px;
             height: 6px;
             text-align: center;
             font-size: 8px;
             color: transparent;
         }}
-        QProgressBar::chunk {{ background-color: {accent}; border-radius: 14px; }}
+        QProgressBar::chunk {{ background-color: {accent}; border-radius: 20px; }}
     """,
     "action_tile_label": (
         "font-size: 11px; font-weight: 600; color: {text_primary}; "

@@ -21,7 +21,9 @@ class PresetBanner(QFrame):
     def __init__(self, ios_style: bool = True, parent=None):
         super().__init__(parent)
         self.setObjectName("presetBanner")
-        self.setFrameShape(QFrame.StyledPanel)
+        # NoFrame: StyledPanel draws square corners that fight rounded
+        # stylesheet borders (same fix as IOSCard, Round 4).
+        self.setFrameShape(QFrame.NoFrame)
         self._ios_style = ios_style
 
         layout = QHBoxLayout(self)
@@ -54,7 +56,7 @@ class PresetBanner(QFrame):
         self.setStyleSheet("""
             PresetBanner {
                 background-color: transparent;
-                border-radius: 12px;
+                border-radius: 20px;
                 border: none;
             }
         """)
@@ -196,7 +198,7 @@ class PresetWidget(QWidget):
             github_btn.setStyleSheet(
                 "QToolButton { background: transparent; border: none; }"
                 "QToolButton:hover { background-color: #3b3b3b;"
-                " border-radius: 8px; }")
+                " border-radius: 18px; }")
             github_btn.setToolTip(
                 "github.com/adnan120hz/WorkSlop-Desktop-Version")
             github_btn.clicked.connect(lambda: open_new_tab(
@@ -257,7 +259,7 @@ class PresetWidget(QWidget):
         b.setStyleSheet("""
             PresetBanner {
                 background-color: #3b3b3b;
-                border-radius: 10px;
+                border-radius: 20px;
                 border: none;
             }
         """)

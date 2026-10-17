@@ -194,7 +194,7 @@ class _GestaltContent(QWidget):
         c = ColorThemeManager.instance().colors
         return (
             "QLineEdit {"
-            f" background-color: {c.bg_input}; border: none; border-radius: 8px;"
+            f" background-color: {c.bg_input}; border: none; border-radius: 18px;"
             f" color: {c.text_primary}; font-size: 14px; padding: 8px 10px; }}"
         )
 

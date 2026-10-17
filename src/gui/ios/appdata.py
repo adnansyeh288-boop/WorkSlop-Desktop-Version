@@ -320,7 +320,7 @@ class IOSAppDataPage(QWidget):
         self.file_tree.setStyleSheet(
             f"QTreeWidget {{ background-color: {self._c.bg_primary}; "
             f"color: {self._c.text_primary}; border: 1px solid {self._c.border}; "
-            f"border-radius: 8px; font-size: 13px; }}"
+            f"border-radius: 18px; font-size: 13px; }}"
             f"QHeaderView::section {{ background-color: {self._c.bg_tertiary}; "
             f"color: {self._c.text_primary}; border: none; "
             f"border-bottom: 1px solid {self._c.border}; padding: 6px; "

@@ -652,6 +652,11 @@ class NavigationMixin:
     # so the header's "+ Add Tendies" would be redundant chrome in classic.
     _classic_nav_pages = (10,)
 
+    def _set_ios_nav_visible(self, visible: bool):
+        """Hide/show the iOS nav header (kept as a separate method so the
+        floating-capsule experiment can hook visibility in one place)."""
+        self.ios_nav.setVisible(visible)
+
     def _update_shared_nav(self, index: int):
         classic = True  # single UI: always the classic shell
         if classic and index not in self._classic_nav_pages:
@@ -659,14 +664,14 @@ class NavigationMixin:
             # on pages that need it (Icon Themes keeps "+ Add Icon"); the
             # page refresh + selection sync below still run so hosted
             # iOS-style pages never show stale device state.
-            self.ios_nav.setVisible(False)
+            self._set_ios_nav_visible(False)
             self.ios_nav.clear_right_action()
         else:
             # the iOS home page is full-screen — no header at all. The
             # refresh + sidebar sync below must still run for page 0:
             # returning early here left the rail highlighting the previous
             # page (e.g. Settings) after a programmatic jump home.
-            self.ios_nav.setVisible(index != 0)
+            self._set_ios_nav_visible(index != 0)
             if index == 0:
                 self.ios_nav.clear_right_action()
             else:
@@ -1874,7 +1879,7 @@ class ApplyMixin:
                 background-color: {c.bg_secondary};
                 color: {c.text_primary};
                 border: 1px solid {c.border};
-                border-radius: 10px;
+                border-radius: 20px;
                 padding: 6px 16px;
                 min-width: 80px;
             }}

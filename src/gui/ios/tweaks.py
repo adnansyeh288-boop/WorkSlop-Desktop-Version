@@ -194,6 +194,11 @@ class IOSSectionContent(QWidget):
         layout.setContentsMargins(_PAGE_MARGIN, _PAGE_MARGIN, _PAGE_MARGIN, 32)
         layout.setSpacing(_SECTION_GAP)
         inner = QWidget(self)
+        # Round 4: explicit page bg (bg_tertiary). Transparent did not
+        # composite reliably; the global QWidget rule paints white and hides
+        # the cards' rounded corners.
+        _c = ColorThemeManager.instance().colors
+        inner.setStyleSheet(f"background-color: {_c.bg_tertiary}; border: none;")
         inner.setLayout(layout)
         self._inner = inner
         self.layout().addWidget(inner)
@@ -548,7 +553,7 @@ class IOSSectionContent(QWidget):
             btn.setStyleSheet(
                 f"QPushButton {{ color: {c.text_primary};"
                 f" background-color: {c.surface_hover}; border: none;"
-                " border-radius: 8px; padding: 4px 10px; }"
+                " border-radius: 18px; padding: 4px 10px; }"
                 f"QPushButton:checked {{ color: #FFFFFF;"
                 f" background-color: {c.accent}; }}")
             group.addButton(btn)
@@ -685,7 +690,11 @@ class IOSTweaksPage(QWidget):
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        self._scroll.setStyleSheet(f"background-color: {c.bg_primary}; border: none;")
+        self._scroll.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
+        # Round 4: the content widget must carry the page bg explicitly —
+        # otherwise the inner rebuild widget paints white (global QWidget
+        # rule) and the white cards' rounded corners become invisible.
+        self.content.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
         self.content._retheme()
 
     def set_force_solarium_fallback_visible(self, visible: bool):
@@ -723,7 +732,11 @@ class IOSSectionPage(QWidget):
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        self._scroll.setStyleSheet(f"background-color: {c.bg_primary}; border: none;")
+        self._scroll.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
+        # Round 4: the content widget must carry the page bg explicitly —
+        # otherwise the inner rebuild widget paints white (global QWidget
+        # rule) and the white cards' rounded corners become invisible.
+        self.content.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
         self.content._retheme()
 
     def set_force_solarium_fallback_visible(self, visible: bool):

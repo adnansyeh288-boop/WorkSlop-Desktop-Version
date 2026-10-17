@@ -382,8 +382,8 @@ class IOSBackupPage(QWidget):
             f" border-top: 1px solid {c.divider};")
         self._process_bar.setStyleSheet(
             "QProgressBar { background-color: "
-            f"{c.bg_tertiary}; border: none; border-radius: 8px; }}"
+            f"{c.bg_tertiary}; border: none; border-radius: 18px; }}"
             "QProgressBar::chunk { background-color: "
-            f"{c.accent}; border-radius: 8px; }}")
+            f"{c.accent}; border-radius: 18px; }}")
         self._style_process_label()
         self.refresh()

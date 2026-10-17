@@ -302,7 +302,7 @@ class IOSSideloadPage(QWidget):
         self._log_view.setStyleSheet(
             f"QTextEdit {{ background-color: {c.bg_input}; "
             f"color: {c.text_primary}; border: 1px solid {c.divider}; "
-            f"border-radius: 8px; padding: 8px; "
+            f"border-radius: 18px; padding: 8px; "
             f"font-family: monospace; font-size: 12px; }}")
 
     def _log_line(self, text):

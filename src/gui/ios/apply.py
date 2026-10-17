@@ -25,7 +25,7 @@ def _nugget_primary_qss(c) -> str:
     the Nugget palette — upstream Nugget primaries are accent blue)."""
     return (
         f"QPushButton {{ background-color: {c.accent}; border: none;"
-        " border-radius: 14px; color: #FFFFFF; font-size: 15px;"
+        " border-radius: 20px; color: #FFFFFF; font-size: 15px;"
         " font-weight: 700; padding: 12px 20px; }"
         f"QPushButton:hover {{ background-color: {c.accent_hover}; color: #FFFFFF; }}"
         f"QPushButton:pressed {{ background-color: {c.accent_pressed}; color: #FFFFFF; }}"

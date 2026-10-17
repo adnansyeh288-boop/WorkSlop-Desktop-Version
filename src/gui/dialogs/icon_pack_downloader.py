@@ -95,13 +95,13 @@ class _ThemeCard(QFrame):
         self.setStyleSheet(f"""
             QFrame#iconPackCard {{
                 background-color: {c.bg_secondary};
-                border-radius: 12px;
+                border-radius: 20px;
                 border: none;
             }}
             QFrame#iconPackCard:hover {{ background-color: {c.surface_hover}; }}
             QLabel#ipPreview {{
                 background-color: {c.bg_tertiary};
-                border-radius: 8px;
+                border-radius: 18px;
                 color: {c.text_disabled};
                 font-size: 13px;
             }}
@@ -177,7 +177,7 @@ class IconPackDownloaderDialog(QDialog):
             QPushButton#ipCloseBtn {{
                 background-color: {c.accent};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_inverse};
                 font-size: 14px;
                 padding: 10px 20px;

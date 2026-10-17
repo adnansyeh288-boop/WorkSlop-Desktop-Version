@@ -116,7 +116,7 @@ class IOSIconThemesPage(QWidget):
             QPushButton#downloadIconPacks {{
                 background-color: {c.bg_secondary};
                 border: 1px solid {c.border};
-                border-radius: 12px;
+                border-radius: 20px;
                 color: {c.accent};
                 font-size: 14px;
                 font-weight: 600;
@@ -128,7 +128,7 @@ class IOSIconThemesPage(QWidget):
             QPushButton#appsOnIphone {{
                 background-color: {c.bg_secondary};
                 border: 1px solid {c.border};
-                border-radius: 12px;
+                border-radius: 20px;
                 color: {c.accent};
                 font-size: 14px;
                 font-weight: 600;
@@ -142,7 +142,7 @@ class IOSIconThemesPage(QWidget):
             QPushButton#resetIconThemes {{
                 background-color: {c.scrollbar};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.error};
                 font-size: 15px;
                 font-weight: 600;
@@ -181,7 +181,7 @@ class IOSIconThemesPage(QWidget):
         icon_lbl.setFixedSize(56, 56)
         icon_lbl.setAlignment(Qt.AlignCenter)
         icon_lbl.setStyleSheet(
-            f"background-color: {c.bg_secondary}; border-radius: 12px;")
+            f"background-color: {c.bg_secondary}; border-radius: 20px;")
         pixmap = None
         data = theme.get_icon_data()
         # B18: get_icon_data() returns the actual icon PNG bytes (loading them
@@ -226,7 +226,7 @@ class IOSIconThemesPage(QWidget):
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.setStyleSheet(
             f"QToolButton {{ background-color: {c.surface_hover}; color: {c.error}; "
-            f"border: 1px solid {c.border}; border-radius: 12px; padding: 7px; }}"
+            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
             f"QToolButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}"
         )
         del_btn.clicked.connect(lambda: self._remove_theme(theme.bundle_id))
@@ -361,7 +361,7 @@ class IconThemeDialog(QDialog):
             QLineEdit, QPushButton[objectName="fieldInput"] {{
                 background-color: {c.bg_input};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 14px;
                 padding: 10px 12px;
@@ -369,7 +369,7 @@ class IconThemeDialog(QDialog):
             QPushButton[objectName="fieldInput"]:hover {{ background-color: {c.surface_hover}; }}
             QPushButton {{
                 background-color: {c.accent};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_inverse};
                 font-size: 14px;
                 padding: 10px 20px;

@@ -99,7 +99,7 @@ class NumberInputDialog(QDialog):
             QSpinBox, QDoubleSpinBox {{
                 background-color: {c.bg_input};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 15px;
                 padding: 12px 16px;
@@ -119,7 +119,7 @@ class NumberInputDialog(QDialog):
             QLabel {{ color: {c.text_primary}; font-size: 15px; }}
             QPushButton {{
                 background-color: {c.accent};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_inverse};
                 font-size: 15px;
                 font-weight: 600;
@@ -227,7 +227,10 @@ class IOSCard(QFrame):
     def __init__(self, parent=None, pill: bool = False):
         super().__init__(parent)
         self.setObjectName("iosCard")
-        self.setFrameShape(QFrame.StyledPanel)
+        # NOTE (Round 4, user order): QFrame.StyledPanel draws square frame
+        # corners that override the stylesheet border-radius, so cards looked
+        # boxy. NoFrame lets the stylesheet border + radius paint cleanly.
+        self.setFrameShape(QFrame.NoFrame)
         self._pill = bool(pill)
         self._retheme()
         _auto_retheme(self)
@@ -311,6 +314,13 @@ class IOSCollapsibleSection(QWidget):
 
     def _retheme(self):
         self.header.setStyleSheet(t("collapsible_header"))
+        # Round 4: body + section use the page bg (bg_tertiary) explicitly.
+        # Transparent did not composite reliably here; the global QWidget
+        # rule paints white and hid the cards' rounded corners.
+        c = ColorThemeManager.instance().colors
+        bg = f"background-color: {c.bg_tertiary}; border: none;"
+        self.body.setStyleSheet(bg)
+        self.setStyleSheet(bg)
 
 
 class IOSNavBar(QWidget):

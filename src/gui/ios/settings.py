@@ -133,7 +133,7 @@ class IOSSettingsPage(QWidget):
         def qss(c):
             return (
                 f"background-color: {c.bg_input}; color: {c.brand}; "
-                f"font-size: 11px; font-weight: 700; border-radius: 9px;")
+                f"font-size: 11px; font-weight: 700; border-radius: 18px;")
         lbl.setStyleSheet(qss(self._palette()))
         self._track_styled(lbl, qss)
         return lbl
@@ -229,7 +229,7 @@ class IOSSettingsPage(QWidget):
             QPushButton {{
                 background-color: transparent;
                 border: none;
-                border-radius: 9px;
+                border-radius: 18px;
                 color: {c.text_primary};
                 font-size: 14px; font-weight: 600;
                 text-align: left;
@@ -466,14 +466,14 @@ class IOSSettingsPage(QWidget):
             QLineEdit {{
                 background-color: {c.bg_input};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 15px;
                 padding: 10px 14px;
             }}
             QPushButton {{
                 background-color: {c.accent};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 15px;
                 font-weight: 600;
@@ -604,7 +604,7 @@ class IOSSettingsPage(QWidget):
             QComboBox {{
                 background-color: {c.bg_input};
                 border: 1px solid {c.border};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 14px;
                 padding: 8px 12px;
@@ -613,7 +613,7 @@ class IOSSettingsPage(QWidget):
             QComboBox QAbstractItemView {{
                 background-color: {c.bg_elevated};
                 border: 1px solid {c.border};
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 selection-background-color: {c.accent};
             }}
@@ -626,7 +626,7 @@ class IOSSettingsPage(QWidget):
                 QLineEdit {{
                     background-color: {c.bg_input};
                     border: none;
-                    border-radius: 10px;
+                    border-radius: 20px;
                     color: {c.text_primary};
                     font-size: 14px;
                     padding: 10px 14px;
@@ -639,7 +639,7 @@ class IOSSettingsPage(QWidget):
             QListWidget {{
                 background-color: {c.bg_input};
                 border: none;
-                border-radius: 8px;
+                border-radius: 18px;
                 color: {c.text_primary};
                 font-size: 13px;
                 padding: 4px;
@@ -917,7 +917,7 @@ class IOSSettingsPage(QWidget):
             QPushButton {{
                 background-color: {c.scrollbar};
                 border: none;
-                border-radius: 10px;
+                border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 13px;
                 padding: 8px 12px;
