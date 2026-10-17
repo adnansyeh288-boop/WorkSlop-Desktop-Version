@@ -211,3 +211,43 @@ class TweakID(Enum):
     NuggetSolariumFFAppleMediaServices = auto()
     NuggetSolariumFFSharing = auto()
     NuggetSolariumFFMail = auto()
+    # Partial Liquid Glass disable + new menu tweaks (2026-10-17,
+    # research batch lg-partial-26: binary-attested keys from iOS 26.1
+    # dyld, audited in ~/workspace/riset/audit-kandidat-lg-26.md).
+    # K1/K3/K4/K5/K6 = verified-structure; the rest structural-hypothesis
+    # (device-proven NOT required per user 2026-10-17 — honest grade in
+    # each registry description instead).
+    # --- verified-structure (partial LG disable) ---
+    DisallowGlassLockScreen = auto()        # K1 SBDisallowGlassLockScreen
+    DisableHSGlassExterior = auto()         # K3 SolariumEnableHomeScreenExteriorEffects=false
+    DisableDockGlassExterior = auto()       # K4 SolariumEnableDockExteriorEffects=false
+    DisableKeyboardGlassExterior = auto()   # K5 SolariumEnableKeyboardExteriorEffects=false
+    DisableSolariumFocusForeground = auto() # K6 SolariumDisableFocusForegroundEffects
+    # --- structural-hypothesis: Liquid Glass menu ---
+    SolariumForceDarkShadow = auto()
+    SolariumHighlightWhite = auto()
+    # --- structural-hypothesis: Lock Screen menu ---
+    SBShowLegalTextOnLockScreen = auto()
+    SBDontLockEver = auto()
+    SBDisableAutoDim = auto()
+    # --- structural-hypothesis: Home Screen menu ---
+    SBDisableIconFlyInAnimation = auto()
+    SBDisableLiveIcons = auto()
+    SBDisableParallaxOnPageControl = auto()
+    SBEnableHomeScreenWallpaperDimming = auto()
+    # --- structural-hypothesis: Notifications menu ---
+    SBHideNotifications = auto()
+    SBShowNotificationsInAlwaysOn = auto()
+    SBAllowNotificationsDuringScreenSharing = auto()
+    # --- structural-hypothesis: Dynamic Island menu (mutually exclusive pair) ---
+    SBAlwaysRenderApertureOnGPU = auto()
+    SBNeverRenderApertureOnGPU = auto()
+    # --- structural-hypothesis: Status Bar menu ---
+    SBShowRSSI = auto()
+    SBShowRingerState = auto()
+    SBShowBatteryLevel = auto()
+    # --- structural-hypothesis: SpringBoard/System menu ---
+    SBDisableAttentionAwareness = auto()
+    SBDisableProximity = auto()
+    SBDisableHomeButton = auto()
+    SBDisableIdleSleep = auto()
