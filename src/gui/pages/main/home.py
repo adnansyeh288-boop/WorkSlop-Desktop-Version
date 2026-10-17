@@ -80,31 +80,36 @@ class HomePage(Page):
 
             hero = QWidget(self.ui.homePage)
             hero.setObjectName("wsHero")
+            # Expand so the hero block sits in the vertical middle of the
+            # content area (user order 2026-10-18: bigger + more centered).
+            from PySide6.QtWidgets import QSizePolicy
+            hero.setSizePolicy(QSizePolicy.Policy.Expanding,
+                               QSizePolicy.Policy.Expanding)
             vbox = QVBoxLayout(hero)
             vbox.setContentsMargins(0, 8, 0, 8)
-            vbox.setSpacing(10)
-            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            vbox.setSpacing(16)
+            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # 1. WS icon, centered.
+            # 1. WS icon, centered (enlarged 1.5x; source PNG is 512px).
             icon_lbl = QLabel(hero)
-            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(140, 140)))
+            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(210, 210)))
             icon_lbl.setAlignment(Qt.AlignHCenter)
             icon_lbl.setStyleSheet("background: transparent;")
             vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
 
-            # 2. Title directly below the icon.
+            # 2. Title directly below the icon (enlarged proportionally).
             title = QLabel("WorkSlop Desktop", hero)
             title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
                 f"background: transparent; color: {c0.text_primary};"
-                " font-size: 30px; font-weight: 700;")
+                " font-size: 46px; font-weight: 700;")
             vbox.addWidget(title, 0, Qt.AlignHCenter)
 
             # 3. Developer credit + links below the title.
             self.credits_lbl = make_credits_label(
                 hero, c0.text_secondary, c0.accent, align_center=True)
             self.credits_lbl.setStyleSheet(
-                "background: transparent; font-size: 15px; font-weight: 500;")
+                "background: transparent; font-size: 17px; font-weight: 500;")
             vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
 
             host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)

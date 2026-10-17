@@ -48,23 +48,16 @@ class PresetBanner(QFrame):
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
 
     def _retheme(self):
+        # User order 2026-10-18: no card background on the active-preset
+        # banner — flat/transparent, text + Manage button only.
         c = ColorThemeManager.instance().colors
-        if self._ios_style:
-            self.setStyleSheet(f"""
-                PresetBanner {{
-                    background-color: {c.bg_secondary};
-                    border-radius: 12px;
-                    border: none;
-                }}
-            """)
-        else:
-            self.setStyleSheet(f"""
-                PresetBanner {{
-                    background-color: {c.surface_hover};
-                    border-radius: 10px;
-                    border: none;
-                }}
-            """)
+        self.setStyleSheet("""
+            PresetBanner {
+                background-color: transparent;
+                border-radius: 12px;
+                border: none;
+            }
+        """)
         self.caption_lbl.setStyleSheet(f"font-size: 12px; color: {c.text_secondary};")
         self.active_lbl.setStyleSheet(f"font-size: 17px; font-weight: 600; color: {c.text_primary};")
         self.manage_btn.setStyleSheet(f"""
