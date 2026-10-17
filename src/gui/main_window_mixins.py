@@ -571,110 +571,44 @@ class SettingsMixin:
 
 
     def apply_theme(self, theme: int):
-        """Apply the active UI mode WITHOUT navigating away (Wave 11).
+        """Apply the single WorkSlop UI (3-UI system removed 2026-10-18).
 
-        Restores the v4-era dual interface (user order 2026-10-03):
-
-        * IOS (WorkSlop, the main UI): the generated Nugget sidebar is
-          hidden, the WorkSlop v4 sidebar rail shows, the shell is
-          full-screen with no padding, and the content stack shows the
-          iOS-style pages.
-        * CLASSIC (Nugget, the second UI): the generated sidebar and the
-          padded desktop shell show, the WorkSlop rail hides, and the
-          classic Home/Daemons pages live in the same content stack; the
-          iOS-style pages open inside this chrome as actions.
-
+        The classic desktop shell always shows: padded shell, generated
+        sidebar visible, WorkSlop rail hidden, classic Home/Daemons pages
+        in the content stack with the iOS-style pages hosted as actions.
         Only the chrome changes — the current page stays put.
         """
         self.theme_manager.save_theme(theme)
-        # The OS window title bar follows the active interface: dark in
-        # Full Nugget (Windows immersive dark title bar via DWM), light
-        # in the other two. Best-effort off Windows — see
-        # src/gui/titlebar.py. The requested state is kept on
+        # The OS window title bar stays light. Best-effort off Windows —
+        # see src/gui/titlebar.py. The requested state is kept on
         # self._titlebar_dark so tests can verify it without native
         # chrome (offscreen renders have no OS title bar to capture).
         try:
-            from src.gui.titlebar import (
-                apply_os_titlebar_dark, titlebar_dark_for_theme,
-            )
-            self._titlebar_dark = titlebar_dark_for_theme(theme)
+            from src.gui.titlebar import apply_os_titlebar_dark
+            self._titlebar_dark = False
             apply_os_titlebar_dark(self, self._titlebar_dark)
         except Exception:
             pass
-        is_ios = theme == ThemeManager.IOS
-        self.ui.sidebar.setVisible(not is_ios)
+        self.ui.sidebar.setVisible(True)
         if hasattr(self, "workslop_sidebar"):
-            self.workslop_sidebar.setVisible(is_ios)
-        # The device bar serves both shells (device picker + refresh).
+            self.workslop_sidebar.setVisible(False)
+        # The device bar serves the shell (device picker + refresh).
         self.ui.deviceBar.setVisible(True)
-        if is_ios:
-            # WorkSlop mode: full-screen, no padding
-            self.shell_layout.setContentsMargins(0, 0, 0, 0)
-            self.shell_layout.setSpacing(0)
-            self.body_row.setSpacing(0)
-            # entering the main UI: land on its pages unless already inside
-            if self.content_stack.currentIndex() != 1:
-                self.content_stack.setCurrentIndex(1)
-                self.ios_pages.setCurrentIndex(0)
-            self._update_shared_nav(self.ios_pages.currentIndex())
-        else:
-            # Nugget mode: padding around the desktop shell. Full Nugget
-            # sits flush like upstream (dark window edge to edge).
-            if theme == ThemeManager.FULL_NUGGET:
-                self.shell_layout.setContentsMargins(0, 0, 0, 0)
-                self.shell_layout.setSpacing(0)
-            else:
-                self.shell_layout.setContentsMargins(16, 16, 16, 16)
-                self.shell_layout.setSpacing(12)
-            self.body_row.setSpacing(16)
-            # the classic shell hides the shared header except on pages
-            # that need it (Icon Themes keeps "+ Add Icon")
-            self._update_shared_nav(self.ios_pages.currentIndex())
-            if theme == ThemeManager.FULL_NUGGET:
-                self._land_full_nugget_view()
-            elif self.content_stack.currentIndex() == 3:
-                # Left Full Nugget with its page stack on screen.
-                self.show_home()
-            if self.content_stack.currentIndex() == 1 \
-                    and self.ios_pages.currentIndex() == 0:
-                # the iOS home has no meaning inside the classic shell
-                self.show_home()
-        # Classic-shell flavor (WorkSlop icons vs Full Nugget originals)
-        # and the Nugget-only Liquid Glass subsection follow the mode.
+        # Desktop shell: padding around the content.
+        self.shell_layout.setContentsMargins(16, 16, 16, 16)
+        self.shell_layout.setSpacing(12)
+        self.body_row.setSpacing(16)
+        # the classic shell hides the shared header except on pages
+        # that need it (Icon Themes keeps "+ Add Icon")
+        self._update_shared_nav(self.ios_pages.currentIndex())
+        if self.content_stack.currentIndex() == 1 \
+                and self.ios_pages.currentIndex() == 0:
+            # the iOS home has no meaning inside the classic shell
+            self.show_home()
         self._retheme_classic()
-        # The shared device bar repaints with its shell (dark in Full
-        # Nugget, the themed light pill otherwise).
+        # The shared device bar repaints with its shell.
         try:
             self._style_device_pill()
-        except Exception:
-            pass
-        # Full Nugget also restyles the classic Home's preset block
-        # (dark Nugget colors + the UI credit over the banner).
-        try:
-            self.pages[Page.Home].set_full_nugget(
-                theme == ThemeManager.FULL_NUGGET)
-        except Exception:
-            pass
-        # The classic shell hosts Daemons / Posterboard / Settings /
-        # Themes / Apply from the page stacks; in Full Nugget they take the
-        # Nugget-original dark palette like the vendored Nugget pages
-        # (user report 2026-10-03: they were still WorkSlop-light). The
-        # classic Daemons page (stack 2) and the iOS-stack Daemons page
-        # both follow; UI-1 and UI-2 keep their themed look untouched.
-        for _page in (getattr(self, "ios_daemons", None),
-                      getattr(self, "ios_posterboard", None),
-                      getattr(self, "ios_settings", None),
-                      getattr(self, "ios_themes_hub", None),
-                      getattr(self, "ios_apply", None)):
-            try:
-                if _page is not None:
-                    _page.set_full_nugget(
-                        theme == ThemeManager.FULL_NUGGET)
-            except Exception:
-                pass
-        try:
-            self.pages[Page.Daemons].set_full_nugget(
-                theme == ThemeManager.FULL_NUGGET)
         except Exception:
             pass
         for _page in (getattr(self, "ios_liquidglass", None),
@@ -719,8 +653,7 @@ class NavigationMixin:
     _classic_nav_pages = (10,)
 
     def _update_shared_nav(self, index: int):
-        classic = ThemeManager.is_classic(getattr(self.theme_manager,
-                          "current_theme", ThemeManager.IOS))
+        classic = True  # single UI: always the classic shell
         if classic and index not in self._classic_nav_pages:
             # The classic (Nugget) shell hides the shared iOS header except
             # on pages that need it (Icon Themes keeps "+ Add Icon"); the
@@ -794,8 +727,7 @@ class NavigationMixin:
         """Move the checked highlight of the ACTIVE shell's rail to the
         active view: the WorkSlop v4 sidebar in IOS mode, the generated
         Nugget sidebar buttons in CLASSIC mode."""
-        classic = ThemeManager.is_classic(getattr(self.theme_manager,
-                          "current_theme", ThemeManager.IOS))
+        classic = True  # single UI: always the classic shell
         if classic:
             btns = (self.ui.homePageBtn, self.ui.posterboardPageBtn,
                     self.ui.springboardOptionsPageBtn,
@@ -824,18 +756,23 @@ class NavigationMixin:
                 idx = 0
             elif self.content_stack.currentIndex() == 2:
                 idx = 5  # classic daemons page
-            elif self.content_stack.currentIndex() == 3:
-                # Full Nugget stack: highlight by its section key.
-                keys = getattr(self, "_nugget_page_keys", [])
-                if keys:
-                    idx = {"statusbar": 9, "springboard": 2,
-                           "internal": 3, "liquidglass": 4}.get(
-                               keys[self.nugget_stack.currentIndex()])
             elif self.content_stack.currentIndex() == 1:
                 idx = page_to_btn.get(self.ios_pages.currentIndex())
             target = btns[idx] if idx is not None else None
             for b in btns:
                 b.setChecked(b is target)
+            # Re-tint sidebar icons for contrast: white on the checked
+            # (blue) button, dark text color otherwise.
+            try:
+                from src.gui.theme import theme_icon
+                cc = ColorThemeManager.instance().colors
+                for b in btns:
+                    res = b.property("_ws_icon_res")
+                    if res:
+                        b.setIcon(theme_icon(
+                            res, "#FFFFFF" if b is target else cc.text_primary))
+            except Exception:
+                pass
             return
         page_to_menu = {
             0: "home",
@@ -854,14 +791,8 @@ class NavigationMixin:
 
 
     def show_home(self):
-        """Open the home page of the ACTIVE UI mode."""
-        if getattr(self.theme_manager, "current_theme", ThemeManager.IOS) \
-                == ThemeManager.IOS:
-            self.content_stack.setCurrentIndex(1)
-            self.ios_pages.setCurrentIndex(0)
-            self._update_shared_nav(0)
-        else:
-            self.content_stack.setCurrentIndex(0)
+        """Open the home page (single UI)."""
+        self.content_stack.setCurrentIndex(0)
         self._refresh_preset_widgets()
         self._sync_sidebar_selection()
 
@@ -882,81 +813,7 @@ class NavigationMixin:
         self.content_stack.setCurrentIndex(1)
         self.ios_pages.setCurrentIndex(index)
 
-    # -- Full Nugget pages (third interface) -------------------------------
-
-    def _full_nugget_active(self) -> bool:
-        return getattr(self.theme_manager, "current_theme", None) \
-            == ThemeManager.FULL_NUGGET
-
-    def _ensure_nugget_pages(self):
-        """Build the vendored Nugget v7.4.1 pages on first use.
-
-        The upstream form is set up on a throwaway window (kept alive
-        on self) because setupUi() paints the window stylesheet and
-        builds the whole widget tree; the tweak-section pages are then
-        reparented into this window's Nugget stack and wired by the
-        ported page builders in src/gui/nugget_pages/.
-        """
-        if self._nugget_ui is not None:
-            return
-        from src.qt.nugget741_ui import Ui_Nugget741
-        from src.gui.nugget_pages import (
-            NuggetInternalPage, NuggetLiquidGlassPage,
-            NuggetSpringboardPage, NuggetStatusBarPage,
-        )
-        host = QtWidgets.QMainWindow()
-        ui = Ui_Nugget741()
-        ui.setupUi(host)
-        self._nugget_ui_host = host
-        self._nugget_ui = ui
-        pages = (
-            ("statusbar", ui.statusBarPage, NuggetStatusBarPage(ui)),
-            ("springboard", ui.springboardOptionsPage,
-             NuggetSpringboardPage(ui)),
-            ("internal", ui.internalOptionsPage, NuggetInternalPage(ui)),
-            ("liquidglass", ui.liquidGlassPage, NuggetLiquidGlassPage(ui)),
-        )
-        for key, widget, page in pages:
-            widget.setParent(None)
-            self.nugget_stack.addWidget(widget)
-            self._nugget_pages[key] = page
-            self._nugget_page_keys.append(key)
-        # Upstream's window stylesheet is the dark chrome of the form;
-        # scoping it to the stack themes the stolen pages exactly as
-        # upstream's window does, without touching the other shells.
-        sheet = host.styleSheet()
-        if sheet:
-            self.nugget_stack.setStyleSheet(sheet)
-
-    #: iOS-page index -> Nugget stack key, for theme-switch landing.
-    _IOS_TO_NUGGET_PAGE = {5: "statusbar", 7: "springboard",
-                           8: "internal", 9: "liquidglass"}
-
-    def _land_full_nugget_view(self):
-        """Pick the Full Nugget view matching what is on screen."""
-        if self.content_stack.currentIndex() == 1:
-            key = self._IOS_TO_NUGGET_PAGE.get(self.ios_pages.currentIndex())
-            if key is not None:
-                self.show_nugget_page(key)
-                return
-            self.show_home()
-        # Classic Home / classic Daemons / the Nugget stack stay as-is.
-
-    def show_nugget_page(self, key: str):
-        """Open one original-Nugget tweak page (Full Nugget mode)."""
-        self._ensure_nugget_pages()
-        page = self._nugget_pages[key]
-        was_loaded = page.loaded
-        page.load()
-        if was_loaded and key == "statusbar":
-            # Reflect overrides changed in another shell.
-            try:
-                page.load_status_bar()
-            except Exception:
-                pass
-        self.content_stack.setCurrentWidget(self.nugget_stack)
-        self.nugget_stack.setCurrentIndex(self._nugget_page_keys.index(key))
-        self._sync_sidebar_selection()
+    # -- Full Nugget pages removed 2026-10-18 with the 3-UI system --------
 
 
     def open_presets_section(self):
@@ -1047,8 +904,7 @@ class NavigationMixin:
 
     def _go_back(self) -> bool:
         """Navigate back: subpage -> home (stay in the UI)."""
-        classic = ThemeManager.is_classic(getattr(self.theme_manager,
-                          "current_theme", ThemeManager.IOS))
+        classic = True  # single UI: always the classic shell
         if classic and self.content_stack.currentIndex() != 0:
             self.show_home()
             return True
@@ -1065,33 +921,21 @@ class NavigationMixin:
 
 
     def on_statusBarPageBtn_clicked(self):
-        if self._full_nugget_active():
-            self.show_nugget_page("statusbar")
-            return
         self.show_ios_page(5)
         self._sync_sidebar_selection()
 
 
     def on_springboardOptionsPageBtn_clicked(self):
-        if self._full_nugget_active():
-            self.show_nugget_page("springboard")
-            return
         self.show_ios_page(7)
         self._sync_sidebar_selection()
 
 
     def on_internalOptionsPageBtn_clicked(self):
-        if self._full_nugget_active():
-            self.show_nugget_page("internal")
-            return
         self.show_ios_page(8)
         self._sync_sidebar_selection()
 
 
     def on_liquidGlassPageBtn_clicked(self):
-        if self._full_nugget_active():
-            self.show_nugget_page("liquidglass")
-            return
         self.show_ios_page(9)
         self._sync_sidebar_selection()
 
@@ -1103,8 +947,7 @@ class NavigationMixin:
 
 
     def on_daemonsPageBtn_clicked(self):
-        if ThemeManager.is_classic(getattr(
-                self.theme_manager, "current_theme", ThemeManager.IOS)):
+        if True:  # single UI: always the classic shell
             # The Nugget shell has its own classic Daemons page.
             self.pages[Page.Daemons].load()
             self.pages[Page.Daemons].refresh()

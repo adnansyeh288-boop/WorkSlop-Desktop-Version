@@ -511,7 +511,7 @@ class IOSSectionContent(QWidget):
         if box is None:
             return
         theme = getattr(getattr(self.window, "theme_manager", None),
-                        "current_theme", ThemeManager.IOS)
+                        "current_theme", ThemeManager.CLASSIC)
         box.setVisible(ThemeManager.is_classic(theme))
 
     def _nugget_row_card(self, title: str):

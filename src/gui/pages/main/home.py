@@ -32,13 +32,7 @@ class HomePage(Page):
 
         self._trim_to_logo_header()
         self._inject_preset_widget()
-        try:
-            from src.gui.ios.theme_manager import ThemeManager
-            self.set_full_nugget(
-                self.window.theme_manager.current_theme
-                == ThemeManager.FULL_NUGGET)
-        except Exception:
-            pass
+        # (Full Nugget restyle removed 2026-10-18 with the 3-UI system.)
 
     def set_full_nugget(self, enabled: bool):
         """Full Nugget (third interface) restyle of the preset block:

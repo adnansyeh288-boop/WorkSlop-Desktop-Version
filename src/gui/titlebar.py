@@ -14,16 +14,15 @@ the in-app chrome still follows the interface on every platform.
 """
 import sys
 
-from src.gui.ios.theme_manager import ThemeManager
+# (ThemeManager import removed 2026-10-18: single UI, title bar always light.)
 
 # DWMWA_USE_IMMERSIVE_DARK_MODE (Windows 10 2004+ / Windows 11).
 _DWMWA_USE_IMMERSIVE_DARK_MODE = 20
 
 
 def titlebar_dark_for_theme(theme: int) -> bool:
-    """Pure mapping: only the Full Nugget interface gets a dark OS
-    title bar; WorkSlop (Main) and WorkSlop 2 keep the light one."""
-    return theme == ThemeManager.FULL_NUGGET
+    """Pure mapping: single UI — the OS title bar always stays light."""
+    return False
 
 
 def apply_os_titlebar_dark(window, dark: bool) -> bool:

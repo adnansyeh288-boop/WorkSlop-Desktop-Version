@@ -280,45 +280,11 @@ class IOSSettingsPage(QWidget):
             self._ws_info_row(lay, "--", tr("No device"),
                               tr("Connect an iPhone over USB"), first=True)
 
-    def _style_interface_buttons(self):
-        """Style the stacked interface-picker boxes from the active
-        palette: fluid rounded corners (16px, like the cards), the
-        active box outlined in the accent color with a check mark and
-        its name on the first line, a short caption on the second."""
-        c = self._palette()
-        for name, caption, theme in self._interface_choices:
-            btn = self.interface_buttons.get(theme)
-            if btn is None:
-                continue
-            active = btn.isChecked()
-            btn.setText(f"{'✓  ' if active else ''}{name}\n{caption}")
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: {c.bg_secondary if active else c.bg_input};
-                    border: 2px solid {c.accent if active else c.border};
-                    border-radius: 16px;
-                    color: {c.text_primary};
-                    font-size: 14px;
-                    font-weight: 600;
-                    text-align: left;
-                    padding: 10px 14px;
-                }}
-                QPushButton:hover {{ background-color: {c.surface_hover}; }}
-            """)
+    # (_style_interface_buttons removed 2026-10-18 with the 3-UI system.)
 
     def refresh(self):
         """Called when navigating to Settings — picks up device changes."""
         self._build_device_rows()
-        btns = getattr(self, "interface_buttons", None)
-        if btns:
-            from src.gui.ios.theme_manager import ThemeManager
-            current = self.window.theme_manager.current_theme
-            for theme, btn in btns.items():
-                if btn.isChecked() != (theme == current):
-                    btn.blockSignals(True)
-                    btn.setChecked(theme == current)
-                    btn.blockSignals(False)
-            self._style_interface_buttons()
         # Rows rebuilt above (and any card created since the last pass)
         # take the palette of the interface currently active.
         self._retheme()
@@ -337,42 +303,8 @@ class IOSSettingsPage(QWidget):
         body = self._ws_control_row(ap_lay, "AP", tr("Accent color"), first=True)
         self._accent_picker = AccentPicker()
         body.addWidget(self._accent_picker)
-        # Interface picker (three UIs, user order 2026-10-03; renamed and
-        # restacked for the final build, user order 2026-10-03): three
-        # stacked box rows with fluid rounded corners, the active one
-        # clearly marked. Order and mapping:
-        #   "WorkSlop (Main)" -> ThemeManager.IOS (the main UI)
-        #   "WorkSlop 2"      -> ThemeManager.CLASSIC (Nugget shell,
-        #                        WorkSlop icons)
-        #   "Nugget"          -> ThemeManager.FULL_NUGGET (the original
-        #                        Nugget interface)
-        # The Settings page stays reachable from every shell, so the
-        # switch back always works from here.
-        from src.gui.ios.theme_manager import ThemeManager
-        ui_body = self._ws_control_row(ap_lay, "UI", tr("Interface"))
-        self.interface_buttons = {}
-        self._interface_choices = (
-            (tr("WorkSlop (Main)"), tr("The WorkSlop interface"),
-             ThemeManager.IOS),
-            (tr("WorkSlop 2"), tr("Nugget layout with WorkSlop icons"),
-             ThemeManager.CLASSIC),
-            (tr("Nugget"), tr("The original Nugget interface"),
-             ThemeManager.FULL_NUGGET),
-        )
-        self._interface_group = QButtonGroup(self)
-        self._interface_group.setExclusive(True)
-        for _name, _caption, theme in self._interface_choices:
-            btn = QPushButton()
-            btn.setCheckable(True)
-            btn.setChecked(
-                self.window.theme_manager.current_theme == theme)
-            btn.setCursor(Qt.PointingHandCursor)
-            btn.clicked.connect(
-                lambda _checked=False, t=theme: self.window.apply_theme(t))
-            self._interface_group.addButton(btn)
-            ui_body.addWidget(btn)
-            self.interface_buttons[theme] = btn
-        self._style_interface_buttons()
+        # (Interface picker removed 2026-10-18 with the 3-UI system:
+        # there is exactly one UI now, nothing to choose.)
 
         # --- Safety (HotLoad) ---
         sf_lay = self._ws_section("Safety (HotLoad)")
@@ -660,8 +592,6 @@ class IOSSettingsPage(QWidget):
             self._retheme_preset_list()
         if hasattr(self, 'update_channel_drp'):
             self._retheme_update_combo()
-        if getattr(self, "interface_buttons", None):
-            self._style_interface_buttons()
 
     def _retheme_update_combo(self):
         # Only the Full Nugget dark palette needs an explicit combo

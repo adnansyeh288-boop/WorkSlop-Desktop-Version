@@ -92,35 +92,8 @@ _HIDDEN_THEMED_ICONS = {
     "leminKoFiBtn": ":/icon/currency-dollar.svg",
 }
 
-# The original Nugget icon for every classic-shell button, exactly as
-# the generated .ui assigns them (src/qt/mainwindow_ui.py). The Full
-# Nugget interface (third UI) restores these untouched; the second UI
-# replaces them with the WorkSlop set above. Only the app name and app
-# icon differ from upstream Nugget in Full Nugget mode.
-_CLASSIC_ORIGINAL_ICONS = {
-    "phoneIconBtn": ":/icon/phone.svg",
-    "refreshBtn": ":/icon/arrow-clockwise.svg",
-    "homePageBtn": ":/icon/house.svg",
-    "posterboardPageBtn": ":/icon/wallpaper.svg",
-    "gestaltPageBtn": ":/icon/iphone-island.svg",
-    "euEnablerPageBtn": ":/icon/geo-alt.svg",
-    "statusBarPageBtn": ":/icon/wifi.svg",
-    "passcodePageBtn": ":/icon/lock.svg",
-    "springboardOptionsPageBtn": ":/icon/app-indicator.svg",
-    "internalOptionsPageBtn": ":/icon/hdd.svg",
-    "liquidGlassPageBtn": ":/icon/liquid-glass.svg",
-    "daemonsPageBtn": ":/icon/toggles.svg",
-    "iconThemesPageBtn": ":/icon/brush.svg",
-    "applyPageBtn": ":/icon/check-circle.svg",
-    "backupPageBtn": ":/icon/shippingbox.svg",
-    "settingsPageBtn": ":/icon/gear.svg",
-    "mainDevBtn": ":/icon/github.svg",
-    "discordBtn": ":/icon/discord.svg",
-    "starOnGithubBtn": ":/icon/star.svg",
-    "leminGithubBtn": ":/icon/github.svg",
-    "leminTwitterBtn": ":/icon/twitter.svg",
-    "leminKoFiBtn": ":/icon/currency-dollar.svg",
-}
+# (Removed 2026-10-18 with the 3-UI system: the Full Nugget interface no
+# longer exists, so the original-Nugget icon map is dead code.)
 _HIDDEN_BORDERED_BTNS = [
     "helpFromBtn", "posterRestoreBtn", "snoolieBtn", "disfordottieBtn",
     "mikasaBtn", "wind0ws11AeroBtn", "translatorsBtn", "libiBtn",
@@ -343,17 +316,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.content_stack.addWidget(ios_root)             # 1 = iOS pages
         self.content_stack.addWidget(self.ui.daemonsPage)  # 2 = classic daemons
         self.content_stack.setStyleSheet("background: transparent;")
-        # Full Nugget (third interface): the original Nugget v7.4.1
-        # tweak pages (vendored src/qt/nugget741_ui.py, builders in
-        # src/gui/nugget_pages/) live in their own stack here and are
-        # built lazily on first use — see NavigationMixin.
-        self.nugget_stack = QtWidgets.QStackedWidget(self)
-        self.nugget_stack.setStyleSheet("background: transparent;")
-        self.content_stack.addWidget(self.nugget_stack)  # 3 = Nugget pages
-        self._nugget_ui = None
-        self._nugget_ui_host = None
-        self._nugget_pages = {}       # key -> page builder
-        self._nugget_page_keys = []   # keys in stack order
+        # (Removed 2026-10-18 with the 3-UI system: the Full Nugget
+        # interface no longer exists, so there is no nugget page stack.)
         shell = QtWidgets.QWidget(self)
         shell.setProperty("cls", "central")
         # Wave 11 shell: animated blue Apple-logo background behind the
@@ -442,20 +406,10 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         unmapped parent, which on several platforms renders them transparent
         and stuttering. Called from main_app right after widget.show().
         """
-        # First launch: ask user which interface they prefer (restored
-        # Wave 11, user order 2026-10-03 — the v4-era picker retired by
-        # 445efe3). WorkSlop (iOS-style) is the main UI, so it is also the
-        # fallback when the dialog is dismissed without a choice.
+        # First launch: the 3-UI picker was removed (user order 2026-10-18).
+        # There is exactly one interface now; nothing to choose.
         if not self.theme_manager.settings.contains("ui/theme"):
-            from src.gui.interface_picker import InterfacePickerDialog
-            dlg = InterfacePickerDialog(self)
-            picked = (dlg.exec() == QtWidgets.QDialog.DialogCode.Accepted
-                      and dlg.choice)
-            self.theme_manager.save_theme({
-                "classic": ThemeManager.CLASSIC,
-                "full_nugget": ThemeManager.FULL_NUGGET,
-            }.get(picked, ThemeManager.IOS))
-            self.apply_theme(self.theme_manager.current_theme)
+            self.theme_manager.save_theme(ThemeManager.CLASSIC)
 
         # First launch: remind the user to back up the device before tweaking
         # (keeps asking until they confirm a backup was made)
@@ -516,15 +470,10 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self._retheme_classic()
 
     def _style_device_pill(self):
-        """Restyle the top device bar as a clean status pill (v4 shell).
+        """Restyle the top device bar as a clean status pill.
 
         The picker group moves to the right; the old title text becomes a
         plain expanding spacer.
-
-        Full Nugget flavor: the bar melts into upstream's dark window
-        (dark #1e1e1e strip, #3b3b3b pill, light text) — it is the only
-        interface whose shell is dark; the other two keep the themed
-        light pill below untouched.
         """
         # The picker group moves to the right and the old title text is
         # blanked first (every flavor shares this layout fixup).
@@ -534,58 +483,13 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.ui.titleBar.setText("")
         self.ui.titleBar.setStyleSheet(
             "background-color: transparent; border: none;")
-        if getattr(self, "theme_manager", None) is not None and \
-                self.theme_manager.current_theme == ThemeManager.FULL_NUGGET:
-            bar.setStyleSheet("background-color: #1e1e1e;")
-            self.ui.horizontalWidget_2.setStyleSheet("""
-                QWidget#horizontalWidget_2 {
-                    background-color: #3b3b3b;
-                    border: 1px solid #4b4b4b;
-                    border-radius: 19px;
-                }
-            """)
-            self.ui.devicePicker.setStyleSheet("""
-                QComboBox {
-                    background-color: transparent;
-                    border: none;
-                    color: #e8e8e8;
-                    font-size: 13px;
-                    font-weight: 500;
-                    min-height: 36px;
-                    padding-left: 10px;
-                }
-                QComboBox::drop-down { border: none; width: 22px; }
-                QComboBox::down-arrow {
-                    image: url(:/icon/caret-down-fill.svg);
-                    width: 12px; height: 12px; margin-right: 8px;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: #3b3b3b;
-                    border: 1px solid #4b4b4b;
-                    border-radius: 10px;
-                    color: #e8e8e8;
-                    selection-background-color: #2860ca;
-                }
-            """)
-            self.ui.refreshBtn.setStyleSheet("""
-                QToolButton {
-                    background-color: transparent;
-                    border: none;
-                    border-radius: 14px;
-                    color: #FFFFFF;
-                }
-                QToolButton:hover { background-color: rgba(255, 255, 255, 0.12); }
-            """)
-            self.ui.phoneIconBtn.setStyleSheet(
-                "background-color: transparent; border: none;")
-            return
         c = self._color_theme.colors
-        bar.setStyleSheet(f"background-color: {c.bg_primary};")
+        bar.setStyleSheet("background-color: transparent;")
         pill = self.ui.horizontalWidget_2
         pill.setStyleSheet(f"""
             QWidget#horizontalWidget_2 {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.border};
+                background-color: #FFFFFF;
+                border: 1px solid {c.card_border};
                 border-radius: 19px;
             }}
         """)
@@ -614,12 +518,13 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         """)
         self.ui.refreshBtn.setStyleSheet(f"""
             QToolButton {{
-                background-color: transparent;
+                background-color: {c.accent};
                 border: none;
-                border-radius: 14px;
-                color: {c.text_primary};
+                border-radius: 17px;
+                color: #FFFFFF;
             }}
-            QToolButton:hover {{ background-color: rgba(255, 255, 255, 0.12); }}
+            QToolButton:hover {{ background-color: {c.accent_hover}; }}
+            QToolButton:pressed {{ background-color: {c.accent_pressed}; }}
         """)
         self.ui.phoneIconBtn.setStyleSheet(
             "background-color: transparent; border: none;")
@@ -627,18 +532,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
     def _retheme_classic(self):
         """Re-color the classic shell: chrome icons, device picker, version
         link and the hardcoded-dark credit buttons.
-
-        Flavor-aware (three-UI, user order 2026-10-03): the second UI
-        (Nugget with WorkSlop icons) gets the WorkSlop set + theming
-        below; the third UI (Full Nugget) keeps the original Nugget
-        icons and chrome, restored by _apply_full_nugget_chrome().
         """
-        if getattr(self, "theme_manager", None) is not None and \
-                self.theme_manager.current_theme == ThemeManager.FULL_NUGGET:
-            self._apply_full_nugget_chrome()
-            return
-        # Leaving Full Nugget (or never entering it): the dark shell
-        # background must not stick to the WorkSlop / Nugget-WS shells.
         try:
             self._shell.layout().itemAt(1).widget().setStyleSheet(
                 "background: transparent;")
@@ -650,11 +544,19 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
                 _page.setStyleSheet("")
         c = self._color_theme.colors
 
-        # Recolor white SVG chrome icons to the current text color
+        # Recolor white SVG chrome icons to the current text color.
+        # The resource is stored on each button so _sync_sidebar_selection
+        # can re-tint to white when the button is checked (blue bg).
         for obj_name, res in _HIDDEN_THEMED_ICONS.items():
             widget = getattr(self.ui, obj_name, None)
             if widget is not None:
                 widget.setIcon(theme_icon(res, c.text_primary))
+                widget.setProperty("_ws_icon_res", res)
+        # The refresh button sits on solid blue — its icon stays white.
+        if self.ui.refreshBtn is not None:
+            self.ui.refreshBtn.setIcon(
+                theme_icon(":/icon/ws-refresh.svg", "#FFFFFF"))
+            self.ui.refreshBtn.setProperty("_ws_icon_res", None)
 
         # Device picker keeps its Designer stylesheet untouched (classic look).
 
@@ -666,16 +568,47 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         # Always-visible shell chrome: the sidebar and device bar are shown on
         # every page/tab, so their text color must be themed explicitly
         # (otherwise it falls back to whatever the .ui bundled).
+        #
+        # WorkSlop Blue Desk (single-UI rebuild 2026-10-18): white sidebar
+        # card with fluid 16px corners, blue section kicker, nav buttons
+        # with 12px corners — light-blue hover, solid blue + white text
+        # when checked. No sharp corners anywhere.
         chrome = f"""
-            QToolButton {{
-                color: {c.text_primary};
-                background: transparent;
+            #sidebar {{
+                background-color: #FFFFFF;
+                border: 1px solid {c.card_border};
+                border-radius: 16px;
             }}
-            QToolButton:hover {{
+            #sidebar QToolButton {{
+                color: {c.text_primary};
+                background-color: transparent;
+                border: none;
+                border-radius: 12px;
+                font-size: 14px;
+                font-weight: 600;
+                text-align: left;
+                padding: 10px 12px;
+                icon-size: 20px;
+            }}
+            #sidebar QToolButton:hover {{
                 color: {c.text_primary};
                 background-color: {c.surface_hover};
             }}
-            QLabel {{ color: {c.text_primary}; }}
+            #sidebar QToolButton:checked {{
+                color: #FFFFFF;
+                background-color: {c.accent};
+                font-weight: 700;
+            }}
+            #sidebar QToolButton:pressed {{
+                background-color: {c.accent_pressed};
+                color: #FFFFFF;
+            }}
+            #sidebar QToolButton:disabled {{
+                color: {c.text_disabled};
+                background-color: transparent;
+            }}
+            #sidebar QLabel {{ color: {c.text_primary}; background: transparent; }}
+            #sidebar QLabel[cls=dim] {{ color: {c.text_secondary}; }}
         """
         self.ui.sidebar.setStyleSheet(chrome)
 
@@ -686,50 +619,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             if widget is not None:
                 widget.setStyleSheet(bordered_style)
 
-    def _apply_full_nugget_chrome(self):
-        """Full Nugget flavor: original Nugget icons + dark chrome.
-
-        Restores the classic shell's icons (the generated .ui's own set,
-        untinted) and re-applies upstream's dark window look — upstream's
-        .ui paints white text/icons over a #1e1e1e central background
-        with #3b3b3b widgets — so the second UI's WorkSlop icons/colors
-        never leak into this flavor. The app name and window icon stay
-        WorkSlop (set at startup); everything else is upstream's look.
-        The dark shell is cleared again by _retheme_classic() whenever
-        another flavor becomes active.
-        """
-        from PySide6.QtGui import QIcon
-        for obj_name, res in _CLASSIC_ORIGINAL_ICONS.items():
-            widget = getattr(self.ui, obj_name, None)
-            if widget is not None:
-                widget.setIcon(QIcon(res))
-        # Dark window behind the classic shell (upstream [cls=central]).
-        try:
-            content = self._shell.layout().itemAt(1).widget()
-            content.setStyleSheet("background-color: #1e1e1e;")
-        except Exception:
-            pass
-        self.ui.sidebar.setStyleSheet(
-            "#sidebar { background-color: #1e1e1e; }\n"
-            "#sidebar QToolButton { color: #FFFFFF;"
-            " background: transparent; }\n"
-            "#sidebar QToolButton:hover { background-color: #3b3b3b; }\n"
-            "#sidebar QToolButton:checked { background-color: #3b3b3b; }\n"
-            "#sidebar QLabel { color: #FFFFFF; }")
-        # The classic pages' own labels inherit upstream's white text.
-        for _page_name in ("homePage", "daemonsPage"):
-            _page = getattr(self.ui, _page_name, None)
-            if _page is not None:
-                _page.setStyleSheet("QLabel { color: #FFFFFF; }")
-        orig = getattr(self, "_orig_classic_qss", {})
-        if "phoneNameLbl" in orig:
-            self.ui.phoneNameLbl.setStyleSheet(
-                orig["phoneNameLbl"] + "\ncolor: #FFFFFF;")
-        self.ui.phoneVersionLbl.setText("Version")
-        for obj_name in _HIDDEN_BORDERED_BTNS:
-            widget = getattr(self.ui, obj_name, None)
-            if widget is not None and obj_name in orig:
-                widget.setStyleSheet(orig[obj_name])
+    # (Removed 2026-10-18 with the 3-UI system: _apply_full_nugget_chrome
+    # deleted — the Full Nugget interface no longer exists.)
 
     def _on_color_theme_changed(self):
         """Called when the color theme (dark/light or accent) changes."""

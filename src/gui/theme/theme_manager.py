@@ -162,10 +162,10 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # WorkSlop v4 UI restoration (user order 2026-10-03): the shipped
-        # palette is the v4 SKY palette again (white rail, soft blue-white
-        # body). WS_BLUE/WORKBENCH stay defined for archived code only.
-        return SKY.with_accent(accent, hover, pressed)
+        # Single-UI rebuild (user order 2026-10-18): the shipped palette is
+        # WS_BLUE — the strong blue-white desktop-tool identity (#0B65D8
+        # header/footer bars, white content, light-grey panels).
+        return WS_BLUE.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""
