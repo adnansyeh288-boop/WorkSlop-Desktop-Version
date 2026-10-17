@@ -401,6 +401,20 @@ SPECS: tuple[TweakSpec, ...] = (
     _t(TweakID.SolariumHighlightWhite, Section.LIQUID_GLASS, "White Glass Highlight",
        GP, "SolariumHighlightWhite",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "White highlight on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
+    # K8 (deep-audit PROMOTE 2026-10-17): Solarium pref-family keys, each
+    # binary-attested exactly once in the DesignLibrary string table alongside
+    # confirmed GP prefs (SolariumNoBlurReducedFrost, SolariumIncreasedDiffusion).
+    # Reader not confirmed by disassembly (FUSE/APFS blocked in this VM) —
+    # structural-hypothesis grade, device test required.
+    _t(TweakID.SolariumBackgroundFilter, Section.LIQUID_GLASS, "Solarium Background Filter",
+       GP, "SolariumBackgroundFilter",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the Solarium background filter stage (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
+    _t(TweakID.SolariumTextFrost, Section.LIQUID_GLASS, "Solarium Text Frost",
+       GP, "SolariumTextFrost",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the frost effect applied to text on Liquid Glass surfaces (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
+    _t(TweakID.SolariumUseDisplayAngle, Section.LIQUID_GLASS, "Solarium Use Display Angle",
+       GP, "SolariumUseDisplayAngle",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Solarium lighting react to the display viewing angle (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
     # === Non-glass candidates (audited) ===
     _t(TweakID.CustomLockDate, Section.SPRINGBOARD, "Custom Lock Screen Date", FileLocation.globalPreferencesHomeDomain, "AppleICUDateTimeSymbols",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Custom Lock Screen date format. Device-proven (iOS 26.0-26.7).")),

@@ -226,6 +226,10 @@ class TweakID(Enum):
     # --- structural-hypothesis: Liquid Glass menu ---
     SolariumForceDarkShadow = auto()
     SolariumHighlightWhite = auto()
+    # --- K8 (deep-audit PROMOTE): Solarium pref-family keys, binary-attested ---
+    SolariumBackgroundFilter = auto()
+    SolariumTextFrost = auto()
+    SolariumUseDisplayAngle = auto()
     # --- structural-hypothesis: Lock Screen menu ---
     SBShowLegalTextOnLockScreen = auto()
     SBDontLockEver = auto()
