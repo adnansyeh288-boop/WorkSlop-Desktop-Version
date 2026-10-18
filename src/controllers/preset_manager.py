@@ -435,7 +435,7 @@ class PresetManager:
                     if target is None:
                         continue
                     try:
-                        self._apply_tweak(target, tweak_data)
+                        self._apply_tweak(target, tweak_data, tweak_id=key)
                     except Exception as e:
                         print(f"Failed to apply tweak {name}: {e}")
 
@@ -455,9 +455,18 @@ class PresetManager:
         # stale gestalt state is cleared otherwise.
         tweak_loader.load_eligibility(None, decision)
 
-    def _apply_tweak(self, tweak, data: dict):
+    def _apply_tweak(self, tweak, data: dict, tweak_id=None):
         if "enabled" in data:
-            tweak.enabled = data["enabled"]
+            if data["enabled"] and tweak_id is not None:
+                # Route enables through the mutual-exclusion helper so a
+                # preset load respects the same invariant as the UI (e.g. the
+                # DI GPU pair SBAlwaysRenderApertureOnGPU /
+                # SBNeverRenderApertureOnGPU can never both end up enabled from
+                # a hand-crafted preset). Non-pair tweaks are unaffected.
+                from src.tweaks.tweaks import set_tweak_enabled
+                set_tweak_enabled(tweak_id, True)
+            else:
+                tweak.enabled = data["enabled"]
 
         if isinstance(tweak, AdvancedPlistTweak):
             if "value" in data:
