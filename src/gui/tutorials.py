@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.theme import ColorThemeManager
+from src.gui.ios.components import IOSCard
 
 MODEL_ISLAND = "island"
 MODEL_HOME = "home"
@@ -618,13 +619,10 @@ class TutorialPage(QWidget):
         il.setContentsMargins(4, 4, 4, 4)
         il.setSpacing(10)
         for i, text in enumerate(steps, 1):
-            card = QFrame(inner)
-            card.setStyleSheet(f"""
-                QFrame {{
-                    background-color: {c.bg_secondary};
-                    border: 1px solid {c.card_border};
-                    border-radius: 20px;
-                }}""")
+            # IOSCard paints its rounded surface in paintEvent — Qt ignores
+            # stylesheet border-radius on plain QFrames in this window (the
+            # sharp inner box seen in round 5).
+            card = IOSCard(inner)
             cl = QHBoxLayout(card)
             cl.setContentsMargins(18, 14, 18, 14)
             cl.setSpacing(14)
@@ -641,7 +639,11 @@ class TutorialPage(QWidget):
                 }}""")
             txt = QLabel(text, card)
             txt.setWordWrap(True)
-            txt.setStyleSheet("font-size: 14px; background: transparent;")
+            txt.setObjectName("stepText")
+            # Belt and suspenders: stylesheet ID selector + translucent
+            # attribute, so no Qt quirk can paint an opaque box here.
+            txt.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            txt.setStyleSheet("QLabel#stepText { font-size: 14px; background: transparent; }")
             cl.addWidget(num)
             cl.addWidget(txt, 1)
             il.addWidget(card)

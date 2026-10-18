@@ -2,7 +2,7 @@ from PySide6.QtCore import (
     Qt, QCoreApplication, Signal as pyqtSignal, QSize, QRectF,
     QPropertyAnimation, QEasingCurve, Property,
 )
-from PySide6.QtGui import QPainter, QColor
+from PySide6.QtGui import QPainter, QColor, QPen
 from PySide6.QtWidgets import (
     QWidget, QHBoxLayout, QLabel, QPushButton, QFrame,
     QSizePolicy, QDialog, QDialogButtonBox, QLineEdit, QSpinBox,
@@ -223,6 +223,7 @@ class IOSCard(QFrame):
     a full-capsule shape (round 2 fluid-corner order)."""
 
     PILL_RADIUS_PX = 30
+    CARD_RADIUS_PX = 22
 
     def __init__(self, parent=None, pill: bool = False):
         super().__init__(parent)
@@ -232,27 +233,43 @@ class IOSCard(QFrame):
         # boxy. NoFrame lets the stylesheet border + radius paint cleanly.
         self.setFrameShape(QFrame.NoFrame)
         self._pill = bool(pill)
+        self._bg = QColor("#FFFFFF")
+        self._border = QColor("#C4D6E8")
         self._retheme()
         _auto_retheme(self)
         # Don't create a default layout - let the caller decide
 
     def set_pill(self, pill: bool):
         self._pill = bool(pill)
-        self._retheme()
+        self.update()
 
     def _retheme(self):
-        ss = t("card")
-        if self._pill:
-            ss = ss.replace("border-radius: 22px",
-                            f"border-radius: {self.PILL_RADIUS_PX}px")
-        # NOTE: child widgets (QLabel rows, etc.) inherit an opaque
-        # background from the global QWidget rule, which paints a sharp
-        # white rectangle over the card's rounded corners. Force them
-        # transparent so the card's own rounded background shows through.
-        # (Custom-painted children like IOSSwitch draw their own visuals
-        # in paintEvent, so transparency does not break them.)
-        ss += " IOSCard QWidget { background: transparent; }"
-        self.setStyleSheet(ss)
+        # NOTE (Round 5): the rounded surface is painted in paintEvent, NOT
+        # via stylesheet border-radius — Qt silently drops border-radius on
+        # these cards in the real window (global QWidget background rule +
+        # scroll-area viewport interplay; verified by direct render tests).
+        # Manual QPainter rounded-rect is deterministic. The stylesheet only
+        # forces child widgets transparent (house rule: raised surfaces need
+        # an explicit transparent background, otherwise children paint sharp
+        # white rects over the rounded corners).
+        c = ColorThemeManager.instance().colors
+        self._bg = QColor(c.bg_secondary)
+        self._border = QColor(c.card_border)
+        self.setStyleSheet("background: transparent; border: none;"
+                           " IOSCard QWidget { background: transparent; }")
+        self.update()
+
+    def paintEvent(self, event):
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+        radius = self.PILL_RADIUS_PX if self._pill else self.CARD_RADIUS_PX
+        # Inset by half the pen width so the 1px border stays inside.
+        rect = self.rect().adjusted(1, 1, -1, -1)
+        p.setBrush(self._bg)
+        p.setPen(QPen(self._border, 1))
+        p.drawRoundedRect(rect, radius, radius)
+        p.end()
+        super().paintEvent(event)
 
 
 class IOSCollapsibleSection(QWidget):
