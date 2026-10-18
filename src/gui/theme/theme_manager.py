@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal, QSettings
 from PySide6.QtGui import QColor, QPalette
 
-from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, WS_GRAY, ACCENT_PRESETS
+from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, WS_GRAY, WS_DARK, ACCENT_PRESETS
 from src.controllers.settings import migrate_legacy_key
 
 
@@ -162,11 +162,11 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # Gray rebuild (user order 2026-10-18 ronde 8): the shipped palette is
-        # WS_GRAY — the neutral gray-white desktop-tool identity (gray
-        # header/footer bars, white content, light-grey panels). WS_BLUE is
-        # kept in colors.py for reference only.
-        return WS_GRAY.with_accent(accent, hover, pressed)
+        # Dark gray rebuild (user order 2026-10-18 ronde 9): the shipped palette
+        # is WS_DARK — dark #1e1e1e like Nugget's dark UI ("BUKAN TERANG!").
+        # Menu pills are white glossy with black text. WS_GRAY/WS_BLUE kept
+        # in colors.py for reference only.
+        return WS_DARK.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""

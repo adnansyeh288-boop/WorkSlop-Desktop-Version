@@ -112,9 +112,6 @@ class TweakID(Enum):
     GranularSpringBoard = auto()
     LGLPMGestalt = auto()
     DisallowGlassTime = auto()
-    DisableLockScreenSpecular = auto()
-    DisableClockSpecular = auto()
-    DisableGlassLockScreen = auto()
     DisableGlassDock = auto()
     FlatIconsEverywhere = auto()
     DisableWidgetSpecular = auto()
@@ -129,16 +126,6 @@ class TweakID(Enum):
     DisableCompactChrome = auto()
     DisableSpecularEverywhere = auto()
     SuppressDICompletely = auto()
-    DisableGlassDI = auto()
-    DisallowGlassDI = auto()
-    DisableIslandSpecular = auto()
-    DisableGlassEverywhere = auto()
-    DisallowGlassEverywhere = auto()
-    DisableRefractionEverywhere = auto()
-    ExcludeAllGlassShadows = auto()
-    FlatDockEverywhere = auto()
-    DisableGlassBlur = auto()
-    DisallowGlassKeyboard = auto()
     # Blurr Motion (2026-10-03): the single candidate from the DesignLibrary
     # dossier whose key string is attested in the 23G83 binary
     # (~/workspace/riset/wave11/DOSSIER-BLURR-MOTION.md). Normal tweak, no

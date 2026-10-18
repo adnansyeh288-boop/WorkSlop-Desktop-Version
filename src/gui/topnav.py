@@ -110,40 +110,44 @@ class TopNavBar(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        c = ColorThemeManager.instance().colors
-        color = "#FFFFFF" if checked else c.accent
-        btn.setIcon(theme_icon(icon_res, color))
+        # White pills → BLACK icons (user: "TULISAN HITAM"). Both checked
+        # and unchecked use black for visibility on white glossy pills.
+        btn.setIcon(theme_icon(icon_res, "#0A0A0A"))
         btn.setIconSize(QSize(20, 20))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # Full-capsule pills: radius = half of PILL_HEIGHT. Checked pill is
-        # solid gray with white text; idle pills are white with gray text.
-        # No gradients, no translucency — opaque, crisp, gray-white identity.
+        # White GLOSSY pills with BLACK text (user order 2026-10-18 ronde 9:
+        # "MENU PUTIH MENGKILAP CAHAYA TULISAN HITAM"). The qlineargradient
+        # simulates light reflection from above — glossy/shiny look.
+        # Checked pill: solid white with black text + subtle inner glow.
         # NOTE: the stylesheet is set on the pills container (not TopNavBar)
         # because the QScrollArea viewport breaks TopNavBar-descendant
         # selectors for the :checked state.
         pills = self._scroll.widget()
         pills.setStyleSheet(f"""
             QPushButton {{
-                background-color: {c.bg_secondary};
-                color: {c.accent};
-                border: 1px solid {c.card_border};
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                color: #0A0A0A;
+                border: 1px solid #D0D0D0;
                 border-radius: {PILL_HEIGHT // 2}px;
                 font-size: 13px;
                 font-weight: 600;
                 padding: 0 12px;
             }}
             QPushButton:hover {{
-                background-color: {c.surface_hover};
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
             }}
             QPushButton:checked {{
-                background-color: {c.accent};
-                color: #FFFFFF;
-                border: 1px solid {c.accent};
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.5 #F8F8F8, stop:1 #E8E8E8);
+                color: #0A0A0A;
+                border: 2px solid #8A8A8A;
             }}
             QPushButton:pressed {{
-                background-color: {c.accent_pressed};
+                background-color: #D8D8D8;
             }}
             QPushButton:disabled {{
                 color: {c.text_disabled};

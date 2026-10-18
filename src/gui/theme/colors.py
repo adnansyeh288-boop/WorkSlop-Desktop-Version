@@ -180,6 +180,63 @@ WS_GRAY = ThemeColors(
 
 
 # ---------------------------------------------------------------------------
+# Dark gray palette (WorkSlop v16 ronde 9, user order 2026-10-18):
+# "ABU ABU KAYAK WARNA UI NUGGET YANG GELAP BUKAN TERANG!"
+# Dark #1e1e1e background like Nugget's dark UI. Menu pills are WHITE
+# glossy with BLACK text (user: "MENU PUTIH MENGKILAP CAHAYA TULISAN HITAM").
+# Design structure unchanged — only colors rebuilt.
+# ---------------------------------------------------------------------------
+WS_DARK = ThemeColors(
+    bg_primary="#1e1e1e",
+    bg_secondary="#262626",
+    bg_tertiary="#2c2c2c",
+    bg_input="#2c2c2c",
+    bg_elevated="#333333",
+
+    text_primary="#FFFFFF",
+    text_secondary="#b8b8b8",
+    text_disabled="#6e6e6e",
+    text_inverse="#1e1e1e",
+
+    accent="#8A8A8A",
+    accent_hover="#9A9A9A",
+    accent_pressed="#6E6E6E",
+
+    success="#34C759",
+    error="#FF453A",
+    error_hover="#FF6B62",
+    error_pressed="#D93A30",
+    warning="#FFD60A",
+
+    border="#4B4B4B",
+    divider="#3a3a3a",
+
+    scrollbar="#4b4b4b",
+    scrollbar_pressed="#5c5c5c",
+    selection="#8A8A8A",
+
+    card_border="#4B4B4B",
+    surface_hover="#3a3a3a",
+    danger_text="#FF6B62",
+
+    bg_gradient_start="#1e1e1e",
+    bg_gradient_end="#1e1e1e",
+    glass_bg="#262626",
+    glass_border="#4B4B4B",
+    bubble="rgba(255, 255, 255, 0.06)",
+
+    # Menu pills: WHITE glossy with BLACK text (user order)
+    menu_bg="#FFFFFF",
+    menu_text="#0A0A0A",
+    menu_dim="#6B6B6B",
+    menu_active_bg="#FFFFFF",
+    menu_active_text="#0A0A0A",
+    brand="#FFFFFF",
+    brand_dim="#b8b8b8",
+)
+
+
+# ---------------------------------------------------------------------------
 # Workbench palette (Wave 10 first rebuild, rejected by the user as ugly;
 # archived under riset/wave10/archive-old-ui/workbench-v1). Kept only so
 # older constructions/imports keep working. Do not use for new UI.

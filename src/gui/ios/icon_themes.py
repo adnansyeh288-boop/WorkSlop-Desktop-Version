@@ -21,10 +21,10 @@ from src.controllers.files_handler import get_bundle_files
 # iOS 18 Icon Pack (built-in, user order 2026-10-18 ronde 8)
 # ---------------------------------------------------------------------------
 # The pack is bundled in the repo again (files/ios18_icons/{Light,Dark,
-# Rounded-Light,Rounded-Dark}/) — NOT import-only. Artwork: "iOS 18 App
+# Tinted}/) — NOT import-only. Artwork: "iOS 18 App
 # Icons by catwithabaloon" (https://github.com/catwithabaloon/iOS-18-icon-pack).
 # Catalog: (display name, bundle id, asset slug). 51 apps, Light artwork for
-# all; Dark has 50 (the pack ships no Dark Shortcuts).
+# all; Dark has 50 (the pack ships no Dark Shortcuts); Tinted has 67 (v15 set).
 IOS18_CATALOG = [
     ("Shortcuts", "com.apple.shortcuts", "shortcuts"),
     ("App Store", "com.apple.AppStore", "app-store"),
@@ -80,11 +80,12 @@ IOS18_CATALOG = [
 ]
 
 # Variant: (display name, folder name)
+# v15 had Light/Dark/Tinted (user order 2026-10-18: "tinted sesuai v15!" —
+# the Rounded circular variants are replaced by Tinted).
 IOS18_VARIANTS = [
     ("Light", "Light"),
     ("Dark", "Dark"),
-    ("Rounded Light", "Rounded-Light"),
-    ("Rounded Dark", "Rounded-Dark"),
+    ("Tinted", "Tinted"),
 ]
 
 
