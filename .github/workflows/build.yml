@@ -1,8 +1,6 @@
 name: Build WorkSlop Desktop
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       build_for_macos_intel:
