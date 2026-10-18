@@ -12,7 +12,7 @@ from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRe
 from src.gui.ios.components import (
     IOSCard, IOSPrimaryButton, apply_full_nugget_chrome,
 )
-from src.gui.theme import ColorThemeManager
+from src.gui.theme import ColorThemeManager, t
 from src.gui.theme.colors import NUGGET_DARK
 from src.tweaks.tweaks import tweaks, TweakID
 
@@ -206,7 +206,11 @@ class IOSPosterboardPage(QWidget):
 
     def _retheme(self):
         c = self._palette()
-        self.setStyleSheet(f"background-color: {c.bg_primary};")
+        # Round 6: no panels — page floats on the Apple-logo watermark.
+        # (The bottom tab bar keeps its own surface.)
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSPosterboardPage QWidget { background: transparent; }")
         self._reset_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {c.scrollbar};
@@ -290,9 +294,12 @@ class IOSPosterboardPage(QWidget):
     def _retheme_tendies_tab(self):
         c = self._palette()
         if hasattr(self, '_tendies_scroll'):
-            self._tendies_scroll.setStyleSheet(
-                f"background-color: {c.bg_primary}; border: none;"
-            )
+            # Round 6: no panels — content floats on the watermark.
+            self._tendies_scroll.setStyleSheet(t("scroll_area"))
+            self._tendies_scroll.viewport().setStyleSheet(
+                "background: transparent;")
+            self._tendies_scroll.widget().setStyleSheet(
+                "background: transparent; border: none;")
         if hasattr(self, '_download_icon'):
             self._download_icon.setStyleSheet(
                 f"QLabel {{ background-color: {c.accent}; border-radius: 20px; font-size: 24px; color: {c.text_inverse}; }}"
@@ -321,9 +328,12 @@ class IOSPosterboardPage(QWidget):
     def _retheme_templates_tab(self):
         c = self._palette()
         if hasattr(self, '_templates_scroll'):
-            self._templates_scroll.setStyleSheet(
-                f"background-color: {c.bg_primary}; border: none;"
-            )
+            # Round 6: no panels — content floats on the watermark.
+            self._templates_scroll.setStyleSheet(t("scroll_area"))
+            self._templates_scroll.viewport().setStyleSheet(
+                "background: transparent;")
+            self._templates_scroll.widget().setStyleSheet(
+                "background: transparent; border: none;")
         if hasattr(self, 'templates_placeholder'):
             self.templates_placeholder.setStyleSheet(
                 f"font-size: 15px; color: {c.text_secondary};"
@@ -332,9 +342,12 @@ class IOSPosterboardPage(QWidget):
     def _retheme_video_tab(self):
         c = self._palette()
         if hasattr(self, '_video_scroll'):
-            self._video_scroll.setStyleSheet(
-                f"background-color: {c.bg_primary}; border: none;"
-            )
+            # Round 6: no panels — content floats on the watermark.
+            self._video_scroll.setStyleSheet(t("scroll_area"))
+            self._video_scroll.viewport().setStyleSheet(
+                "background: transparent;")
+            self._video_scroll.widget().setStyleSheet(
+                "background: transparent; border: none;")
         for lbl in getattr(self, '_video_labels', []):
             lbl.setStyleSheet(f"font-size: 15px; color: {c.text_primary}; min-width: 100px;")
         for btn in (getattr(self, 'thumb_btn', None), getattr(self, 'video_btn', None)):

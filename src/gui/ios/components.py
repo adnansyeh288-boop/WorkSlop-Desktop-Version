@@ -338,13 +338,10 @@ class IOSCollapsibleSection(QWidget):
 
     def _retheme(self):
         self.header.setStyleSheet(t("collapsible_header"))
-        # Round 4: body + section use the page bg (bg_tertiary) explicitly.
-        # Transparent did not composite reliably here; the global QWidget
-        # rule paints white and hid the cards' rounded corners.
-        c = ColorThemeManager.instance().colors
-        bg = f"background-color: {c.bg_tertiary}; border: none;"
-        self.body.setStyleSheet(bg)
-        self.setStyleSheet(bg)
+        # Round 6: no panels — the collapsible body floats on the watermark;
+        # its cards (IOSCard) paint their own white rounded surface.
+        self.body.setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet("background: transparent; border: none;")
 
 
 class IOSNavBar(QWidget):

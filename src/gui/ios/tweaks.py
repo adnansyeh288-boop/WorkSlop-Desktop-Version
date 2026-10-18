@@ -14,7 +14,7 @@ from src.devicemanagement.constants import mobilegestalt_decision
 from src.tweaks.capabilities import (
     clear_audit_research_only_state, clear_unsupported_mobilegestalt_state,
 )
-from src.gui.theme import ColorThemeManager
+from src.gui.theme import ColorThemeManager, t
 from src.tweaks.tweaks import tweaks, TweakID, set_tweak_enabled
 from src.tweaks.registry import SPECS_BY_SECTION, SPECS_BY_ID, SECTION_FEATURES, Kind, Section
 from src.tweaks.tweak_loader import load_plist_tweaks, load_eligibility
@@ -194,11 +194,11 @@ class IOSSectionContent(QWidget):
         layout.setContentsMargins(_PAGE_MARGIN, _PAGE_MARGIN, _PAGE_MARGIN, 32)
         layout.setSpacing(_SECTION_GAP)
         inner = QWidget(self)
-        # Round 4: explicit page bg (bg_tertiary). Transparent did not
-        # composite reliably; the global QWidget rule paints white and hides
-        # the cards' rounded corners.
-        _c = ColorThemeManager.instance().colors
-        inner.setStyleSheet(f"background-color: {_c.bg_tertiary}; border: none;")
+        # Round 6: no page panels — the tweak rows (white pills painted by
+        # IOSCard) float directly on the Apple-logo watermark. Everything
+        # here is transparent; the global QWidget rule is beaten by the
+        # explicit descendant rule on the page classes below.
+        inner.setStyleSheet("background: transparent; border: none;")
         inner.setLayout(layout)
         self._inner = inner
         self.layout().addWidget(inner)
@@ -689,12 +689,15 @@ class IOSTweaksPage(QWidget):
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
 
     def _retheme(self):
-        c = ColorThemeManager.instance().colors
-        self._scroll.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
-        # Round 4: the content widget must carry the page bg explicitly —
-        # otherwise the inner rebuild widget paints white (global QWidget
-        # rule) and the white cards' rounded corners become invisible.
-        self.content.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
+        # Round 6: no panels — scroll, content and every plain descendant
+        # are transparent; the white pill rows (IOSCard.paintEvent) float
+        # on the Apple-logo watermark like Home.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self.content.setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSTweaksPage QWidget { background: transparent; }")
         self.content._retheme()
 
     def set_force_solarium_fallback_visible(self, visible: bool):
@@ -731,12 +734,13 @@ class IOSSectionPage(QWidget):
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
 
     def _retheme(self):
-        c = ColorThemeManager.instance().colors
-        self._scroll.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
-        # Round 4: the content widget must carry the page bg explicitly —
-        # otherwise the inner rebuild widget paints white (global QWidget
-        # rule) and the white cards' rounded corners become invisible.
-        self.content.setStyleSheet(f"background-color: {c.bg_tertiary}; border: none;")
+        # Round 6: no panels — see IOSTweaksPage._retheme.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self.content.setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSSectionPage QWidget { background: transparent; }")
         self.content._retheme()
 
     def set_force_solarium_fallback_visible(self, visible: bool):

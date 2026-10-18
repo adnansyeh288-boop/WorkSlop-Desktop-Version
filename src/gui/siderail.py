@@ -20,7 +20,7 @@ MENUS = [
     ("rec_exit", "Exit\nRecovery", ":/icon/ws-refresh.svg"),
     ("dfu_guide", "DFU\nGuide", ":/icon/ws-toolbox.svg"),
     ("restore_guide", "Restore\nGuide", ":/icon/ws-device.svg"),
-    ("beta_guide", "Beta\niOS", ":/icon/ws-signal.svg"),
+    ("beta_guide", "Beta\niOS", ":/icon/apple.svg"),
     ("app_guide", "WorkSlop\nGuide", ":/icon/ws-apps.svg"),
 ]
 

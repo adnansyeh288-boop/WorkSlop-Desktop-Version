@@ -49,9 +49,12 @@ class IOSApplyPage(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         c = ColorThemeManager.instance().colors
-        scroll.setStyleSheet(f"background-color: {c.bg_primary}; border: none;")
+        # Round 6: no panels — cards float on the Apple-logo watermark.
+        scroll.setStyleSheet(t("scroll_area"))
+        scroll.viewport().setStyleSheet("background: transparent;")
         self._scroll = scroll
         content = QWidget()
+        content.setStyleSheet("background: transparent; border: none;")
         scroll.setWidget(content)
         layout.addWidget(scroll)
 
@@ -173,7 +176,13 @@ class IOSApplyPage(QWidget):
 
     def _retheme(self):
         c = self._palette()
-        self._scroll.setStyleSheet(f"background-color: {c.bg_primary}; border: none;")
+        # Round 6: no panels — cards float on the Apple-logo watermark.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self._scroll.widget().setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSApplyPage QWidget { background: transparent; }")
         self.apply_desc.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
         self.remove_desc.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
         self.status_lbl.setStyleSheet(f"color: {c.text_primary}; font-size: 14px;")

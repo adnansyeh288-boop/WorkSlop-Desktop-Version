@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from src.gui.ios.components import IOSCard
-from src.gui.theme import ColorThemeManager, theme_icon
+from src.gui.theme import ColorThemeManager, theme_icon, t
 from src.gui.dialogs.icon_pack_downloader import IconPackDownloaderDialog
 from src.gui.dialogs.app_list_dialog import AppListExportDialog
 from src.tweaks.tweaks import tweaks, TweakID
@@ -109,8 +109,13 @@ class IOSIconThemesPage(QWidget):
     def _retheme(self):
         c = ColorThemeManager.instance().colors
         self._c = c
-        self._scroll.setStyleSheet(
-            f"background-color: {c.bg_primary}; border: none;")
+        # Round 6: no panels — content floats on the Apple-logo watermark.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self._scroll.widget().setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSIconThemesPage QWidget { background: transparent; }")
         self._hint.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
         self._download_btn.setStyleSheet(f"""
             QPushButton#downloadIconPacks {{

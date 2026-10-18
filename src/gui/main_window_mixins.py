@@ -737,6 +737,7 @@ class NavigationMixin:
         page_to_menu = {
             0: ("top", "home"),
             2: ("top", "posterboard"),
+            3: ("top", "daemons"),
             4: ("rail", "settings"),
             5: ("top", "statusbar"),
             6: ("rail", "apply"),
@@ -760,7 +761,12 @@ class NavigationMixin:
             target = ("top", "daemons")   # classic daemons page
         elif self.content_stack.currentIndex() == 1:
             target = page_to_menu.get(self.ios_pages.currentIndex())
-        # clear all, then check the target
+        # clear all, then check the target.
+        # NOTE: both nav bars use exclusive QButtonGroups, and in an
+        # exclusive group setChecked(False) on the checked button is a
+        # no-op — so exclusivity is dropped while clearing, then restored.
+        self.topnav._group.setExclusive(False)
+        self.siderail._group.setExclusive(False)
         for mid in self.topnav.menu_ids():
             btn = self.topnav._buttons[mid]
             if ("top", mid) != target:
@@ -768,6 +774,8 @@ class NavigationMixin:
         for mid, btn in self.siderail._buttons.items():
             if ("rail", mid) != target:
                 btn.setChecked(False)
+        self.topnav._group.setExclusive(True)
+        self.siderail._group.setExclusive(True)
         if target is not None:
             where, mid = target
             if where == "top":
@@ -1013,14 +1021,11 @@ class NavigationMixin:
 
 
     def on_daemonsPageBtn_clicked(self):
-        if True:  # single UI: always the classic shell
-            # The Nugget shell has its own classic Daemons page.
-            self.pages[Page.Daemons].load()
-            self.pages[Page.Daemons].refresh()
-            self.content_stack.setCurrentIndex(2)
-        else:
-            self.ios_daemons.refresh_from_tweaks()
-            self.show_ios_page(3)
+        # Round 6: single UI — the rebuilt iOS Daemons page (transparent,
+        # floats on the watermark) like every other menu. The classic-shell
+        # override painted a solid panel; retired.
+        self.ios_daemons.refresh_from_tweaks()
+        self.show_ios_page(3)
         self._sync_sidebar_selection()
 
 

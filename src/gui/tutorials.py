@@ -41,9 +41,9 @@ MODEL_HOME = "home"
 
 MODELS = [
     (MODEL_ISLAND, "iPhone Dynamic Island",
-     "iPhone X dan lebih baru\n(tanpa Home button)"),
+     "iPhone X and newer\n(no Home button)"),
     (MODEL_HOME, "iPhone Home Button",
-     "iPhone 8 dan lebih lama\n(Home button fisik)"),
+     "iPhone 8 and older\n(physical Home button)"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -54,111 +54,115 @@ def _s(buttons, text, hold=0):
 
 
 STEPS = {
-    # -- Masuk Recovery Mode -------------------------------------------------
+    # -- Enter Recovery Mode -------------------------------------------------
     "rec_enter": {
-        "title": "Masuk Recovery Mode",
+        "title": "Enter Recovery Mode",
         "needs_model": True, "animated": True, "action": "enter",
         MODEL_ISLAND: [
-            _s(["vol_up"], "Tekan lalu lepas cepat tombol Volume Up."),
-            _s(["vol_down"], "Tekan lalu lepas cepat tombol Volume Down."),
-            _s(["side"], "Tahan tombol Side sampai muncul layar recovery "
-                         "(gambar kabel + komputer), lalu lepas."),
+            _s(["vol_up"], "Quick-press and release the Volume Up button."),
+            _s(["vol_down"], "Quick-press and release the Volume Down button."),
+            _s(["side"], "Hold the Side button until the recovery screen "
+                         "appears (cable + computer icon), then release."),
         ],
         MODEL_HOME: [
-            _s(["home", "power"], "Tahan tombol Home + Power bersamaan sampai "
-                                  "muncul layar recovery (gambar kabel + "
-                                  "komputer), lalu lepas."),
+            _s(["home", "power"], "Hold the Home + Power buttons together "
+                                  "until the recovery screen appears "
+                                  "(cable + computer icon), then release."),
         ],
     },
     # -- Exit Recovery Mode ---------------------------------------------------
     "rec_exit": {
-        "title": "Keluar dari Recovery Mode",
+        "title": "Exit Recovery Mode",
         "needs_model": True, "animated": True, "action": "exit",
         MODEL_ISLAND: [
-            _s(["side"], "Tahan tombol Side sampai muncul logo Apple, lalu "
-                         "lepas. iPhone akan boot normal."),
+            _s(["side"], "Hold the Side button until the Apple logo appears, "
+                         "then release. Your iPhone will boot normally."),
         ],
         MODEL_HOME: [
-            _s(["home", "power"], "Tahan tombol Home + Power sampai muncul "
-                                  "logo Apple, lalu lepas."),
+            _s(["home", "power"], "Hold the Home + Power buttons until the "
+                                  "Apple logo appears, then release."),
         ],
     },
     # -- DFU ------------------------------------------------------------------
     "dfu": {
-        "title": "Cara Masuk DFU Mode",
+        "title": "How to Enter DFU Mode",
         "needs_model": True, "animated": True, "action": None,
         MODEL_ISLAND: [
-            _s(["vol_up"], "Tekan lalu lepas cepat Volume Up."),
-            _s(["vol_down"], "Tekan lalu lepas cepat Volume Down."),
-            _s(["side"], "Tahan tombol Side selama 10 detik.", hold=10),
-            _s(["side", "vol_down"], "Sambil tetap menahan Side, tahan juga "
-                                     "Volume Down selama 5 detik.", hold=5),
-            _s(["vol_down"], "Lepas tombol Side, TETAP tahan Volume Down "
-                             "sampai layar tetap hitam (~10 detik). "
-                             "Layar hitam = DFU berhasil.", hold=10),
+            _s(["vol_up"], "Quick-press and release Volume Up."),
+            _s(["vol_down"], "Quick-press and release Volume Down."),
+            _s(["side"], "Hold the Side button for 10 seconds.", hold=10),
+            _s(["side", "vol_down"], "While still holding Side, also hold "
+                                     "Volume Down for 5 seconds.", hold=5),
+            _s(["vol_down"], "Release the Side button but KEEP holding "
+                             "Volume Down until the screen stays black "
+                             "(~10 seconds). Black screen = DFU worked.", hold=10),
         ],
         MODEL_HOME: [
-            _s(["home", "power"], "Tahan tombol Home + Power bersamaan "
-                                  "selama 10 detik.", hold=10),
-            _s(["home"], "Lepas tombol Power, TETAP tahan Home sampai layar "
-                          "tetap hitam. Layar hitam = DFU berhasil.", hold=10),
+            _s(["home", "power"], "Hold the Home + Power buttons together "
+                                  "for 10 seconds.", hold=10),
+            _s(["home"], "Release the Power button but KEEP holding Home "
+                          "until the screen stays black. "
+                          "Black screen = DFU worked.", hold=10),
         ],
     },
     # -- Restore iPhone -------------------------------------------------------
     "restore": {
-        "title": "Cara Restore HP",
+        "title": "How to Restore Your iPhone",
         "needs_model": True, "animated": False, "action": None,
         MODEL_ISLAND: [
-            "Masukkan iPhone ke recovery mode dulu: tekan-lepas Volume Up, "
-            "tekan-lepas Volume Down, tahan Side sampai layar recovery muncul.",
-            "Sambungkan iPhone ke Mac/PC dengan kabel.",
-            "Buka Finder (Mac) atau iTunes (Windows), lalu pilih iPhone kamu.",
-            'Klik "Restore iPhone", lalu konfirmasi.',
-            "Tunggu download firmware dan restore selesai — jangan cabut kabel.",
-            "iPhone akan restart. Setup sebagai baru atau restore dari backup.",
+            "Put your iPhone into recovery mode first: quick-press Volume Up, "
+            "quick-press Volume Down, then hold Side until the recovery "
+            "screen appears.",
+            "Connect your iPhone to your Mac/PC with a cable.",
+            "Open Finder (Mac) or iTunes (Windows), then select your iPhone.",
+            'Click "Restore iPhone", then confirm.',
+            "Wait for the firmware download and restore to finish — "
+            "don't unplug the cable.",
+            "Your iPhone will restart. Set it up as new or restore from a backup.",
         ],
         MODEL_HOME: [
-            "Masukkan iPhone ke recovery mode dulu: tahan Home + Power "
-            "sampai layar recovery muncul.",
-            "Sambungkan iPhone ke Mac/PC dengan kabel.",
-            "Buka Finder (Mac) atau iTunes (Windows), lalu pilih iPhone kamu.",
-            'Klik "Restore iPhone", lalu konfirmasi.',
-            "Tunggu download firmware dan restore selesai — jangan cabut kabel.",
-            "iPhone akan restart. Setup sebagai baru atau restore dari backup.",
+            "Put your iPhone into recovery mode first: hold Home + Power "
+            "until the recovery screen appears.",
+            "Connect your iPhone to your Mac/PC with a cable.",
+            "Open Finder (Mac) or iTunes (Windows), then select your iPhone.",
+            'Click "Restore iPhone", then confirm.',
+            "Wait for the firmware download and restore to finish — "
+            "don't unplug the cable.",
+            "Your iPhone will restart. Set it up as new or restore from a backup.",
         ],
     },
     # -- Beta program ---------------------------------------------------------
     "beta": {
-        "title": "Cara Ikut Program Beta iOS",
+        "title": "How to Join the iOS Beta Program",
         "needs_model": True, "animated": False, "action": None,
         MODEL_ISLAND: [
-            "Buka beta.apple.com di Safari, masuk dengan Apple Account.",
-            "Daftarkan perangkatmu ke program beta.",
-            "Di iPhone: Settings > General > Software Update > Beta Updates.",
-            'Pilih "iOS Developer Beta" atau "iOS Public Beta".',
-            "Kembali, lalu download dan install update beta.",
-            "Penting: backup iPhone dulu sebelum install beta.",
+            "Open beta.apple.com in Safari and sign in with your Apple Account.",
+            "Enroll your device in the beta program.",
+            "On your iPhone: Settings > General > Software Update > Beta Updates.",
+            'Choose "iOS Developer Beta" or "iOS Public Beta".',
+            "Go back, then download and install the beta update.",
+            "Important: back up your iPhone before installing the beta.",
         ],
         MODEL_HOME: [
-            "Buka beta.apple.com di Safari, masuk dengan Apple Account.",
-            "Daftarkan perangkatmu ke program beta.",
-            "Di iPhone: Settings > General > Software Update > Beta Updates.",
-            'Pilih "iOS Developer Beta" atau "iOS Public Beta".',
-            "Kembali, lalu download dan install update beta.",
-            "Penting: backup iPhone dulu sebelum install beta.",
+            "Open beta.apple.com in Safari and sign in with your Apple Account.",
+            "Enroll your device in the beta program.",
+            "On your iPhone: Settings > General > Software Update > Beta Updates.",
+            'Choose "iOS Developer Beta" or "iOS Public Beta".',
+            "Go back, then download and install the beta update.",
+            "Important: back up your iPhone before installing the beta.",
         ],
     },
     # -- WorkSlop app tutorial (no model picker) --------------------------------
     "app": {
-        "title": "Tutorial WorkSlop",
+        "title": "WorkSlop Tutorial",
         "needs_model": False, "animated": False, "action": None,
         "steps": [
-            "Sambungkan iPhone ke komputer dengan kabel, ketuk \"Trust\" di iPhone.",
-            "Pilih device-mu di bar atas aplikasi WorkSlop Desktop.",
-            "Buka menu tweak (mis. Liquid Glass), aktifkan toggle yang diinginkan.",
-            "Buka menu Backup — buat backup dulu sebelum apply.",
-            "Buka menu Apply — terapkan tweak ke iPhone.",
-            "Restart iPhone jika diminta agar tweak aktif.",
+            "Connect your iPhone to the computer with a cable and tap \"Trust\" on your iPhone.",
+            "Select your device in the top bar of WorkSlop Desktop.",
+            "Open a tweak menu (e.g. Liquid Glass) and turn on the toggles you want.",
+            "Open the Backup menu — back up first before applying.",
+            "Open the Apply menu to apply the tweaks to your iPhone.",
+            "Restart your iPhone if prompted so the tweaks take effect.",
         ],
     },
 }
@@ -384,7 +388,7 @@ class PhoneAnimWidget(QWidget):
             f2.setPointSize(12)
             p.setFont(f2)
             p.drawText(QRectF(bx, by, bw, bh), Qt.AlignCenter,
-                       f"Tahan {step['hold']} detik")
+                       f"Hold {step['hold']}s")
 
     def _draw_side_button(self, p, btn_id, accent):
         br = self._button_rect(btn_id)
@@ -427,7 +431,7 @@ class TutorialPage(QWidget):
         pl = QVBoxLayout(self._picker)
         pl.setContentsMargins(0, 0, 0, 0)
         pl.setSpacing(10)
-        plbl = QLabel("Pilih model iPhone kamu dulu:", self._picker)
+        plbl = QLabel("Pick your iPhone model first:", self._picker)
         plbl.setStyleSheet("font-size: 15px; font-weight: 600; "
                            "background: transparent;")
         pl.addWidget(plbl)
@@ -520,7 +524,7 @@ class TutorialPage(QWidget):
         c = ColorThemeManager.instance().colors
 
         if self._model is not None:
-            change = QPushButton("Ganti model iPhone", self._content)
+            change = QPushButton("Change iPhone model", self._content)
             change.setCursor(Qt.PointingHandCursor)
             change.setStyleSheet(f"""
                 QPushButton {{
@@ -540,8 +544,8 @@ class TutorialPage(QWidget):
         action = self.spec.get("action")
         if action in ("enter", "exit"):
             btn = QPushButton(
-                "MASUK RECOVERY MODE (beneran)" if action == "enter"
-                else "KELUAR DARI RECOVERY MODE (beneran)",
+                "ENTER RECOVERY MODE (for real)" if action == "enter"
+                else "EXIT RECOVERY MODE (for real)",
                 self._content)
             btn.setCursor(Qt.PointingHandCursor)
             btn.setMinimumHeight(52)
@@ -574,8 +578,8 @@ class TutorialPage(QWidget):
 
         nav = QHBoxLayout()
         nav.setSpacing(10)
-        self._back_btn = QPushButton("‹ Kembali", self._content)
-        self._next_btn = QPushButton("Lanjut ›", self._content)
+        self._back_btn = QPushButton("‹ Back", self._content)
+        self._next_btn = QPushButton("Next ›", self._content)
         self._auto_btn = QPushButton("Auto-play: OFF", self._content)
         self._auto_btn.setCheckable(True)
         for b in (self._back_btn, self._next_btn, self._auto_btn):

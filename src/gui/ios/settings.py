@@ -14,7 +14,7 @@ from src.controllers.preset_manager import PresetManager
 from src.controllers.hotload import HotLoad
 from src.tweaks.tweaks import tweaks, TweakID
 from src.gui.thread_workers.apply_worker import ResetPairingThread
-from src.gui.theme import ColorThemeManager, AccentPicker
+from src.gui.theme import ColorThemeManager, AccentPicker, t
 from src.gui.theme.colors import NUGGET_DARK
 from src.gui.ios.preset_menu import (
     load_preset_flow, save_preset_flow, delete_preset_flow,
@@ -578,11 +578,15 @@ class IOSSettingsPage(QWidget):
 
     def _retheme(self):
         c = self._palette()
-        self._scroll.setStyleSheet(
-            f"background-color: {c.bg_primary}; border: none;"
-        )
+        # Round 6: no panels — cards float on the Apple-logo watermark.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self._scroll.widget().setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSSettingsPage QWidget { background: transparent; }")
         self._accent_picker.setStyleSheet(
-            f"background-color: {c.bg_primary};"
+            "background: transparent; border: none;"
         )
         apply_full_nugget_chrome(self, self._full_nugget)
         self._restyle_tracked()

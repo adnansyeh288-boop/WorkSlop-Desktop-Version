@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 from src.gui.ios.components import (
     IOSSectionHeader, IOSSwitch, apply_full_nugget_chrome,
 )
-from src.gui.theme import ColorThemeManager
+from src.gui.theme import ColorThemeManager, t
 from src.gui.theme.colors import NUGGET_DARK
 from src.tweaks.tweaks import tweaks, TweakID
 from src.tweaks.tweak_loader import load_daemons
@@ -573,6 +573,11 @@ class IOSDaemonsPage(QWidget):
         self._retheme()
 
     def _retheme(self):
-        c = self._palette()
-        self._scroll.setStyleSheet(f"background-color: {c.bg_primary}; border: none;")
+        # Round 6: no panels — rows float on the Apple-logo watermark.
+        self._scroll.setStyleSheet(t("scroll_area"))
+        self._scroll.viewport().setStyleSheet("background: transparent;")
+        self.content.setStyleSheet("background: transparent; border: none;")
+        self.setStyleSheet(
+            "background: transparent; border: none;"
+            " IOSDaemonsPage QWidget { background: transparent; }")
         self.content._retheme()
