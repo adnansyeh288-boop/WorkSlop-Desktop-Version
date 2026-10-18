@@ -609,7 +609,9 @@ class TutorialPage(QWidget):
 
         self._step_idx = 0
         self._anim.set_steps(steps)
-        self._update_step_ui()
+        # NOTE: set_steps -> set_step(0) -> step_changed -> _on_anim_step ->
+        # _update_step_ui, so no direct _update_step_ui() call here (it would
+        # be redundant and was a suspected source of doubled step text).
 
     def _build_text_steps(self, layout):
         c = ColorThemeManager.instance().colors

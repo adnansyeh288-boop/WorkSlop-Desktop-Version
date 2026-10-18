@@ -200,6 +200,7 @@ class TweakID(Enum):
     # each registry description instead).
     # --- verified-structure (partial LG disable) ---
     DisallowGlassLockScreen = auto()        # K1 SBDisallowGlassLockScreen
+    IOS18LockScreenLook = auto()            # SBDisallowGlassButtons (structure-verified: CSProminentButtonView.disallowGlassButtons reader; pure new tweak, user order 2026-10-18)
     DisableHSGlassExterior = auto()         # K3 SolariumEnableHomeScreenExteriorEffects=false
     DisableDockGlassExterior = auto()       # K4 SolariumEnableDockExteriorEffects=false
     DisableKeyboardGlassExterior = auto()   # K5 SolariumEnableKeyboardExteriorEffects=false

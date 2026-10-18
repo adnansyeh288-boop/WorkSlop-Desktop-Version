@@ -125,6 +125,61 @@ WS_BLUE = ThemeColors(
 
 
 # ---------------------------------------------------------------------------
+# Gray palette (WorkSlop v16 ronde 8, user order 2026-10-18):
+# "WARNA WORKSLOP DI GANTI TOTAL! WARNA ABU ABU ... DESIGN STYLE MASIH SAMA!"
+# Same structure as WS_BLUE, every blue tone replaced with a neutral gray.
+# WS_BLUE is kept above for reference only; the app ships WS_GRAY.
+# ---------------------------------------------------------------------------
+WS_GRAY = ThemeColors(
+    bg_primary="#FFFFFF",
+    bg_secondary="#FFFFFF",
+    bg_tertiary="#F0F0F0",
+    bg_input="#F5F5F5",
+    bg_elevated="#FFFFFF",
+
+    text_primary="#1C1C1C",
+    text_secondary="#5A5A5A",
+    text_disabled="#9D9D9D",
+    text_inverse="#FFFFFF",
+
+    accent="#5A5A5A",
+    accent_hover="#4A4A4A",
+    accent_pressed="#3A3A3A",
+
+    success="#2FA84F",
+    error="#E5484D",
+    error_hover="#F0666A",
+    error_pressed="#C03540",
+    warning="#E8930C",
+
+    border="#D0D0D0",
+    divider="#DCDCDC",
+
+    scrollbar="#A8A8A8",
+    scrollbar_pressed="#888888",
+    selection="#5A5A5A",
+
+    card_border="#D0D0D0",
+    surface_hover="#E8E8E8",
+    danger_text="#C03540",
+
+    bg_gradient_start="#FFFFFF",
+    bg_gradient_end="#F2F2F2",
+    glass_bg="#FFFFFF",
+    glass_border="#D0D0D0",
+    bubble="rgba(90, 90, 90, 0.08)",
+
+    menu_bg="#5A5A5A",
+    menu_text="#FFFFFF",
+    menu_dim="#C8C8C8",
+    menu_active_bg="#4A4A4A",
+    menu_active_text="#FFFFFF",
+    brand="#5A5A5A",
+    brand_dim="#808080",
+)
+
+
+# ---------------------------------------------------------------------------
 # Workbench palette (Wave 10 first rebuild, rejected by the user as ugly;
 # archived under riset/wave10/archive-old-ui/workbench-v1). Kept only so
 # older constructions/imports keep working. Do not use for new UI.
@@ -346,6 +401,7 @@ NUGGET_DARK = ThemeColors(
 # Accent presets: (normal, hover, pressed)
 # ---------------------------------------------------------------------------
 ACCENT_PRESETS = {
+    "gray":     ("#5A5A5A", "#4A4A4A", "#3A3A3A"),
     "blue":     ("#0B65D8", "#005CB8", "#004A94"),
     "purple":   ("#AF52DE", "#9B47C4", "#893DAB"),
     "pink":     ("#FF2D55", "#E6284D", "#CC2244"),

@@ -312,6 +312,15 @@ SPECS: tuple[TweakSpec, ...] = (
     # verified-structure; the last two are structural-hypothesis.
     # Device-proven NOT required per user 2026-10-17 — honest grade in
     # each description instead. All write GP via partial restore.
+    # === iOS 18 Lock Screen Look (2026-10-18, pure new tweak — user order;
+    # do NOT touch the existing DisallowGlassLockScreen). SBDisallowGlassButtons
+    # is structure-verified: reader CSProminentButtonView.disallowGlassButtons
+    # confirmed in binary (CSProminentButtonView = flashlight/camera buttons on
+    # CoverSheet/lock screen). Same GP delivery path as SBDisallowGlassLockScreen
+    # (device-proven). Report: ~/workspace/riset/keyboard-ios18/REPORT.md.
+    _t(TweakID.IOS18LockScreenLook, Section.LIQUID_GLASS, "iOS 18 Lock Screen Look",
+       GP, "SBDisallowGlassButtons",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow Liquid Glass on the Lock Screen flashlight/camera buttons (structure-verified: CSProminentButtonView.disallowGlassButtons reader in binary). Gives the buttons the flat iOS 18 look instead of fluid glass corners. Unverified on device — needs device test.")),
     _t(TweakID.DisallowGlassLockScreen, Section.LIQUID_GLASS, "Disallow Glass on Lock Screen",
        GP, "SBDisallowGlassLockScreen",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow Liquid Glass on the Lock Screen (verified-structure: key found in SpringBoardFoundation binary). The direct answer to glass reflections during the Home Screen to Lock Screen transition. Unverified on device — needs device test.")),

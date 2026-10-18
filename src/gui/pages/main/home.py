@@ -112,6 +112,53 @@ class HomePage(Page):
                 "background: transparent; font-size: 17px; font-weight: 500;")
             vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
 
+            # 4. GitHub credit boxes (user order 2026-10-18 ronde 8): three
+            # boxes below the title — Adnan.120hz, awesomenull (GoldenNugget
+            # dev), leminlimez (Nugget dev). Icons MUST come from the repo
+            # (:/icon/github.svg), not generated. Clicking a box opens the
+            # GitHub profile in the browser.
+            from PySide6.QtWidgets import QGridLayout
+            from PySide6.QtGui import QDesktopServices
+            from PySide6.QtCore import QUrl
+            from src.gui.ios.components import IOSCard
+            from src.gui.theme import theme_icon
+            gh_row = QHBoxLayout()
+            gh_row.setSpacing(12)
+            gh_row.setAlignment(Qt.AlignHCenter)
+            gh_profiles = [
+                ("Adnan.120hz", "https://github.com/adnan120hz"),
+                ("awesomenull", "https://github.com/awesomenull"),
+                ("leminlimez", "https://github.com/leminlimez"),
+            ]
+            for name, url in gh_profiles:
+                box = IOSCard(hero)
+                box.setCursor(Qt.PointingHandCursor)
+                box_layout = QVBoxLayout(box)
+                box_layout.setContentsMargins(16, 12, 16, 12)
+                box_layout.setSpacing(8)
+                box_layout.setAlignment(Qt.AlignHCenter)
+                icon = QLabel(box)
+                icon.setPixmap(theme_icon(
+                    ":/icon/github.svg", c0.text_primary).pixmap(40, 40))
+                icon.setAlignment(Qt.AlignHCenter)
+                icon.setStyleSheet("background: transparent;")
+                box_layout.addWidget(icon)
+                lbl = QLabel(name, box)
+                lbl.setAlignment(Qt.AlignHCenter)
+                lbl.setStyleSheet(
+                    f"background: transparent; color: {c0.text_primary};"
+                    " font-size: 13px; font-weight: 600;")
+                box_layout.addWidget(lbl)
+                box.setFixedWidth(140)
+                # Clickable: open the GitHub profile.
+                box.mousePressEvent = (
+                    lambda _e, u=url: QDesktopServices.openUrl(QUrl(u)))
+                gh_row.addWidget(box)
+            gh_container = QWidget(hero)
+            gh_container.setLayout(gh_row)
+            gh_container.setStyleSheet("background: transparent;")
+            vbox.addWidget(gh_container, 0, Qt.AlignHCenter)
+
             host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)
 
         # Brand the big button icon too (kept for compat, hidden with band).

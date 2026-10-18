@@ -513,6 +513,11 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         # blanked first (every flavor shares this layout fixup).
         bar = self.ui.deviceBar
         layout = self.ui.horizontalLayout_4
+        # Tidy the device bar (user order 2026-10-18 ronde 8): even spacing
+        # and margins so the device pill + refresh button sit neatly.
+        layout.setSpacing(8)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter)
         layout.insertWidget(0, self.ui.titleBar)
         self.ui.titleBar.setText("")
         self.ui.titleBar.setStyleSheet(

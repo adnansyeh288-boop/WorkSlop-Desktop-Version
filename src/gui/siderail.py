@@ -117,14 +117,25 @@ class SideRail(QWidget):
     def _retheme(self):
         c = ColorThemeManager.instance().colors
         # Fluid rounded buttons (18px on a 68px-wide button reads fully
-        # rounded). Blue-white identity, no gradients.
+        # rounded). Gray-white identity, no gradients.
+        # NOTE: the button stylesheet is set on the holder widget (not
+        # SideRail) because the QScrollArea viewport breaks SideRail-
+        # descendant selectors for the :checked state (user order
+        # 2026-10-18 ronde 8: active menu icon must stay visible).
         self.setStyleSheet(f"""
             SideRail {{
                 background-color: {c.bg_secondary};
                 border: 1px solid {c.card_border};
                 border-radius: 22px;
             }}
-            SideRail QToolButton {{
+        """)
+        holder = self._scroll.widget()
+        holder.setStyleSheet(f"""
+            QWidget {{
+                background: transparent;
+                border: none;
+            }}
+            QToolButton {{
                 background-color: transparent;
                 color: {c.text_primary};
                 border: none;
@@ -133,14 +144,14 @@ class SideRail(QWidget):
                 font-weight: 600;
                 padding: 6px 2px;
             }}
-            SideRail QToolButton:hover {{
+            QToolButton:hover {{
                 background-color: {c.surface_hover};
             }}
-            SideRail QToolButton:checked {{
+            QToolButton:checked {{
                 background-color: {c.accent};
                 color: #FFFFFF;
             }}
-            SideRail QToolButton:pressed {{
+            QToolButton:pressed {{
                 background-color: {c.accent_pressed};
             }}
         """)
