@@ -143,22 +143,6 @@ elif os.name == 'nt':
     else:
         print("[!] libimobiledevice binaries not bundled: 'idevice' folder not found")
 
-# zsign (built from source via tools/build_zsign.py). The sideloading
-# engine's resolve_zsign() looks in <resource_dir>/vendor/ first, where
-# resource_dir() is <_MEIPASS>/ipaside_engine when frozen — so the binary
-# must be bundled at ipaside_engine/vendor/, NOT the bundle root (the old
-# "--add-binary ... :." destination never matched any lookup candidate,
-# which is why frozen builds always fell through to "zsign not found").
-_zsign = os.path.join("vendor", "zsign.exe" if os.name == "nt" else "zsign")
-if os.path.isfile(_zsign):
-    _sep = ";" if os.name == "nt" else ":"
-    args.append('--add-binary')
-    args.append(f"{_zsign}{_sep}ipaside_engine/vendor")
-    print(f"[+] Bundling zsign: {_zsign} -> ipaside_engine/vendor")
-else:
-    print("[!] zsign not bundled: run tools/build_zsign.py first "
-          "(sideload signing will need zsign on PATH or WORKSLOP_ZSIGN)")
-
 PyInstaller.__main__.run(args)
 
 if platform == "darwin":

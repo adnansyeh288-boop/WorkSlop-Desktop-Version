@@ -130,7 +130,7 @@ STYLES = {
         }}
     """,
 
-    "nav_bar": "background-color: {bg_secondary}; border-bottom: 1px solid {divider};",
+    "nav_bar": "background-color: transparent; border: none;",
 
     "nav_back_btn": """
         QPushButton {{

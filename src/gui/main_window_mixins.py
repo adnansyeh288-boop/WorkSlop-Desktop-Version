@@ -611,13 +611,6 @@ class SettingsMixin:
             self._style_device_pill()
         except Exception:
             pass
-        for _page in (getattr(self, "ios_liquidglass", None),
-                      getattr(self, "ios_tweaks", None)):
-            try:
-                if _page is not None:
-                    _page.refresh_nugget_lg_visibility()
-            except Exception:
-                pass
         self._sync_sidebar_selection()
     def updateAppVersionLabel(self):
         new_text: str = self.ui.appVersionLbl.text()
@@ -853,12 +846,20 @@ class NavigationMixin:
         self._recovery_worker.progress.connect(
             lambda msg: self.statusBar().showMessage(msg, 10000))
         def _done(ok: bool, msg: str):
+            # Never show a raw traceback: the worker appends one for the
+            # log, but the dialog only ever shows the first line. A
+            # no-device failure always becomes the friendly prompt.
+            first = (msg or "").split("\n")[0].strip()
             if ok:
-                QMessageBox.information(self, "Recovery", msg)
+                QMessageBox.information(self, "Recovery", first)
+            elif "No device" in first:
+                QMessageBox.warning(
+                    self, "No device",
+                    "Connect an iPhone first (select it in the top bar).")
             else:
                 QMessageBox.critical(
                     self, "Recovery failed",
-                    f"{name} failed:\n\n{msg}")
+                    f"{name} failed:\n\n{first}")
             self._recovery_worker = None
         self._recovery_worker.finished.connect(_done)
         self._recovery_worker.start()

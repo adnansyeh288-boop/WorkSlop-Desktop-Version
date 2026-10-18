@@ -75,6 +75,40 @@ class IOSIconThemesPage(QWidget):
         self._apps_btn = apps_btn
         self.content_layout.addWidget(apps_btn)
 
+        # -- iOS 18 Icon Pack (user order 2026-10-18): the pack choices
+        # live directly on this page — Light / Dark / Tinted / more
+        # tints — each one imports the variant's folder or .zip straight
+        # into the themes via the existing import machinery. The pack
+        # files themselves are user-supplied (not bundled in the repo).
+        pack_title = QLabel(QCoreApplication.translate(
+            "Nugget", "iOS 18 Icon Pack"))
+        pack_title.setObjectName("packTitle")
+        pack_title.setWordWrap(True)
+        self._pack_title = pack_title
+        self.content_layout.addWidget(pack_title)
+        pack_hint = QLabel(QCoreApplication.translate(
+            "Nugget",
+            "Import the iOS 18-style pack from your own files. Pick a "
+            "variant, choose its folder or .zip, and the icons apply "
+            "right away."))
+        pack_hint.setObjectName("packHint")
+        pack_hint.setWordWrap(True)
+        self._pack_hint = pack_hint
+        self.content_layout.addWidget(pack_hint)
+        pack_row = QHBoxLayout()
+        pack_row.setSpacing(10)
+        self._pack_btns = {}
+        for variant in ("Light", "Dark", "Tinted", "More Tints"):
+            b = QPushButton(QCoreApplication.translate("Nugget", variant))
+            b.setObjectName("packVariantBtn")
+            b.setCursor(Qt.PointingHandCursor)
+            b.clicked.connect(
+                lambda _=False, v=variant: self._import_pack_variant(v))
+            self._pack_btns[variant] = b
+            pack_row.addWidget(b)
+        pack_row.addStretch(1)
+        self.content_layout.addLayout(pack_row)
+
         self.themes_placeholder = QLabel(QCoreApplication.translate(
             "Nugget", "No icon themes yet. Tap + Add Icon or download a pack."))
         self.themes_placeholder.setAlignment(Qt.AlignCenter)
@@ -143,10 +177,28 @@ class IOSIconThemesPage(QWidget):
         """)
         self.themes_placeholder.setStyleSheet(
             f"color: {c.text_secondary}; font-size: 15px; padding: 24px 0;")
+        self._pack_title.setStyleSheet(
+            f"color: {c.text_primary}; font-size: 16px; font-weight: 700; "
+            f"padding: 14px 0 0 0; background: transparent;")
+        self._pack_hint.setStyleSheet(
+            f"color: {c.text_secondary}; font-size: 13px; background: transparent;")
+        for b in self._pack_btns.values():
+            b.setStyleSheet(f"""
+                QPushButton#packVariantBtn {{
+                    background-color: {c.bg_secondary};
+                    border: 1px solid {c.border};
+                    border-radius: 20px;
+                    color: {c.accent};
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 12px 18px;
+                }}
+                QPushButton#packVariantBtn:hover {{ background-color: {c.surface_hover}; }}
+            """)
         self._reset_btn.setStyleSheet(f"""
             QPushButton#resetIconThemes {{
-                background-color: {c.scrollbar};
-                border: none;
+                background-color: {c.bg_secondary};
+                border: 1px solid {c.border};
                 border-radius: 20px;
                 color: {c.error};
                 font-size: 15px;
@@ -280,6 +332,42 @@ class IOSIconThemesPage(QWidget):
         dialog = IconPackDownloaderDialog(self.window)
         if dialog.exec() == QDialog.Accepted and dialog.added_bundle_ids:
             self.refresh_themes()
+
+    def _import_pack_variant(self, variant: str):
+        """Import one iOS 18 pack variant from the user's own folder/.zip."""
+        from PySide6.QtWidgets import QInputDialog
+        tweak = tweaks[TweakID.IconThemes]
+        tr = lambda s: QCoreApplication.translate("Nugget", s)
+        options = [tr("Pack folder…"), tr("Pack .zip file…")]
+        choice, ok = QInputDialog.getItem(
+            self.window, tr(f"iOS 18 Pack — {variant}"),
+            tr("Import the variant from:"),
+            options, 0, False)
+        if not ok:
+            return
+        if options.index(choice) == 0:
+            folder = QFileDialog.getExistingDirectory(
+                self.window, tr(f"Choose the {variant} pack folder"))
+            if not folder:
+                return
+            added, _skipped = tweak.import_pack(folder)
+        else:
+            path, _ = QFileDialog.getOpenFileName(
+                self.window, tr(f"Choose the {variant} pack .zip"),
+                "", "Icon packs (*.zip)")
+            if not path:
+                return
+            added, _skipped = tweak.import_pack_zip(path)
+        if added:
+            tweak.set_enabled(True)
+            self.refresh_themes()
+            QMessageBox.information(
+                self.window, tr(f"iOS 18 Pack — {variant}"),
+                tr("Imported {0} icons ({1}).").format(added, variant))
+        else:
+            QMessageBox.warning(
+                self.window, tr(f"iOS 18 Pack — {variant}"),
+                tr("No icons found in the selected {0} pack.").format(variant))
 
 
 class IconThemeDialog(QDialog):

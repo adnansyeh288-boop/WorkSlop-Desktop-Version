@@ -115,63 +115,6 @@ SPECS: tuple[TweakSpec, ...] = (
     # files; iOS 26 zero-byte contents, iOS 27+ empty plist).
 
     # --- SpringBoard ---
-    _t(TweakID.LockScreenFootnote, Section.SPRINGBOARD, "Lock Screen Footnote Text",
-       FileLocation.footnote, "LockScreenFootnote", value="", kind=Kind.TEXT,
-       description=QT_TRANSLATE_NOOP("Nugget", "Sets custom text shown at the bottom of the Lock Screen below the time. Long text is cut off — keep it short. Leave empty to remove.")),
-    _t(TweakID.WatchOSCompatibility, Section.SPRINGBOARD, "Allow pairing with any watchOS version",
-       FileLocation.nanoregistry, "", factory=_watchos_compatibility,
-       description=QT_TRANSLATE_NOOP("Nugget", "Removes the minimum watchOS pairing check in NanoRegistry so you can pair an Apple Watch running any watchOS version with your iPhone.")),
-    _t(TweakID.AirDropDisableTimeLimit, Section.SPRINGBOARD, "Disable AirDrop Time Limit for Everyone Option",
-       FileLocation.airdrop, "OverrideTimeLimitEveryoneMode",
-       description=QT_TRANSLATE_NOOP("Nugget", "Unlocks the hidden 'Everyone' AirDrop receiving option that would normally be limited to a 10-minute time window.")),
-    _t(TweakID.SBDontLockAfterCrash, Section.SPRINGBOARD, "Disable Lock After Respring",
-       FileLocation.springboard, "SBDontLockAfterCrash",
-       description=QT_TRANSLATE_NOOP("Nugget", "Prevents the screen from locking right after a respring — the phone won't ask for a passcode immediately after the UI reloads.")),
-    _t(TweakID.SBDontDimOrLockOnAC, Section.SPRINGBOARD, "Disable Screen Dimming While Charging",
-       FileLocation.springboard, "SBDontDimOrLockOnAC",
-       description=QT_TRANSLATE_NOOP("Nugget", "Stops the display from auto-dimming while the device is connected to a charger.")),
-    _t(TweakID.SBHideLowPowerAlerts, Section.SPRINGBOARD, "Disable Low Battery Alerts",
-       FileLocation.springboard, "SBHideLowPowerAlerts",
-       description=QT_TRANSLATE_NOOP("Nugget", "Suppresses the 'Low Battery — 20% / 10%' system alerts.")),
-    _t(TweakID.SBHideACPower, Section.SPRINGBOARD, "Hide AC Power on Lock Screen",
-       FileLocation.springboard, "SBHideACPower",
-       description=QT_TRANSLATE_NOOP("Nugget", "Hides the charging status from the Lock Screen while the device is plugged into AC power.")),
-    _t(TweakID.SBNeverBreadcrumb, Section.SPRINGBOARD, "Disable Breadcrumbs",
-       FileLocation.springboard, "SBNeverBreadcrumb",
-       description=QT_TRANSLATE_NOOP("Nugget", "Disables the 'Return to <App>' breadcrumb button that appears in the status bar after opening a link from another app.")),
-    _t(TweakID.SBShowSupervisionTextOnLockScreen, Section.SPRINGBOARD, "Show Supervision Text on Lock Screen",
-       FileLocation.springboard, "SBShowSupervisionTextOnLockScreen",
-       description=QT_TRANSLATE_NOOP("Nugget", "Shows the device-supervision text on the Lock Screen, like the '<Device> is supervised by <org>' label seen on MDM-managed devices.")),
-    _t(TweakID.AirplaySupport, Section.SPRINGBOARD, "Enable AirPlay support for Stage Manager",
-       FileLocation.springboard, "SBExtendedDisplayOverrideSupportForAirPlayAndDontFileRadars",
-       description=QT_TRANSLATE_NOOP("Nugget", "Adds extended-display AirPlay support for Stage Manager so apps and external displays can use the feature more broadly.")),
-    _t(TweakID.SBAlwaysShowSystemApertureInSnapshots, Section.SPRINGBOARD, "Show Dynamic Island in Screenshots",
-       FileLocation.springboard, "SBAlwaysShowSystemApertureInSnapshots", min_version="17.4", iphone_only=True,
-       description=QT_TRANSLATE_NOOP("Nugget", "Forces the Dynamic Island to appear in screenshots instead of being hidden or shrunk while the screenshot is taken.")),
-    _t(TweakID.HideDICompletely, Section.SPRINGBOARD, "Hide Dynamic Island Completely",
-       FileLocation.springboard, "SBSuppressDynamicIslandCompletely", min_version="17.4", iphone_only=True,
-       description=QT_TRANSLATE_NOOP("Nugget", "Suppresses the Dynamic Island cutout completely so it is never drawn. Can make the screen look odd on devices with a pill cutout.")),
-    _t(TweakID.SBShowAuthenticationEngineeringUI, Section.SPRINGBOARD, "Show Red/Green Authentication Line on Lock Screen",
-       FileLocation.springboard, "SBShowAuthenticationEngineeringUI",
-       description=QT_TRANSLATE_NOOP("Nugget", "Shows a red/green authentication progress indicator on the Lock Screen while Face ID or passcode checks are running (engineering debug UI).")),
-    # DEAD 2026-10-01 (binary research): Apple removed the floating tab bar
-    # (and this preference) in iPadOS 26.4 — the key is a stale no-op on
-    # 26.6.1. Kept in the enum for history; never loaded, never applied,
-    # never rendered.
-    _t(TweakID.UseFloatingTabBar, Section.SPRINGBOARD, "Disable Floating Tab Bar",
-       FileLocation.uikit, "UseFloatingTabBar", value=False, ipad_only=True, disabled=True,
-       description=QT_TRANSLATE_NOOP("Nugget", "Uses the old fixed tab bar style instead of the floating tab bar on iPad. Enabled when the switch is OFF.")),
-    _t(TweakID.SBDisableIconParallax, Section.SPRINGBOARD, "Disable Icon Parallax",
-       FileLocation.springboard, "SBDisableParallax",
-       description=QT_TRANSLATE_NOOP("Nugget", "Stops Home Screen icons from shifting with the device tilt (the parallax effect). Pair with Disable Icon Page-Control Parallax for a fully static Home Screen.")),
-    # Hide Search Button: v4 placement (SpringBoard section) and v4 spec,
-    # restored verbatim with the Liquid Glass set. Same writer as before:
-    # managed SpringBoard location, key SBHomeScreenShowsSearchAffordance,
-    # value False; the retired HideSearchAffordance name still aliases here.
-    _t(TweakID.SBHideSearchAffordance, Section.SPRINGBOARD, "Hide Search Button on Home Screen",
-       FileLocation.springboard, "SBHomeScreenShowsSearchAffordance", value=False,
-       description=QT_TRANSLATE_NOOP("Nugget", "Removes the search button below the icons on the Home Screen (the faint search bar/icon above the Dock). Enabled when the switch is ON.")),
-
     # === Partial LG batch: SpringBoard menus (2026-10-17, lg-partial-26) ===
     # Binary-attested SB* keys from the iOS 26.1 dyld (audit:
     # ~/workspace/riset/audit-kandidat-lg-26.md). All structural-hypothesis.
@@ -241,6 +184,63 @@ SPECS: tuple[TweakSpec, ...] = (
     _t(TweakID.SBDisableIdleSleep, Section.SPRINGBOARD, "Disable Idle Sleep",
        GP, "SBDisableIdleSleep",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disables idle sleep (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
+    _t(TweakID.LockScreenFootnote, Section.SPRINGBOARD, "Lock Screen Footnote Text",
+       FileLocation.footnote, "LockScreenFootnote", value="", kind=Kind.TEXT,
+       description=QT_TRANSLATE_NOOP("Nugget", "Sets custom text shown at the bottom of the Lock Screen below the time. Long text is cut off — keep it short. Leave empty to remove.")),
+    _t(TweakID.WatchOSCompatibility, Section.SPRINGBOARD, "Allow pairing with any watchOS version",
+       FileLocation.nanoregistry, "", factory=_watchos_compatibility,
+       description=QT_TRANSLATE_NOOP("Nugget", "Removes the minimum watchOS pairing check in NanoRegistry so you can pair an Apple Watch running any watchOS version with your iPhone.")),
+    _t(TweakID.AirDropDisableTimeLimit, Section.SPRINGBOARD, "Disable AirDrop Time Limit for Everyone Option",
+       FileLocation.airdrop, "OverrideTimeLimitEveryoneMode",
+       description=QT_TRANSLATE_NOOP("Nugget", "Unlocks the hidden 'Everyone' AirDrop receiving option that would normally be limited to a 10-minute time window.")),
+    _t(TweakID.SBDontLockAfterCrash, Section.SPRINGBOARD, "Disable Lock After Respring",
+       FileLocation.springboard, "SBDontLockAfterCrash",
+       description=QT_TRANSLATE_NOOP("Nugget", "Prevents the screen from locking right after a respring — the phone won't ask for a passcode immediately after the UI reloads.")),
+    _t(TweakID.SBDontDimOrLockOnAC, Section.SPRINGBOARD, "Disable Screen Dimming While Charging",
+       FileLocation.springboard, "SBDontDimOrLockOnAC",
+       description=QT_TRANSLATE_NOOP("Nugget", "Stops the display from auto-dimming while the device is connected to a charger.")),
+    _t(TweakID.SBHideLowPowerAlerts, Section.SPRINGBOARD, "Disable Low Battery Alerts",
+       FileLocation.springboard, "SBHideLowPowerAlerts",
+       description=QT_TRANSLATE_NOOP("Nugget", "Suppresses the 'Low Battery — 20% / 10%' system alerts.")),
+    _t(TweakID.SBHideACPower, Section.SPRINGBOARD, "Hide AC Power on Lock Screen",
+       FileLocation.springboard, "SBHideACPower",
+       description=QT_TRANSLATE_NOOP("Nugget", "Hides the charging status from the Lock Screen while the device is plugged into AC power.")),
+    _t(TweakID.SBNeverBreadcrumb, Section.SPRINGBOARD, "Disable Breadcrumbs",
+       FileLocation.springboard, "SBNeverBreadcrumb",
+       description=QT_TRANSLATE_NOOP("Nugget", "Disables the 'Return to <App>' breadcrumb button that appears in the status bar after opening a link from another app.")),
+    _t(TweakID.SBShowSupervisionTextOnLockScreen, Section.SPRINGBOARD, "Show Supervision Text on Lock Screen",
+       FileLocation.springboard, "SBShowSupervisionTextOnLockScreen",
+       description=QT_TRANSLATE_NOOP("Nugget", "Shows the device-supervision text on the Lock Screen, like the '<Device> is supervised by <org>' label seen on MDM-managed devices.")),
+    _t(TweakID.AirplaySupport, Section.SPRINGBOARD, "Enable AirPlay support for Stage Manager",
+       FileLocation.springboard, "SBExtendedDisplayOverrideSupportForAirPlayAndDontFileRadars",
+       description=QT_TRANSLATE_NOOP("Nugget", "Adds extended-display AirPlay support for Stage Manager so apps and external displays can use the feature more broadly.")),
+    _t(TweakID.SBAlwaysShowSystemApertureInSnapshots, Section.SPRINGBOARD, "Show Dynamic Island in Screenshots",
+       FileLocation.springboard, "SBAlwaysShowSystemApertureInSnapshots", min_version="17.4", iphone_only=True,
+       description=QT_TRANSLATE_NOOP("Nugget", "Forces the Dynamic Island to appear in screenshots instead of being hidden or shrunk while the screenshot is taken.")),
+    _t(TweakID.HideDICompletely, Section.SPRINGBOARD, "Hide Dynamic Island Completely",
+       FileLocation.springboard, "SBSuppressDynamicIslandCompletely", min_version="17.4", iphone_only=True,
+       description=QT_TRANSLATE_NOOP("Nugget", "Suppresses the Dynamic Island cutout completely so it is never drawn. Can make the screen look odd on devices with a pill cutout.")),
+    _t(TweakID.SBShowAuthenticationEngineeringUI, Section.SPRINGBOARD, "Show Red/Green Authentication Line on Lock Screen",
+       FileLocation.springboard, "SBShowAuthenticationEngineeringUI",
+       description=QT_TRANSLATE_NOOP("Nugget", "Shows a red/green authentication progress indicator on the Lock Screen while Face ID or passcode checks are running (engineering debug UI).")),
+    # DEAD 2026-10-01 (binary research): Apple removed the floating tab bar
+    # (and this preference) in iPadOS 26.4 — the key is a stale no-op on
+    # 26.6.1. Kept in the enum for history; never loaded, never applied,
+    # never rendered.
+    _t(TweakID.UseFloatingTabBar, Section.SPRINGBOARD, "Disable Floating Tab Bar",
+       FileLocation.uikit, "UseFloatingTabBar", value=False, ipad_only=True, disabled=True,
+       description=QT_TRANSLATE_NOOP("Nugget", "Uses the old fixed tab bar style instead of the floating tab bar on iPad. Enabled when the switch is OFF.")),
+    _t(TweakID.SBDisableIconParallax, Section.SPRINGBOARD, "Disable Icon Parallax",
+       FileLocation.springboard, "SBDisableParallax",
+       description=QT_TRANSLATE_NOOP("Nugget", "Stops Home Screen icons from shifting with the device tilt (the parallax effect). Pair with Disable Icon Page-Control Parallax for a fully static Home Screen.")),
+    # Hide Search Button: v4 placement (SpringBoard section) and v4 spec,
+    # restored verbatim with the Liquid Glass set. Same writer as before:
+    # managed SpringBoard location, key SBHomeScreenShowsSearchAffordance,
+    # value False; the retired HideSearchAffordance name still aliases here.
+    _t(TweakID.SBHideSearchAffordance, Section.SPRINGBOARD, "Hide Search Button on Home Screen",
+       FileLocation.springboard, "SBHomeScreenShowsSearchAffordance", value=False,
+       description=QT_TRANSLATE_NOOP("Nugget", "Removes the search button below the icons on the Home Screen (the faint search bar/icon above the Dock). Enabled when the switch is ON.")),
+
 
     # --- Internal Options ---
     _t(TweakID.SBBuildNumber, Section.INTERNAL, "Show Build Version in Status Bar", GP, "UIStatusBarShowBuildVersion",
@@ -306,6 +306,47 @@ SPECS: tuple[TweakSpec, ...] = (
     # 4f44415): same key, file location, value/type, and version gates.
     # The Wave 10 replacement candidates and their UNPROVEN/device-test
     # labelling are gone. Proof: tools/test_wave11_lg_v4_verbatim.py.
+    # === Partial Liquid Glass disable batch (2026-10-17, lg-partial-26) ===
+    # Binary-attested keys from the iOS 26.1 dyld (audit:
+    # ~/workspace/riset/audit-kandidat-lg-26.md). K1/K3/K4/K5/K6 are
+    # verified-structure; the last two are structural-hypothesis.
+    # Device-proven NOT required per user 2026-10-17 — honest grade in
+    # each description instead. All write GP via partial restore.
+    _t(TweakID.DisallowGlassLockScreen, Section.LIQUID_GLASS, "Disallow Glass on Lock Screen",
+       GP, "SBDisallowGlassLockScreen",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow Liquid Glass on the Lock Screen (verified-structure: key found in SpringBoardFoundation binary). The direct answer to glass reflections during the Home Screen to Lock Screen transition. Unverified on device — needs device test.")),
+    _t(TweakID.DisableHSGlassExterior, Section.LIQUID_GLASS, "Disable Home Screen Glass Exterior",
+       GP, "SolariumEnableHomeScreenExteriorEffects", value=False,
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Home Screen (verified-structure: DesignLibrary binary pattern SolariumEnable<Area>ExteriorEffects). Enabled when the switch is ON. Unverified on device — needs device test.")),
+    _t(TweakID.DisableDockGlassExterior, Section.LIQUID_GLASS, "Disable Dock Glass Exterior",
+       GP, "SolariumEnableDockExteriorEffects", value=False,
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Dock (verified-structure). Enabled when the switch is ON. Unverified on device — needs device test.")),
+    _t(TweakID.DisableKeyboardGlassExterior, Section.LIQUID_GLASS, "Disable Keyboard Glass Exterior",
+       GP, "SolariumEnableKeyboardExteriorEffects", value=False,
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects on the keyboard, making it look like the flat iOS 18 keyboard (verified-structure: DesignLibrary binary). Enabled when the switch is ON. Unverified on device — needs device test.")),
+    _t(TweakID.DisableSolariumFocusForeground, Section.LIQUID_GLASS, "Disable Solarium Focus Foreground Effects",
+       GP, "SolariumDisableFocusForegroundEffects",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disables the Solarium foreground effects shown while focusing (verified-structure). Unverified on device — needs device test.")),
+    _t(TweakID.SolariumForceDarkShadow, Section.LIQUID_GLASS, "Force Dark Glass Shadow",
+       GP, "SolariumForceDarkShadow",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Forces dark shadows on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
+    _t(TweakID.SolariumHighlightWhite, Section.LIQUID_GLASS, "White Glass Highlight",
+       GP, "SolariumHighlightWhite",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "White highlight on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
+    # K8 (deep-audit PROMOTE 2026-10-17): Solarium pref-family keys, each
+    # binary-attested exactly once in the DesignLibrary string table alongside
+    # confirmed GP prefs (SolariumNoBlurReducedFrost, SolariumIncreasedDiffusion).
+    # Reader not confirmed by disassembly (FUSE/APFS blocked in this VM) —
+    # structural-hypothesis grade, device test required.
+    _t(TweakID.SolariumBackgroundFilter, Section.LIQUID_GLASS, "Solarium Background Filter",
+       GP, "SolariumBackgroundFilter",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the Solarium background filter stage (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
+    _t(TweakID.SolariumTextFrost, Section.LIQUID_GLASS, "Solarium Text Frost",
+       GP, "SolariumTextFrost",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the frost effect applied to text on Liquid Glass surfaces (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
+    _t(TweakID.SolariumUseDisplayAngle, Section.LIQUID_GLASS, "Solarium Use Display Angle",
+       GP, "SolariumUseDisplayAngle",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Solarium lighting react to the display viewing angle (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
     _t(TweakID.SolariumForceFallback, Section.LIQUID_GLASS, "Force Solarium Fallback", GP, "SolariumForceFallback",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Force iOS to use Liquid Glass fallback mode. Unverified — needs device test.")),
     _t(TweakID.DisableSolariumSwiftUI, Section.LIQUID_GLASS, "Disable Solarium (SwiftUI)", GP, "com.apple.SwiftUI.DisableSolarium",
@@ -374,47 +415,6 @@ SPECS: tuple[TweakSpec, ...] = (
     # v4 set; see tools/test_wave11_blurr_motion.py).
     _t(TweakID.BlurrMotion, Section.LIQUID_GLASS, "Blurr Motion", GP, "SolariumIncreasedDiffusion",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Research candidate for thicker frost blur on Liquid Glass surfaces: its key was found in the DesignLibrary material cluster in the iOS 23G83 binary, but the effect on a real device is not proven yet. Back up fully first, turn Low Power Mode OFF, apply it on its own, reboot, then judge each surface on its own (Dock, Control Center, notifications, folders, App Switcher, Lock Screen clock). Turning it off and applying again removes the key.")),
-    # === Partial Liquid Glass disable batch (2026-10-17, lg-partial-26) ===
-    # Binary-attested keys from the iOS 26.1 dyld (audit:
-    # ~/workspace/riset/audit-kandidat-lg-26.md). K1/K3/K4/K5/K6 are
-    # verified-structure; the last two are structural-hypothesis.
-    # Device-proven NOT required per user 2026-10-17 — honest grade in
-    # each description instead. All write GP via partial restore.
-    _t(TweakID.DisallowGlassLockScreen, Section.LIQUID_GLASS, "Disallow Glass on Lock Screen",
-       GP, "SBDisallowGlassLockScreen",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow Liquid Glass on the Lock Screen (verified-structure: key found in SpringBoardFoundation binary). The direct answer to glass reflections during the Home Screen to Lock Screen transition. Unverified on device — needs device test.")),
-    _t(TweakID.DisableHSGlassExterior, Section.LIQUID_GLASS, "Disable Home Screen Glass Exterior",
-       GP, "SolariumEnableHomeScreenExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Home Screen (verified-structure: DesignLibrary binary pattern SolariumEnable<Area>ExteriorEffects). Enabled when the switch is ON. Unverified on device — needs device test.")),
-    _t(TweakID.DisableDockGlassExterior, Section.LIQUID_GLASS, "Disable Dock Glass Exterior",
-       GP, "SolariumEnableDockExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Dock (verified-structure). Enabled when the switch is ON. Unverified on device — needs device test.")),
-    _t(TweakID.DisableKeyboardGlassExterior, Section.LIQUID_GLASS, "Disable Keyboard Glass Exterior",
-       GP, "SolariumEnableKeyboardExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects on the keyboard, making it look like the flat iOS 18 keyboard (verified-structure: DesignLibrary binary). Enabled when the switch is ON. Unverified on device — needs device test.")),
-    _t(TweakID.DisableSolariumFocusForeground, Section.LIQUID_GLASS, "Disable Solarium Focus Foreground Effects",
-       GP, "SolariumDisableFocusForegroundEffects",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disables the Solarium foreground effects shown while focusing (verified-structure). Unverified on device — needs device test.")),
-    _t(TweakID.SolariumForceDarkShadow, Section.LIQUID_GLASS, "Force Dark Glass Shadow",
-       GP, "SolariumForceDarkShadow",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Forces dark shadows on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
-    _t(TweakID.SolariumHighlightWhite, Section.LIQUID_GLASS, "White Glass Highlight",
-       GP, "SolariumHighlightWhite",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "White highlight on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
-    # K8 (deep-audit PROMOTE 2026-10-17): Solarium pref-family keys, each
-    # binary-attested exactly once in the DesignLibrary string table alongside
-    # confirmed GP prefs (SolariumNoBlurReducedFrost, SolariumIncreasedDiffusion).
-    # Reader not confirmed by disassembly (FUSE/APFS blocked in this VM) —
-    # structural-hypothesis grade, device test required.
-    _t(TweakID.SolariumBackgroundFilter, Section.LIQUID_GLASS, "Solarium Background Filter",
-       GP, "SolariumBackgroundFilter",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the Solarium background filter stage (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
-    _t(TweakID.SolariumTextFrost, Section.LIQUID_GLASS, "Solarium Text Frost",
-       GP, "SolariumTextFrost",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the frost effect applied to text on Liquid Glass surfaces (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
-    _t(TweakID.SolariumUseDisplayAngle, Section.LIQUID_GLASS, "Solarium Use Display Angle",
-       GP, "SolariumUseDisplayAngle",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Solarium lighting react to the display viewing angle (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
     # === Non-glass candidates (audited) ===
     _t(TweakID.CustomLockDate, Section.SPRINGBOARD, "Custom Lock Screen Date", FileLocation.globalPreferencesHomeDomain, "AppleICUDateTimeSymbols",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Custom Lock Screen date format. Device-proven (iOS 26.0-26.7).")),

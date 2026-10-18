@@ -42,8 +42,29 @@ class SideRail(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 12, 8, 12)
-        layout.setSpacing(8)
-        layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        layout.setSpacing(0)
+
+        # The rail must never squash its buttons: on short laptop screens
+        # the 9 fixed-height buttons would otherwise be compressed and
+        # their labels' descenders clipped. A (chromeless) scroll area
+        # keeps every button at full height and scrolls instead.
+        from PySide6.QtWidgets import QScrollArea
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(False)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.viewport().setStyleSheet("background: transparent;")
+        scroll.setStyleSheet("background: transparent; border: none;")
+        self._scroll = scroll
+
+        holder = QWidget()
+        holder.setStyleSheet("background: transparent; border: none;")
+        btn_layout = QVBoxLayout(holder)
+        btn_layout.setContentsMargins(0, 0, 0, 0)
+        btn_layout.setSpacing(8)
+        from PySide6.QtWidgets import QLayout
+        btn_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
@@ -63,9 +84,15 @@ class SideRail(QWidget):
                 lambda checked, b=btn, r=icon_res: self._update_icon(b, r, checked))
             self._group.addButton(btn)
             self._buttons[menu_id] = btn
-            layout.addWidget(btn, 0, Qt.AlignHCenter)
+            btn_layout.addWidget(btn, 0, Qt.AlignHCenter)
 
-        layout.addStretch(1)
+        holder.adjustSize()
+        # Pin the holder to its full content height: the scroll area must
+        # scroll, never compress the fixed-height buttons.
+        _full_h = holder.sizeHint().height()
+        holder.setFixedHeight(_full_h)
+        scroll.setWidget(holder)
+        layout.addWidget(scroll, 1)
         self._retheme()
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
 

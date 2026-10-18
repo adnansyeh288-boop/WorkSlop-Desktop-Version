@@ -192,25 +192,6 @@ class TweakID(Enum):
     Daemons = auto()
     ClearScreenTimeAgentPlist = auto()
 
-    # Liquid Glass Tweaks (Nugget) — verbatim from leminlimez/Nugget
-    # v7.4.1 (src/tweaks/nugget_lg.py). Own IDs so the Nugget set lives
-    # next to, never inside, the WorkSlop v4 set above.
-    NuggetForceSolariumFallback = auto()
-    NuggetDisableSolarium = auto()
-    NuggetIgnoreSolariumLinkedOnCheck = auto()
-    NuggetNoLiquidClock = auto()
-    NuggetNoLiquidDock = auto()
-    NuggetDisableSpecularMotion = auto()
-    NuggetDisableOuterRefraction = auto()
-    NuggetDisableSolariumHDR = auto()
-    NuggetSolariumFFSwiftUI = auto()
-    NuggetSolariumFFSpringBoard = auto()
-    NuggetSolariumFFIconServices = auto()
-    NuggetSolariumFFDocumentCamera = auto()
-    NuggetSolariumFFPhotos = auto()
-    NuggetSolariumFFAppleMediaServices = auto()
-    NuggetSolariumFFSharing = auto()
-    NuggetSolariumFFMail = auto()
     # Partial Liquid Glass disable + new menu tweaks (2026-10-17,
     # research batch lg-partial-26: binary-attested keys from iOS 26.1
     # dyld, audited in ~/workspace/riset/audit-kandidat-lg-26.md).

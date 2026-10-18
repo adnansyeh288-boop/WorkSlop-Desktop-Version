@@ -65,12 +65,13 @@ def _enter_recovery_sync(udid, progress_cb) -> str:
 def _exit_recovery_sync(progress_cb) -> str:
     """Find the device in recovery/DFU mode over USB and send 'reboot'."""
     from pymobiledevice3.irecv import IRecv
-    from pymobiledevice3.exceptions import IRecvNoDeviceConnectedError
 
     progress_cb("Looking for a device in recovery/DFU mode over USB...")
+    # ANY failure to open the recovery channel means "no usable device" —
+    # surface the friendly message, never the raw library traceback.
     try:
         recv = IRecv(timeout=10)
-    except IRecvNoDeviceConnectedError:
+    except Exception:  # noqa: BLE001 - e.g. NoBackendError, IRecvNoDeviceConnectedError
         raise RuntimeError(
             "No device in recovery/DFU mode found over USB. "
             "Put the iPhone into recovery mode first, then try again.")

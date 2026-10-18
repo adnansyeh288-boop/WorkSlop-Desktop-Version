@@ -1,8 +1,8 @@
 """WorkSlop Desktop tutorials (single-UI rebuild, round 2).
 
 - Model picker (WAJIB, user order): every device-touching tutorial starts
-  with choosing the iPhone model — "Dynamic Island" (no Home button) or
-  "Home Button" (physical Home button). Steps and the animated iPhone
+  with choosing the iPhone model — "iPhone with Face ID (no Home button)"
+  or "iPhone with Home Button". Steps and the animated iPhone
   drawing adapt to the chosen model. The WorkSlop app-usage tutorial has
   no picker (not device-specific).
 - PhoneAnimWidget: QPainter-drawn iPhone (Dynamic Island pill OR Home
@@ -40,10 +40,10 @@ MODEL_ISLAND = "island"
 MODEL_HOME = "home"
 
 MODELS = [
-    (MODEL_ISLAND, "iPhone Dynamic Island",
-     "iPhone X and newer\n(no Home button)"),
-    (MODEL_HOME, "iPhone Home Button",
-     "iPhone 8 and older\n(physical Home button)"),
+    (MODEL_ISLAND, "iPhone with Face ID (no Home button)",
+     "iPhone X and newer"),
+    (MODEL_HOME, "iPhone with Home Button",
+     "iPhone 8 and older (physical Home button)"),
 ]
 
 # ---------------------------------------------------------------------------
