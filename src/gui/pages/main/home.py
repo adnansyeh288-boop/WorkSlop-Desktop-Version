@@ -90,6 +90,35 @@ class HomePage(Page):
             vbox.setSpacing(16)
             vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
+            # Search bar at top-right (user order 2026-10-19 ronde 11:
+            # "search bar di pojok kanan atas, fluid corner, functional").
+            # Moved from ios/home.py (wrong page) to the actual HomePage.
+            from PySide6.QtWidgets import QLineEdit
+            from PySide6.QtGui import QAction as _QAction
+            _search_box = QLineEdit(hero)
+            _search_box.setPlaceholderText("Search tweaks...")
+            _search_box.setFixedHeight(40)
+            _search_box.setMinimumWidth(220)
+            _search_box.setMaximumWidth(300)
+            _search_box.setStyleSheet("""
+                QLineEdit {
+                    background-color: rgba(255, 255, 255, 240);
+                    border-radius: 20px;
+                    border: 1px solid #C8C8C8;
+                    padding-left: 40px;
+                    padding-right: 12px;
+                    color: #0A0A0A;
+                    font-size: 13px;
+                }
+            """)
+            _search_icon = _QAction(_search_box)
+            _search_icon.setIcon(QIcon(":/icon/ws-search.svg"))
+            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
+            # Functional: search tweak titles, navigate on Enter.
+            _search_box.returnPressed.connect(
+                lambda: self.window._on_search_tweak_from_home(_search_box.text()))
+            vbox.addWidget(_search_box, 0, Qt.AlignRight)
+
             # 1. WS icon, centered. FIXED size 120px to prevent cropping
             # (user order 2026-10-19: "icon workslop masih ke potong").
             # The icon was 180px and got clipped by the layout; 120px is
@@ -102,8 +131,9 @@ class HomePage(Page):
             icon_lbl.setFixedSize(120, 120)
             vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
 
-            # Spacer between icon and title to prevent overlap.
-            vbox.addSpacing(12)
+            # Spacer between icon and title (user order 2026-10-19:
+            # "ada spasi jarak lumayan antara icon dan tulisan").
+            vbox.addSpacing(32)
 
             # 2. Title directly below the icon. White GLOWING (user order
             # 2026-10-19 ronde 10: "tulisan workslop desktop bercahaya putih").
@@ -164,7 +194,7 @@ class HomePage(Page):
                 box.setStyleSheet("""
                     QWidget {
                         background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #FFFFFF, stop:0.25 #FFFFFF, stop:0.5 #F8F8F8, stop:0.75 #EDEDED, stop:1 #E0E0E0);
+                            stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
                         border: 1px solid #C8C8C8;
                         border-radius: 16px;
                     }

@@ -440,7 +440,7 @@ STYLES = {
     "home_icon_button": """
         QPushButton {{
             background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
             color: #0A0A0A;
             border-radius: 20px;
             border: 1px solid #D0D0D0;

@@ -129,7 +129,7 @@ class TopNavBar(QWidget):
         pills.setStyleSheet(f"""
             QPushButton {{
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.25 #FFFFFF, stop:0.5 #F8F8F8, stop:0.75 #EDEDED, stop:1 #E0E0E0);
+                    stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
                 color: #0A0A0A;
                 border: 1px solid #C8C8C8;
                 border-radius: {PILL_HEIGHT // 2}px;

@@ -807,6 +807,38 @@ class NavigationMixin:
         if handler is not None:
             handler()
 
+    def _on_search_tweak_from_home(self, query: str):
+        """Search tweak titles from the HomePage search bar (user order
+        2026-10-19 ronde 11). Looks through the tweak registry for titles
+        containing the query, navigates to the first match's menu."""
+        query = (query or "").strip().lower()
+        if not query:
+            return
+        try:
+            from src.tweaks.registry import SPECS_BY_ID
+        except Exception:
+            return
+        _section_to_menu = {
+            "LIQUID_GLASS": "liquidglass",
+            "SPRINGBOARD": "springboard",
+            "STATUS_BAR": "statusbar",
+            "POSTERBOARD": "posterboard",
+            "MOBILE_GESTALT": "gestalt",
+            "INTERNAL": "internal",
+            "DAEMONS": "daemons",
+        }
+        for spec in SPECS_BY_ID.values():
+            title = str(getattr(spec, "title", "") or "")
+            if query in title.lower():
+                section = str(getattr(spec, "section", "") or "").upper()
+                menu_id = _section_to_menu.get(section)
+                if menu_id:
+                    try:
+                        self._on_topnav_menu(menu_id)
+                    except Exception:
+                        pass
+                    return
+
     def _on_rail_menu(self, menu_id: str):
         if menu_id == "backup":
             self.on_backupPageBtn_clicked()
