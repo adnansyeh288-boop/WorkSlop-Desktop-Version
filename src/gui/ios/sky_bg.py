@@ -27,7 +27,7 @@ from PySide6.QtWidgets import QWidget
 # unlike a filesystem path next to the source tree.
 APPLE_SVG = ":/icon/apple.svg"
 
-BASE_BG = "#1e1e1e"
+BASE_BG = "#F2F7FF"
 
 # Luminous white tints for the drifting background logos (user order
 # 2026-10-19 ronde 10): "putih cahaya berkilau" — shiny glowing white.
