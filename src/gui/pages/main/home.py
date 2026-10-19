@@ -85,42 +85,44 @@ class HomePage(Page):
             from PySide6.QtWidgets import QSizePolicy
             hero.setSizePolicy(QSizePolicy.Policy.Expanding,
                                QSizePolicy.Policy.Expanding)
-            vbox = QVBoxLayout(hero)
-            vbox.setContentsMargins(0, 8, 0, 8)
-            vbox.setSpacing(16)
-            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # 1. WS icon, centered. FIXED size 120px to prevent cropping
-            # (user order 2026-10-19: "icon workslop masih ke potong").
-            # The icon was 180px and got clipped by the layout; 120px is
-            # safe and leaves breathing room for the title below.
+            # HORIZONTAL hero (user order 2026-10-19): WS icon on the LEFT
+            # with text beside it (like the old days), 3 GitHub boxes on
+            # the right. Liquid glass style, anti-AI-slop.
+            hero_layout = QHBoxLayout(hero)
+            hero_layout.setContentsMargins(32, 16, 32, 16)
+            hero_layout.setSpacing(32)
+            hero_layout.setAlignment(Qt.AlignVCenter)
+
+            # LEFT: WS icon + title side by side.
+            left_box = QHBoxLayout()
+            left_box.setSpacing(20)
+            left_box.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+
             icon_lbl = QLabel(hero)
-            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(120, 120))
+            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(100, 100))
             icon_lbl.setPixmap(_icon_px)
-            icon_lbl.setAlignment(Qt.AlignHCenter)
             icon_lbl.setStyleSheet("background: transparent;")
-            icon_lbl.setFixedSize(120, 120)
-            vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
+            icon_lbl.setFixedSize(100, 100)
+            left_box.addWidget(icon_lbl)
 
-            # Spacer between icon and title (user order 2026-10-19:
-            # "ada spasi jarak lumayan antara icon dan tulisan").
-            vbox.addSpacing(32)
-
-            # 2. Title — blue UI style (user order 2026-10-19: back to blue).
-            # Dark navy, semibold. Clean, not AI-slop.
+            title_box = QVBoxLayout()
+            title_box.setSpacing(4)
             title = QLabel("WorkSlop Desktop", hero)
-            title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
                 "background: transparent; color: #1D3045;"
-                " font-size: 38px; font-weight: 600;")
-            vbox.addWidget(title, 0, Qt.AlignHCenter)
+                " font-size: 32px; font-weight: 600;")
+            title_box.addWidget(title)
 
-            # 3. Developer credit + links below the title.
             self.credits_lbl = make_credits_label(
-                hero, c0.text_secondary, c0.accent, align_center=True)
+                hero, c0.text_secondary, c0.accent, align_center=False)
             self.credits_lbl.setStyleSheet(
-                "background: transparent; font-size: 17px; font-weight: 500;")
-            vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
+                "background: transparent; font-size: 14px; font-weight: 500;")
+            title_box.addWidget(self.credits_lbl)
+            left_box.addLayout(title_box)
+
+            hero_layout.addLayout(left_box)
+            hero_layout.addStretch(1)
 
             # 4. GitHub credit boxes (user order 2026-10-18 ronde 8): three
             # boxes below the title — Adnan.120hz, awesomenull (GoldenNugget
@@ -131,22 +133,17 @@ class HomePage(Page):
             from PySide6.QtGui import QDesktopServices
             from PySide6.QtCore import QUrl
             from src.gui.ios.components import IOSCard
-            from src.gui.theme import theme_icon
+            # RIGHT: 3 GitHub boxes — liquid glass, not white glossy.
+            # Adnan.120hz clickable, others pure display.
             gh_row = QHBoxLayout()
             gh_row.setSpacing(12)
-            gh_row.setAlignment(Qt.AlignHCenter)
+            gh_row.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
             gh_profiles = [
                 ("Adnan.120hz", "https://github.com/adnan120hz"),
                 ("awesomenull", "https://github.com/awesomenull"),
                 ("leminlimez", "https://github.com/leminlimez"),
             ]
             for name, url in gh_profiles:
-                # White GLOSSY boxes with BLACK text and VISIBLE SHINE (user
-                # order 2026-10-19: "menu menu github udah good tapi belum ada
-                # pencahayaan kilauan").
-                # PURE display boxes (not clickable) EXCEPT Adnan.120hz which
-                # opens the GitHub profile when clicked (user order 2026-10-19).
-                # Custom QWidget instead of IOSCard for the white glossy style.
                 box = QWidget(hero)
                 _is_adnan = (name == "Adnan.120hz")
                 if _is_adnan:
@@ -155,15 +152,12 @@ class HomePage(Page):
                     box.setCursor(Qt.ArrowCursor)
                 box.setStyleSheet("""
                     QWidget {
-                        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
-                        border: 1px solid #C8C8C8;
+                        background-color: rgba(255, 255, 255, 0.55);
+                        border: 1px solid rgba(255, 255, 255, 0.5);
                         border-radius: 16px;
                     }
                     QWidget:hover {
-                        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #FFFFFF, stop:0.3 #FFFFFF, stop:0.6 #F0F0F0, stop:1 #D8D8D8);
-                        border: 1px solid #B0B0B0;
+                        background-color: rgba(255, 255, 255, 0.75);
                     }
                 """)
                 box_layout = QVBoxLayout(box)
@@ -172,26 +166,22 @@ class HomePage(Page):
                 box_layout.setAlignment(Qt.AlignHCenter)
                 icon = QLabel(box)
                 icon.setPixmap(theme_icon(
-                    ":/icon/github.svg", "#0A0A0A").pixmap(40, 40))
+                    ":/icon/github.svg", "#1D3045").pixmap(40, 40))
                 icon.setAlignment(Qt.AlignHCenter)
                 icon.setStyleSheet("background: transparent; border: none;")
                 box_layout.addWidget(icon)
                 lbl = QLabel(name, box)
                 lbl.setAlignment(Qt.AlignHCenter)
                 lbl.setStyleSheet(
-                    "background: transparent; border: none; color: #0A0A0A;"
+                    "background: transparent; border: none; color: #1D3045;"
                     " font-size: 13px; font-weight: 600;")
                 box_layout.addWidget(lbl)
                 box.setFixedWidth(140)
-                # Only Adnan.120hz is clickable; others are pure display.
                 if _is_adnan:
                     box.mousePressEvent = (
                         lambda _e, u=url: QDesktopServices.openUrl(QUrl(u)))
                 gh_row.addWidget(box)
-            gh_container = QWidget(hero)
-            gh_container.setLayout(gh_row)
-            gh_container.setStyleSheet("background: transparent;")
-            vbox.addWidget(gh_container, 0, Qt.AlignHCenter)
+            hero_layout.addLayout(gh_row)
 
             # Search bar at top-right (user order 2026-10-19 ronde 11).
             # Placed in its own container ABOVE the hero, not inside the
