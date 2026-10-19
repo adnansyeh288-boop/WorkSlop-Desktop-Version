@@ -102,7 +102,10 @@ class HomePage(Page):
             icon_lbl = QLabel(hero)
             _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(100, 100))
             icon_lbl.setPixmap(_icon_px)
-            icon_lbl.setStyleSheet("background: transparent;")
+            # No box, no background, no border — just the WS letters
+            # (user order 2026-10-19: "icon ws ga keliatan nyatu sama background").
+            icon_lbl.setStyleSheet(
+                "background: transparent; border: none; padding: 0px; margin: 0px;")
             icon_lbl.setFixedSize(100, 100)
             left_box.addWidget(icon_lbl)
 
@@ -188,23 +191,28 @@ class HomePage(Page):
             # centered vbox (which broke the layout).
             from PySide6.QtWidgets import QLineEdit
             from PySide6.QtGui import QAction as _QAction
+            # Search bar — top-right corner, above Home content, with proper
+            # spacing (user order 2026-10-19). Cobalt glass style.
             _search_container = QWidget(self.ui.homePage)
             _search_container.setStyleSheet("background: transparent;")
             _search_hbox = QHBoxLayout(_search_container)
-            _search_hbox.setContentsMargins(0, 0, 16, 8)
+            _search_hbox.setContentsMargins(0, 16, 24, 16)
             _search_box = QLineEdit(_search_container)
             _search_box.setPlaceholderText("Search tweaks...")
             _search_box.setFixedHeight(40)
             _search_box.setFixedWidth(280)
             _search_box.setStyleSheet("""
                 QLineEdit {
-                    background-color: rgba(255, 255, 255, 240);
+                    background-color: rgba(35, 64, 150, 0.55);
                     border-radius: 20px;
-                    border: 1px solid #C8C8C8;
+                    border: 1px solid rgba(150, 180, 255, 0.4);
                     padding-left: 40px;
                     padding-right: 12px;
-                    color: #0A0A0A;
+                    color: #FFFFFF;
                     font-size: 13px;
+                }
+                QLineEdit::placeholder {
+                    color: #8AA0D0;
                 }
             """)
             _search_icon = _QAction(_search_box)

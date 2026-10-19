@@ -109,52 +109,39 @@ class SideRail(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        # White pills → BLACK icons (user: "TULISAN HITAM"). Both checked
-        # and unchecked use black for visibility on white glossy pills.
-        btn.setIcon(theme_icon(icon_res, "#0A0A0A"))
+        # Cobalt Flow: white icons on translucent cobalt glass pills.
+        btn.setIcon(theme_icon(icon_res, "#FFFFFF"))
         btn.setIconSize(QSize(24, 24))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # White GLOSSY pills with BLACK text (user order 2026-10-19 ronde 10:
-        # "di samakan tambahin pallet pil warna putih kayak menu menu di atas").
-        # Same glossy white style as the top nav pills.
-        # NOTE: the button stylesheet is set on the holder widget (not
-        # SideRail) because the QScrollArea viewport breaks SideRail-
-        # descendant selectors for the :checked state (user order
-        # 2026-10-18 ronde 8: active menu icon must stay visible).
+        # Cobalt Flow: side rail pills match the top nav — small cobalt
+        # glass pills, white text (user order 2026-10-19: "ubah jadi pil
+        # kecil kecil seperti pil menu di atas dan warna nya sama").
         self.setStyleSheet(f"""
             SideRail {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.card_border};
-                border-radius: 22px;
+                background-color: transparent;
+                border: none;
             }}
         """)
         holder = self._scroll.widget()
-        # Full PILL capsules with VISIBLE SHINE (user order 2026-10-19):
-        # "pil nya ga kotak tapi pil 1 per 1 seperti pil yang di atas" +
-        # "aku belum melihat kilauan cahaya di menu menu".
-        # Border-radius = half height for true capsule, enhanced gradient
-        # for clear glossy shine, white with black text like top nav.
         holder.setStyleSheet("""
             QWidget {
                 background: transparent;
                 border: none;
             }
             QToolButton {
-                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
-                color: #0A0A0A;
-                border: 1px solid #C8C8C8;
+                background-color: rgba(35, 64, 150, 0.55);
+                color: #FFFFFF;
+                border: 1px solid rgba(150, 180, 255, 0.4);
                 border-radius: 34px;
                 font-size: 11px;
-                font-weight: 600;
+                font-weight: 500;
                 padding: 6px 2px;
             }
             QToolButton:hover {
-                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.3 #FFFFFF, stop:0.6 #F0F0F0, stop:1 #D8D8D8);
-                border: 1px solid #B0B0B0;
+                background-color: rgba(35, 64, 150, 0.75);
+                border: 1px solid rgba(150, 180, 255, 0.6);
             }
             QToolButton:checked {
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
