@@ -90,29 +90,29 @@ class HomePage(Page):
             vbox.setSpacing(16)
             vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # 1. WS icon, centered. Size auto-adjusts to prevent cropping
-            # (user order 2026-10-19 ronde 10): responsive, not fixed.
-            # The icon scales with available space via sizeHint.
+            # 1. WS icon, centered. FIXED size 120px to prevent cropping
+            # (user order 2026-10-19: "icon workslop masih ke potong").
+            # The icon was 180px and got clipped by the layout; 120px is
+            # safe and leaves breathing room for the title below.
             icon_lbl = QLabel(hero)
-            # Use 180px base (down from 210px) to prevent overlap with title.
-            # The label will scale the pixmap to fit while keeping aspect ratio.
-            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(180, 180))
+            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(120, 120))
             icon_lbl.setPixmap(_icon_px)
             icon_lbl.setAlignment(Qt.AlignHCenter)
             icon_lbl.setStyleSheet("background: transparent;")
-            # Allow the icon to shrink if space is tight (prevents cropping).
-            icon_lbl.setScaledContents(False)
-            from PySide6.QtWidgets import QSizePolicy as _SP
-            icon_lbl.setSizePolicy(_SP.Policy.Preferred, _SP.Policy.Preferred)
+            icon_lbl.setFixedSize(120, 120)
             vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
+
+            # Spacer between icon and title to prevent overlap.
+            vbox.addSpacing(12)
 
             # 2. Title directly below the icon. White GLOWING (user order
             # 2026-10-19 ronde 10: "tulisan workslop desktop bercahaya putih").
+            # 38px (down from 42px) to prevent crowding with the icon.
             title = QLabel("WorkSlop Desktop", hero)
             title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
                 "background: transparent; color: #FFFFFF;"
-                " font-size: 42px; font-weight: 700;")
+                " font-size: 38px; font-weight: 700;")
             # White glow effect via drop shadow.
             from PySide6.QtWidgets import QGraphicsDropShadowEffect
             from PySide6.QtGui import QColor as _QC
@@ -149,22 +149,28 @@ class HomePage(Page):
                 ("leminlimez", "https://github.com/leminlimez"),
             ]
             for name, url in gh_profiles:
-                # White GLOSSY boxes with BLACK text (user order 2026-10-19
-                # ronde 10: "3 kotak github di ubah warna dari hitam to putih
-                # cahaya dan di sesuaikan untuk teks nya jadi warna hitam").
+                # White GLOSSY boxes with BLACK text and VISIBLE SHINE (user
+                # order 2026-10-19: "menu menu github udah good tapi belum ada
+                # pencahayaan kilauan").
+                # PURE display boxes (not clickable) EXCEPT Adnan.120hz which
+                # opens the GitHub profile when clicked (user order 2026-10-19).
                 # Custom QWidget instead of IOSCard for the white glossy style.
                 box = QWidget(hero)
-                box.setCursor(Qt.PointingHandCursor)
+                _is_adnan = (name == "Adnan.120hz")
+                if _is_adnan:
+                    box.setCursor(Qt.PointingHandCursor)
+                else:
+                    box.setCursor(Qt.ArrowCursor)
                 box.setStyleSheet("""
                     QWidget {
                         background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
-                        border: 1px solid #D0D0D0;
+                            stop:0 #FFFFFF, stop:0.25 #FFFFFF, stop:0.5 #F8F8F8, stop:0.75 #EDEDED, stop:1 #E0E0E0);
+                        border: 1px solid #C8C8C8;
                         border-radius: 16px;
                     }
                     QWidget:hover {
                         background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+                            stop:0 #FFFFFF, stop:0.3 #FFFFFF, stop:0.6 #F0F0F0, stop:1 #D8D8D8);
                         border: 1px solid #B0B0B0;
                     }
                 """)
@@ -185,9 +191,10 @@ class HomePage(Page):
                     " font-size: 13px; font-weight: 600;")
                 box_layout.addWidget(lbl)
                 box.setFixedWidth(140)
-                # Clickable: open the GitHub profile.
-                box.mousePressEvent = (
-                    lambda _e, u=url: QDesktopServices.openUrl(QUrl(u)))
+                # Only Adnan.120hz is clickable; others are pure display.
+                if _is_adnan:
+                    box.mousePressEvent = (
+                        lambda _e, u=url: QDesktopServices.openUrl(QUrl(u)))
                 gh_row.addWidget(box)
             gh_container = QWidget(hero)
             gh_container.setLayout(gh_row)

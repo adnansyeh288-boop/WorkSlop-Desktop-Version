@@ -442,10 +442,10 @@ STYLES = {
             background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
             color: #0A0A0A;
-            border-radius: 18px;
+            border-radius: 20px;
             border: 1px solid #D0D0D0;
             font-size: 16px;
-            padding: 10px;
+            padding: 8px;
         }}
         QPushButton:hover {{
             background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,

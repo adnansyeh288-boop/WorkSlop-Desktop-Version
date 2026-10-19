@@ -117,9 +117,10 @@ class TopNavBar(QWidget):
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # White GLOSSY pills with BLACK text (user order 2026-10-18 ronde 9:
-        # "MENU PUTIH MENGKILAP CAHAYA TULISAN HITAM"). The qlineargradient
-        # simulates light reflection from above — glossy/shiny look.
+        # White GLOSSY pills with BLACK text and VISIBLE SHINE (user order
+        # 2026-10-19: "aku belum melihat kilauan cahaya di menu menu").
+        # Enhanced gradient: bright white highlight at top for a clear
+        # glossy shine, plus a subtle light border for definition.
         # Checked pill: solid white with black text + subtle inner glow.
         # NOTE: the stylesheet is set on the pills container (not TopNavBar)
         # because the QScrollArea viewport breaks TopNavBar-descendant
@@ -128,9 +129,9 @@ class TopNavBar(QWidget):
         pills.setStyleSheet(f"""
             QPushButton {{
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                    stop:0 #FFFFFF, stop:0.25 #FFFFFF, stop:0.5 #F8F8F8, stop:0.75 #EDEDED, stop:1 #E0E0E0);
                 color: #0A0A0A;
-                border: 1px solid #D0D0D0;
+                border: 1px solid #C8C8C8;
                 border-radius: {PILL_HEIGHT // 2}px;
                 font-size: 13px;
                 font-weight: 600;
@@ -138,16 +139,17 @@ class TopNavBar(QWidget):
             }}
             QPushButton:hover {{
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+                    stop:0 #FFFFFF, stop:0.3 #FFFFFF, stop:0.6 #F0F0F0, stop:1 #D8D8D8);
+                border: 1px solid #B0B0B0;
             }}
             QPushButton:checked {{
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.5 #F8F8F8, stop:1 #E8E8E8);
+                    stop:0 #FFFFFF, stop:0.4 #FAFAFA, stop:1 #E8E8E8);
                 color: #0A0A0A;
-                border: 2px solid #8A8A8A;
+                border: 2px solid #FFFFFF;
             }}
             QPushButton:pressed {{
-                background-color: #D8D8D8;
+                background-color: #D0D0D0;
             }}
             QPushButton:disabled {{
                 color: {c.text_disabled};

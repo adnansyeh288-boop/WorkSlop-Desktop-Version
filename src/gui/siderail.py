@@ -131,6 +131,11 @@ class SideRail(QWidget):
             }}
         """)
         holder = self._scroll.widget()
+        # Full PILL capsules with VISIBLE SHINE (user order 2026-10-19):
+        # "pil nya ga kotak tapi pil 1 per 1 seperti pil yang di atas" +
+        # "aku belum melihat kilauan cahaya di menu menu".
+        # Border-radius = half height for true capsule, enhanced gradient
+        # for clear glossy shine, white with black text like top nav.
         holder.setStyleSheet("""
             QWidget {
                 background: transparent;
@@ -138,26 +143,27 @@ class SideRail(QWidget):
             }
             QToolButton {
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                    stop:0 #FFFFFF, stop:0.25 #FFFFFF, stop:0.5 #F8F8F8, stop:0.75 #EDEDED, stop:1 #E0E0E0);
                 color: #0A0A0A;
-                border: 1px solid #D0D0D0;
-                border-radius: 18px;
+                border: 1px solid #C8C8C8;
+                border-radius: 34px;
                 font-size: 11px;
                 font-weight: 600;
                 padding: 6px 2px;
             }
             QToolButton:hover {
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+                    stop:0 #FFFFFF, stop:0.3 #FFFFFF, stop:0.6 #F0F0F0, stop:1 #D8D8D8);
+                border: 1px solid #B0B0B0;
             }
             QToolButton:checked {
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.5 #F8F8F8, stop:1 #E8E8E8);
+                    stop:0 #FFFFFF, stop:0.4 #FAFAFA, stop:1 #E8E8E8);
                 color: #0A0A0A;
-                border: 2px solid #8A8A8A;
+                border: 2px solid #FFFFFF;
             }
             QToolButton:pressed {
-                background-color: #D8D8D8;
+                background-color: #D0D0D0;
             }
         """)
         for _menu_id, btn in self._buttons.items():

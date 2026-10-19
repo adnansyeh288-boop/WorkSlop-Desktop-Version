@@ -253,7 +253,13 @@ class IOSCard(QFrame):
         # an explicit transparent background, otherwise children paint sharp
         # white rects over the rounded corners).
         c = ColorThemeManager.instance().colors
-        self._bg = QColor(c.bg_secondary)
+        # Liquid glass TINTED DARK (user order 2026-10-19): semi-transparent
+        # dark surface so the Apple-logo canvas faintly shows through —
+        # "transparan ala ala tapi masih blur aman buat di baca".
+        # Alpha 210/255 keeps text fully readable.
+        _bg = QColor(c.bg_secondary)
+        _bg.setAlpha(210)
+        self._bg = _bg
         self._border = QColor(c.card_border)
         self.setStyleSheet("background: transparent; border: none;"
                            " IOSCard QWidget { background: transparent; }")

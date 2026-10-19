@@ -45,12 +45,18 @@ def make_credits_label(parent, text_color: str, link_color: str,
     return lbl
 
 
-# Beta tester team block (user order 2026-10-03, corrected twice the
-# same day): shown on Home with the credit/attribution text above the
-# AutoSave banner. All three names are PLAIN TEXT with no links at all
-# (the TikTok links and the Telegram link were both removed by user
-# order); Davy is written with his handle as plain text.
-BETA_TESTER_NAMES = ("Charlie", "rfrz1d_", "Davy (@Davydavpn)")
+# Beta tester team block (user order 2026-10-03, updated 2026-10-19):
+# shown on Home with the credit/attribution text above the AutoSave banner.
+# All names are PLAIN TEXT with no links. OS-specific testers are in a
+# separate table below (user order 2026-10-19).
+BETA_TESTER_NAMES = ("Charlie", "davydavpn", "Saturo")
+
+# OS-specific testers (user order 2026-10-19): separate table below the
+# main beta tester team list.
+OS_TESTERS = (
+    ("Windows test", "Adnan.120hz"),
+    ("Linux test", "rfrz1d_"),
+)
 
 
 def beta_testers_html(text_color: str, link_color: str = "") -> str:
@@ -60,6 +66,15 @@ def beta_testers_html(text_color: str, link_color: str = "") -> str:
     ]
     for i, name in enumerate(BETA_TESTER_NAMES, 1):
         lines.append(f'<span style="color:{text_color}">{i}. {name}</span>')
+    # OS-specific tester table below.
+    lines.append("<br/>")
+    lines.append(
+        f'<span style="color:{text_color}; font-weight: 700;">'
+        "Testers by OS</span>"
+    )
+    for os_name, tester in OS_TESTERS:
+        lines.append(
+            f'<span style="color:{text_color}">{os_name}: {tester}</span>')
     return "<br/>".join(lines)
 
 
