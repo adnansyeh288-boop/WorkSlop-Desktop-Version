@@ -162,9 +162,8 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # Cobalt Flow (user direction 2026-09-30 Varian 3, confirmed 2026-10-19):
-        # deep cobalt-blue liquid glass, fluid oversized rounded corners.
-        return COBALT.with_accent(accent, hover, pressed)
+        # Sky blue (user order 2026-10-19 21:29: "balik ke sky blue").
+        return SKY.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""

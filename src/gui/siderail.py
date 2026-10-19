@@ -131,17 +131,17 @@ class SideRail(QWidget):
                 border: none;
             }
             QToolButton {
-                background-color: rgba(35, 64, 150, 0.55);
-                color: #FFFFFF;
-                border: 1px solid rgba(150, 180, 255, 0.4);
+                background-color: rgba(255, 255, 255, 0.25);
+                color: #1A1A1A;
+                border: 1px solid rgba(255, 255, 255, 0.5);
                 border-radius: 34px;
                 font-size: 11px;
                 font-weight: 500;
                 padding: 6px 2px;
             }
             QToolButton:hover {
-                background-color: rgba(35, 64, 150, 0.75);
-                border: 1px solid rgba(150, 180, 255, 0.6);
+                background-color: rgba(255, 255, 255, 0.35);
+                border: 1px solid rgba(255, 255, 255, 0.7);
             }
             QToolButton:checked {
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,

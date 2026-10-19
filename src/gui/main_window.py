@@ -522,8 +522,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.ui.titleBar.setText("")
         self.ui.titleBar.setStyleSheet(
             "background-color: transparent; border: none;")
-        # Search box in device bar (user order 2026-10-19): top-right corner,
-        # above the Home nav pill, with spacing. Cobalt glass style.
+        # Search box at TOP-LEFT (user order 2026-10-19 21:28: circled white area).
+        # White transparent gaussian blur style (user order 2026-10-19 21:28).
         # Guard against double-add on re-theme (method can run multiple times).
         if not hasattr(self, "_device_search_box") or self._device_search_box is None:
             from PySide6.QtWidgets import QLineEdit
@@ -535,12 +535,12 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             _search_box.setFixedWidth(240)
             _search_box.setStyleSheet("""
                 QLineEdit {
-                    background-color: rgba(35, 64, 150, 0.55);
+                    background-color: rgba(255, 255, 255, 0.25);
                     border-radius: 18px;
-                    border: 1px solid rgba(150, 180, 255, 0.4);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
                     padding-left: 36px;
                     padding-right: 12px;
-                    color: #FFFFFF;
+                    color: #1A1A1A;
                     font-size: 13px;
                 }
             """)
@@ -549,7 +549,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
             _search_box.returnPressed.connect(
                 lambda: self._on_search_tweak_from_home(_search_box.text()))
-            layout.addWidget(_search_box)
+            # Insert at position 0 (left side), after titleBar
+            layout.insertWidget(1, _search_box)
             self._device_search_box = _search_box
 
         c = self._color_theme.colors
@@ -557,7 +558,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         pill = self.ui.horizontalWidget_2
         pill.setStyleSheet(f"""
             QWidget#horizontalWidget_2 {{
-                background-color: rgba(35, 64, 150, 0.55);
+                background-color: rgba(255, 255, 255, 0.25);
                 border: 1px solid rgba(150, 180, 255, 0.4);
                 border-radius: 19px;
             }}

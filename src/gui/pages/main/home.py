@@ -163,12 +163,12 @@ class HomePage(Page):
                     box.setCursor(Qt.ArrowCursor)
                 box.setStyleSheet("""
                     QWidget {
-                        background-color: rgba(35, 64, 150, 0.55);
+                        background-color: rgba(255, 255, 255, 0.25);
                         border: 1px solid rgba(150, 180, 255, 0.4);
                         border-radius: 16px;
                     }
                     QWidget:hover {
-                        background-color: rgba(35, 64, 150, 0.75);
+                        background-color: rgba(255, 255, 255, 0.35);
                     }
                 """)
                 box_layout = QVBoxLayout(box)

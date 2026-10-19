@@ -123,25 +123,25 @@ class TopNavBar(QWidget):
         pills = self._scroll.widget()
         pills.setStyleSheet(f"""
             QPushButton {{
-                background-color: rgba(35, 64, 150, 0.55);
-                color: #FFFFFF;
-                border: 1px solid rgba(150, 180, 255, 0.4);
+                background-color: rgba(255, 255, 255, 0.25);
+                color: #1A1A1A;
+                border: 1px solid rgba(255, 255, 255, 0.5);
                 border-radius: {PILL_HEIGHT // 2}px;
                 font-size: 13px;
                 font-weight: 500;
                 padding: 0 12px;
             }}
             QPushButton:hover {{
-                background-color: rgba(35, 64, 150, 0.75);
-                border: 1px solid rgba(150, 180, 255, 0.6);
+                background-color: rgba(255, 255, 255, 0.35);
+                border: 1px solid rgba(255, 255, 255, 0.7);
             }}
             QPushButton:checked {{
                 background-color: {c.accent};
-                color: #FFFFFF;
+                color: #1A1A1A;
                 border: 1px solid {c.accent};
             }}
             QPushButton:pressed {{
-                background-color: rgba(35, 64, 150, 0.4);
+                background-color: rgba(255, 255, 255, 0.2);
             }}
             QPushButton:disabled {{
                 color: {c.text_disabled};
