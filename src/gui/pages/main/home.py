@@ -99,13 +99,20 @@ class HomePage(Page):
             left_box.setSpacing(20)
             left_box.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
+            # WS icon — app icon style: rounded box (like app icons) with
+            # cobalt gradient, white WS letters. Does NOT blend with bg.
+            # (user order 2026-10-19: "HARUS NYA ADA KOTAK APLIKASI").
             icon_lbl = QLabel(hero)
-            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(100, 100))
+            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(72, 72))
             icon_lbl.setPixmap(_icon_px)
-            # No box, no background, no border — just the WS letters
-            # (user order 2026-10-19: "icon ws ga keliatan nyatu sama background").
-            icon_lbl.setStyleSheet(
-                "background: transparent; border: none; padding: 0px; margin: 0px;")
+            icon_lbl.setAlignment(Qt.AlignCenter)
+            icon_lbl.setStyleSheet("""
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1A3578, stop:1 #0C1C4E);
+                border: 1px solid rgba(150, 180, 255, 0.5);
+                border-radius: 22px;
+                padding: 14px;
+            """)
             icon_lbl.setFixedSize(100, 100)
             left_box.addWidget(icon_lbl)
 
@@ -222,9 +229,10 @@ class HomePage(Page):
                 lambda: self.window._on_search_tweak_from_home(_search_box.text()))
             _search_hbox.addStretch(1)
             _search_hbox.addWidget(_search_box)
-            host_layout.insertWidget(idx, _search_container)
+            # Insert at position 0 (very top) — not at idx which is mid-layout.
+            host_layout.insertWidget(0, _search_container)
 
-            host_layout.insertWidget(idx + 1, hero, 0, Qt.AlignHCenter)
+            host_layout.insertWidget(1, hero, 0, Qt.AlignHCenter)
 
         # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)

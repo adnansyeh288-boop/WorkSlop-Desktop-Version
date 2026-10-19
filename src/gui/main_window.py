@@ -527,8 +527,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         pill = self.ui.horizontalWidget_2
         pill.setStyleSheet(f"""
             QWidget#horizontalWidget_2 {{
-                background-color: #FFFFFF;
-                border: 1px solid {c.card_border};
+                background-color: rgba(35, 64, 150, 0.55);
+                border: 1px solid rgba(150, 180, 255, 0.4);
                 border-radius: 19px;
             }}
         """)

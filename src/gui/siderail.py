@@ -25,7 +25,7 @@ MENUS = [
 ]
 
 RAIL_WIDTH = 100
-BTN_HEIGHT = 68
+BTN_HEIGHT = 76
 
 
 class SideRail(QWidget):
