@@ -102,8 +102,9 @@ class HomePage(Page):
             # WS icon — app icon style: rounded box (like app icons) with
             # cobalt gradient, white WS letters. Does NOT blend with bg.
             # (user order 2026-10-19: "HARUS NYA ADA KOTAK APLIKASI").
+            # WS letters BIG — not tiny (user order 2026-10-19).
             icon_lbl = QLabel(hero)
-            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(72, 72))
+            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(84, 84))
             icon_lbl.setPixmap(_icon_px)
             icon_lbl.setAlignment(Qt.AlignCenter)
             icon_lbl.setStyleSheet("""
@@ -111,7 +112,7 @@ class HomePage(Page):
                     stop:0 #1A3578, stop:1 #0C1C4E);
                 border: 1px solid rgba(150, 180, 255, 0.5);
                 border-radius: 22px;
-                padding: 14px;
+                padding: 8px;
             """)
             icon_lbl.setFixedSize(100, 100)
             left_box.addWidget(icon_lbl)
@@ -198,41 +199,10 @@ class HomePage(Page):
             # centered vbox (which broke the layout).
             from PySide6.QtWidgets import QLineEdit
             from PySide6.QtGui import QAction as _QAction
-            # Search bar — top-right corner, above Home content, with proper
-            # spacing (user order 2026-10-19). Cobalt glass style.
-            _search_container = QWidget(self.ui.homePage)
-            _search_container.setStyleSheet("background: transparent;")
-            _search_hbox = QHBoxLayout(_search_container)
-            _search_hbox.setContentsMargins(0, 16, 24, 16)
-            _search_box = QLineEdit(_search_container)
-            _search_box.setPlaceholderText("Search tweaks...")
-            _search_box.setFixedHeight(40)
-            _search_box.setFixedWidth(280)
-            _search_box.setStyleSheet("""
-                QLineEdit {
-                    background-color: rgba(35, 64, 150, 0.55);
-                    border-radius: 20px;
-                    border: 1px solid rgba(150, 180, 255, 0.4);
-                    padding-left: 40px;
-                    padding-right: 12px;
-                    color: #FFFFFF;
-                    font-size: 13px;
-                }
-                QLineEdit::placeholder {
-                    color: #8AA0D0;
-                }
-            """)
-            _search_icon = _QAction(_search_box)
-            _search_icon.setIcon(QIcon(":/icon/ws-search.svg"))
-            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
-            _search_box.returnPressed.connect(
-                lambda: self.window._on_search_tweak_from_home(_search_box.text()))
-            _search_hbox.addStretch(1)
-            _search_hbox.addWidget(_search_box)
-            # Insert at position 0 (very top) — not at idx which is mid-layout.
-            host_layout.insertWidget(0, _search_container)
+            # Search box moved to main window device bar (user order 2026-10-19).
+            # (Removed from here to avoid duplicate/misplaced search.)
 
-            host_layout.insertWidget(1, hero, 0, Qt.AlignHCenter)
+            host_layout.insertWidget(0, hero, 0, Qt.AlignHCenter)
 
         # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)
