@@ -524,30 +524,33 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             "background-color: transparent; border: none;")
         # Search box in device bar (user order 2026-10-19): top-right corner,
         # above the Home nav pill, with spacing. Cobalt glass style.
-        from PySide6.QtWidgets import QLineEdit
-        from PySide6.QtGui import QAction as _QAction
-        from PySide6.QtGui import QIcon as _QIcon
-        _search_box = QLineEdit(bar)
-        _search_box.setPlaceholderText("Search tweaks...")
-        _search_box.setFixedHeight(36)
-        _search_box.setFixedWidth(240)
-        _search_box.setStyleSheet("""
-            QLineEdit {
-                background-color: rgba(35, 64, 150, 0.55);
-                border-radius: 18px;
-                border: 1px solid rgba(150, 180, 255, 0.4);
-                padding-left: 36px;
-                padding-right: 12px;
-                color: #FFFFFF;
-                font-size: 13px;
-            }
-        """)
-        _search_icon = _QAction(_search_box)
-        _search_icon.setIcon(_QIcon(":/icon/ws-search.svg"))
-        _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
-        _search_box.returnPressed.connect(
-            lambda: self._on_search_tweak_from_home(_search_box.text()))
-        layout.addWidget(_search_box)
+        # Guard against double-add on re-theme (method can run multiple times).
+        if not hasattr(self, "_device_search_box") or self._device_search_box is None:
+            from PySide6.QtWidgets import QLineEdit
+            from PySide6.QtGui import QAction as _QAction
+            from PySide6.QtGui import QIcon as _QIcon
+            _search_box = QLineEdit(bar)
+            _search_box.setPlaceholderText("Search tweaks...")
+            _search_box.setFixedHeight(36)
+            _search_box.setFixedWidth(240)
+            _search_box.setStyleSheet("""
+                QLineEdit {
+                    background-color: rgba(35, 64, 150, 0.55);
+                    border-radius: 18px;
+                    border: 1px solid rgba(150, 180, 255, 0.4);
+                    padding-left: 36px;
+                    padding-right: 12px;
+                    color: #FFFFFF;
+                    font-size: 13px;
+                }
+            """)
+            _search_icon = _QAction(_search_box)
+            _search_icon.setIcon(_QIcon(":/icon/ws-search.svg"))
+            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
+            _search_box.returnPressed.connect(
+                lambda: self._on_search_tweak_from_home(_search_box.text()))
+            layout.addWidget(_search_box)
+            self._device_search_box = _search_box
 
         c = self._color_theme.colors
         bar.setStyleSheet("background-color: transparent;")
