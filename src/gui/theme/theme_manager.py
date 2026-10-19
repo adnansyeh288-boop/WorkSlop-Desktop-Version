@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal, QSettings
 from PySide6.QtGui import QColor, QPalette
 
-from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, WS_GRAY, WS_DARK, COBALT, ACCENT_PRESETS
+from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, ACCENT_PRESETS
 from src.controllers.settings import migrate_legacy_key
 
 
@@ -36,7 +36,7 @@ class ColorThemeManager(QObject):
         # One-time: carry over the accent saved by GoldenNugget/Nugget builds.
         migrate_legacy_key("accent_color")
         self._settings = QSettings("WorkSlop", "WorkSlop")
-        saved = self._settings.value("accent_color", "gray")
+        saved = self._settings.value("accent_color", "blue")
         if saved in ACCENT_PRESETS:
             self._accent_name = saved
             self._custom_hex = None
@@ -44,7 +44,7 @@ class ColorThemeManager(QObject):
             self._accent_name = "custom"
             self._custom_hex = saved.strip().lower()
         else:
-            self._accent_name = "gray"
+            self._accent_name = "blue"
             self._custom_hex = None
         self._colors = self._build_colors()
 
@@ -162,8 +162,10 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # Sky blue (user order 2026-10-19 21:29: "balik ke sky blue").
-        return SKY.with_accent(accent, hover, pressed)
+        # Single-UI rebuild (user order 2026-10-18): the shipped palette is
+        # WS_BLUE — the strong blue-white desktop-tool identity (#0B65D8
+        # header/footer bars, white content, light-grey panels).
+        return WS_BLUE.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""

@@ -2,18 +2,17 @@
 
 Every tweak family gets its own top-level menu entry — there is no "All
 Tweaks" grouping anywhere in the UI. Each entry is a full-capsule pill
-(fluid corners per user order); the checked pill is solid gray with
+(fluid corners per user order); the checked pill is solid Apple blue with
 a white icon and label.
 
 The bar is intentionally dumb: it emits ``menu_selected(menu_id)`` and the
-main window performs the navigation. All entries are always visible (user
-order 2026-10-18 ronde 8) — no device-gating on the top bar. The pills live
-in a horizontal scroll area so they scroll instead of being cut off on
-narrow screens.
+main window performs the navigation. Visibility of entries (device-gated
+features like Status Bar on iOS 27) is mirrored from the legacy sidebar
+buttons, which remain the source of truth in the device-refresh flow.
 """
 from PySide6.QtCore import Qt, QCoreApplication, Signal, QSize
 from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy, QScrollArea,
+    QWidget, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy,
 )
 
 from src.gui.theme import ColorThemeManager, theme_icon
@@ -48,33 +47,14 @@ class TopNavBar(QWidget):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 10, 16, 10)
-        layout.setSpacing(0)
-
-        # Horizontal scroll area (user order 2026-10-18 ronde 8): pills must
-        # never be cut off ("kepangkas") on narrow screens — they scroll
-        # instead. Scrollbars hidden for a clean look; wheel/drag still scroll.
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setFrameShape(QScrollArea.NoFrame)
-        scroll.setStyleSheet("background: transparent; border: none;")
-        pills = QWidget()
-        pills_layout = QHBoxLayout(pills)
-        pills_layout.setContentsMargins(0, 0, 0, 0)
-        pills_layout.setSpacing(8)
-        pills_layout.setAlignment(Qt.AlignCenter)
-        scroll.setWidget(pills)
-        layout.addWidget(scroll)
-        self._scroll = scroll
-        # TopNavBar itself stays transparent (set once, not in _retheme).
-        self.setStyleSheet("TopNavBar { background-color: transparent; border: none; }")
+        layout.setSpacing(8)
+        layout.setAlignment(Qt.AlignCenter)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
         self._buttons = {}
         for menu_id, label, icon_res, legacy_btn in MENUS:
-            btn = QPushButton(QCoreApplication.translate("Nugget", label), pills)
+            btn = QPushButton(QCoreApplication.translate("Nugget", label), self)
             btn.setObjectName(f"topnav_{menu_id}")
             btn.setCheckable(True)
             btn.setCursor(Qt.PointingHandCursor)
@@ -89,7 +69,7 @@ class TopNavBar(QWidget):
                 lambda checked, b=btn, r=icon_res: self._update_icon(b, r, checked))
             self._group.addButton(btn)
             self._buttons[menu_id] = btn
-            pills_layout.addWidget(btn)
+            layout.addWidget(btn)
 
         self._retheme()
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
@@ -110,40 +90,42 @@ class TopNavBar(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        # Cobalt Flow: white icons on translucent cobalt glass pills.
-        btn.setIcon(theme_icon(icon_res, "#FFFFFF"))
+        c = ColorThemeManager.instance().colors
+        color = "#FFFFFF" if checked else c.accent
+        btn.setIcon(theme_icon(icon_res, color))
         btn.setIconSize(QSize(20, 20))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # LIQUID GLASS pills on Cobalt Flow (user direction 2026-09-30 Varian 3):
-        # deep cobalt-blue, translucent glass pills, white text.
-        # Fully rounded (fluid corners). Checked = bright blue accent.
-        # Anti-AI-slop: no excessive gradients, use real palette.
-        pills = self._scroll.widget()
-        pills.setStyleSheet(f"""
-            QPushButton {{
-                background-color: rgba(255, 255, 255, 0.25);
-                color: #1A1A1A;
-                border: 1px solid rgba(255, 255, 255, 0.5);
+        # Full-capsule pills: radius = half of PILL_HEIGHT. Checked pill is
+        # solid blue with white text; idle pills are white with blue text.
+        # No gradients, no translucency — opaque, crisp, blue-white identity.
+        self.setStyleSheet(f"""
+            TopNavBar {{
+                background-color: transparent;
+                border: none;
+            }}
+            TopNavBar QPushButton {{
+                background-color: {c.bg_secondary};
+                color: {c.accent};
+                border: 1px solid {c.card_border};
                 border-radius: {PILL_HEIGHT // 2}px;
                 font-size: 13px;
-                font-weight: 500;
+                font-weight: 600;
                 padding: 0 12px;
             }}
-            QPushButton:hover {{
-                background-color: rgba(255, 255, 255, 0.35);
-                border: 1px solid rgba(255, 255, 255, 0.7);
+            TopNavBar QPushButton:hover {{
+                background-color: {c.surface_hover};
             }}
-            QPushButton:checked {{
+            TopNavBar QPushButton:checked {{
                 background-color: {c.accent};
-                color: #1A1A1A;
+                color: #FFFFFF;
                 border: 1px solid {c.accent};
             }}
-            QPushButton:pressed {{
-                background-color: rgba(255, 255, 255, 0.2);
+            TopNavBar QPushButton:pressed {{
+                background-color: {c.accent_pressed};
             }}
-            QPushButton:disabled {{
+            TopNavBar QPushButton:disabled {{
                 color: {c.text_disabled};
                 background-color: {c.bg_tertiary};
             }}

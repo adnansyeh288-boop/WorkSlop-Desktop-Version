@@ -188,10 +188,8 @@ class IOSHomePage(QWidget):
         device_row.addWidget(self.device_combo)
 
         self._refresh_btn = QPushButton(self)
-        # 40x40 with 20px radius = perfect circle. Icon 16px gives breathing
-        # room so it doesn't clash with the edge (user order 2026-10-19).
-        self._refresh_btn.setFixedSize(40, 40)
-        self._refresh_btn.setIconSize(QSize(16, 16))
+        self._refresh_btn.setFixedSize(36, 36)
+        self._refresh_btn.setIconSize(QSize(18, 18))
         self._refresh_btn.setStyleSheet(t("home_icon_button"))
         self._apply_icon(self._refresh_btn, ":/icon/arrow-clockwise.svg")
         self._refresh_btn.clicked.connect(self.refresh_devices)
@@ -204,45 +202,6 @@ class IOSHomePage(QWidget):
         self._apply_icon(self._settings_btn, ":/icon/gear.svg")
         self._settings_btn.clicked.connect(self.open_settings)
         device_row.addWidget(self._settings_btn)
-
-        # Search bar (user order 2026-10-19): top-right, fluid corner,
-        # transparent liquid-glass tinted dark, with search icon, functional.
-        # Searches tweak titles across all menus; Enter navigates to the
-        # first match's menu.
-        from PySide6.QtWidgets import QLineEdit
-        self._search_box = QLineEdit(self)
-        self._search_box.setPlaceholderText("Search tweaks...")
-        self._search_box.setFixedHeight(40)
-        self._search_box.setMinimumWidth(220)
-        self._search_box.setMaximumWidth(300)
-        # Liquid glass tinted dark: semi-transparent, rounded, subtle border.
-        self._search_box.setStyleSheet("""
-            QLineEdit {
-                background-color: rgba(38, 38, 38, 180);
-                color: #FFFFFF;
-                border: 1px solid #4B4B4B;
-                border-radius: 20px;
-                padding: 0 16px 0 40px;
-                font-size: 13px;
-                selection-background-color: #8A8A8A;
-            }
-            QLineEdit:focus {
-                border: 1px solid #8A8A8A;
-                background-color: rgba(44, 44, 44, 200);
-            }
-            QLineEdit::placeholder {
-                color: #8A8A8A;
-            }
-        """)
-        # Search icon inside (left).
-        from src.gui.theme import theme_icon as _ti
-        _search_action = self._search_box.addAction(
-            _ti(":/icon/ws-search.svg", "#8A8A8A"),
-            QLineEdit.ActionPosition.LeadingPosition)
-        self._search_box.returnPressed.connect(self._on_search_tweak)
-        # Add spacing before search (user: "jauh ada spasi").
-        device_row.addSpacing(24)
-        device_row.addWidget(self._search_box)
 
         device_row.addStretch(1)
         hero.addLayout(device_row)
@@ -333,9 +292,7 @@ class IOSHomePage(QWidget):
         """)
 
     def _apply_icon(self, button, resource_path: str):
-        # White glossy buttons → BLACK icons for visibility (user order
-        # 2026-10-19 ronde 10).
-        button.setIcon(theme_icon(resource_path, "#0A0A0A"))
+        button.setIcon(theme_icon(resource_path, self._c.text_primary))
 
     def _paint_hero_logo(self):
         """Big Apple logo for the home hero, tinted with the accent color."""
@@ -397,46 +354,6 @@ class IOSHomePage(QWidget):
     @Slot()
     def refresh_devices(self):
         self.window.refresh_devices()
-
-    @Slot()
-    def _on_search_tweak(self):
-        """Search tweak titles and navigate to the first match's menu.
-
-        Functional search (user order 2026-10-19): looks through the
-        tweak registry for titles containing the query, then navigates
-        to the menu (section) of the first match.
-        """
-        query = self._search_box.text().strip().lower()
-        if not query:
-            return
-        try:
-            from src.tweaks.registry import SPECS_BY_ID
-        except Exception:
-            return
-        # Map section names to topnav menu_ids.
-        _section_to_menu = {
-            "LIQUID_GLASS": "liquidglass",
-            "SPRINGBOARD": "springboard",
-            "STATUS_BAR": "statusbar",
-            "POSTERBOARD": "posterboard",
-            "MOBILE_GESTALT": "gestalt",
-            "INTERNAL": "internal",
-            "DAEMONS": "daemons",
-        }
-        for spec in SPECS_BY_ID.values():
-            title = str(getattr(spec, "title", "") or "")
-            if query in title.lower():
-                section = str(getattr(spec, "section", "") or "").upper()
-                menu_id = _section_to_menu.get(section)
-                if menu_id:
-                    # Navigate via the main window's topnav handler.
-                    try:
-                        self.window._on_topnav_menu(menu_id)
-                    except Exception:
-                        pass
-                    return
-        # No match: clear the box to signal nothing found.
-        self._search_box.clear()
 
     @Slot()
     def open_settings(self):

@@ -283,28 +283,11 @@ class IOSSettingsPage(QWidget):
     # (_style_interface_buttons removed 2026-10-18 with the 3-UI system.)
 
     def refresh(self):
-        """Called when navigating to Settings — picks up device changes.
-
-        Optimization (user order 2026-10-19 ronde 10): skip the rebuild
-        if the device state hasn't changed since the last refresh. This
-        makes navigation to Settings instant instead of rebuilding rows
-        and reapplying stylesheets every time.
-        """
-        dev = self.window.device_manager.data_singleton.current_device
-        # Build a fingerprint of the device state.
-        if dev is not None:
-            _fingerprint = (dev.model, dev.version, dev.build, dev.udid)
-        else:
-            _fingerprint = None
-        # Only rebuild if the device changed (or first time).
-        if getattr(self, '_last_device_fingerprint', None) != _fingerprint:
-            self._last_device_fingerprint = _fingerprint
-            self._build_device_rows()
-            # Rows rebuilt above (and any card created since the last pass)
-            # take the palette of the interface currently active.
-            self._retheme()
-        # If device unchanged, skip the expensive rebuild — page is already
-        # showing the correct state.
+        """Called when navigating to Settings — picks up device changes."""
+        self._build_device_rows()
+        # Rows rebuilt above (and any card created since the last pass)
+        # take the palette of the interface currently active.
+        self._retheme()
 
     def _build_settings_ui(self):
         tr = lambda s: QCoreApplication.translate("Nugget", s)

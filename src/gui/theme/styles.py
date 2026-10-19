@@ -439,22 +439,14 @@ STYLES = {
 
     "home_icon_button": """
         QPushButton {{
-            background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #FFFFFF, stop:0.35 #FFFFFF, stop:0.5 #F5F5F5, stop:0.65 #E8E8E8, stop:1 #D0D0D0);
-            color: #0A0A0A;
-            border-radius: 20px;
-            border: 1px solid #D0D0D0;
+            background-color: {bg_secondary};
+            color: {text_primary};
+            border-radius: 18px;
+            border: none;
             font-size: 16px;
-            padding: 8px;
+            padding: 10px;
         }}
-        QPushButton:hover {{
-            background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
-            border: 1px solid #B0B0B0;
-        }}
-        QPushButton:pressed {{
-            background-color: #D8D8D8;
-        }}
+        QPushButton:hover {{ background-color: {surface_hover}; }}
     """,
 
     # Home feature tile: one big icon with the feature name underneath, all

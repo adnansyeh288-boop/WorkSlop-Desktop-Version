@@ -1,16 +1,14 @@
-"""SkyBackground: dark animated background for WorkSlop Desktop.
+"""SkyBackground: fresh light-blue animated background for WorkSlop Desktop.
 
-A dark #1e1e1e tech canvas (Nugget-style dark, user order 2026-10-19
-ronde 10) with many softly-glowing white Apple logos drifting in the
-background. The big centered brand hero lives on the home page itself;
-this widget only paints the canvas and the floating logos behind every
-page.
+Replaces the old terminal theme entirely. A calm white-blue tech canvas with
+many softly-tinted Apple logos drifting in the background. The big centered
+brand hero lives on the home page itself; this widget only paints the canvas
+and the floating logos behind every page.
 
 Performance notes:
   * Every floater pixmap is pre-rendered once (size + tint + opacity baked in)
     so paintEvent is just blits — no per-frame rasterization.
   * The timer skips work while the widget is hidden.
-  * 60 fps animation (user order 2026-10-18 ronde 8).
 """
 
 from __future__ import annotations
@@ -29,11 +27,9 @@ APPLE_SVG = ":/icon/apple.svg"
 
 BASE_BG = "#F2F7FF"
 
-# Luminous white tints for the drifting background logos (user order
-# 2026-10-19 ronde 10): "putih cahaya berkilau" — shiny glowing white.
-# On the dark #1e1e1e canvas, white logos naturally glow like light.
-# High opacity keeps them solid and visible.
-FLOAT_TINTS = ["#FFFFFF", "#FAFAFA", "#FFFFFF", "#F5F5F5", "#FFFFFF"]
+# Soft blue tints for the drifting background logos (light enough to never
+# fight with page content drawn above).
+FLOAT_TINTS = ["#BFD9FA", "#A9CBF7", "#C9DFFB", "#9DC2F2", "#D4E4FC"]
 FLOAT_COUNT = 16
 
 
@@ -92,7 +88,7 @@ class SkyBackground(QWidget):
         self._floaters: list[_Floater] = []
         self._t = 0.0
         self._timer = QTimer(self)
-        self._timer.setInterval(16)  # 60 fps (user order 2026-10-18 ronde 8)
+        self._timer.setInterval(33)  # ~30 fps
         self._timer.timeout.connect(self._tick)
         self._seed_floaters()
 
@@ -113,7 +109,7 @@ class SkyBackground(QWidget):
         for _ in range(FLOAT_COUNT):
             size = rng.randint(26, 92)
             tint = rng.choice(FLOAT_TINTS)
-            opacity = rng.uniform(0.65, 0.90)
+            opacity = rng.uniform(0.35, 0.75)
             pm = _tinted_apple(size, tint, opacity, dpr)
             self._floaters.append(_Floater(
                 pixmap=pm,
@@ -127,9 +123,9 @@ class SkyBackground(QWidget):
     def _tick(self):
         if not self.isVisible():
             return
-        self._t += 0.016
+        self._t += 0.033
         for f in self._floaters:
-            f.ry -= f.speed * 0.016
+            f.ry -= f.speed * 0.033
             if f.ry < -0.12:
                 f.ry = 1.12
         self.update()

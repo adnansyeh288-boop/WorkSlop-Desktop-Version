@@ -779,14 +779,17 @@ class NavigationMixin:
         self._mirror_nav_visibility()
 
     def _mirror_nav_visibility(self):
-        """Top nav always shows all menus (user order 2026-10-18 ronde 8):
-        no device-gating on the top bar — every entry is visible from the
-        moment the app starts, whether or not an iPhone is connected.
-        The legacy sidebar buttons keep their own device-gated visibility;
-        the top nav no longer mirrors it."""
+        """Mirror the legacy sidebar buttons' visibility (device-gated
+        features) into the top nav bar. The old buttons remain the source
+        of truth in the device-refresh flow."""
         for mid in self.topnav.menu_ids():
             btn = self.topnav._buttons[mid]
-            btn.setVisible(True)
+            legacy_name = btn.property("legacy_btn")
+            legacy = getattr(self.ui, legacy_name, None)
+            if legacy is not None:
+                # isVisibleTo would be False while the sidebar is hidden,
+                # so read the explicit visible flag instead.
+                btn.setVisible(legacy.isVisible())
         # The rail menus are never device-gated.
         for _mid, btn in self.siderail._buttons.items():
             btn.setVisible(True)
@@ -806,38 +809,6 @@ class NavigationMixin:
         }.get(menu_id)
         if handler is not None:
             handler()
-
-    def _on_search_tweak_from_home(self, query: str):
-        """Search tweak titles from the HomePage search bar (user order
-        2026-10-19 ronde 11). Looks through the tweak registry for titles
-        containing the query, navigates to the first match's menu."""
-        query = (query or "").strip().lower()
-        if not query:
-            return
-        try:
-            from src.tweaks.registry import SPECS_BY_ID
-        except Exception:
-            return
-        _section_to_menu = {
-            "LIQUID_GLASS": "liquidglass",
-            "SPRINGBOARD": "springboard",
-            "STATUS_BAR": "statusbar",
-            "POSTERBOARD": "posterboard",
-            "MOBILE_GESTALT": "gestalt",
-            "INTERNAL": "internal",
-            "DAEMONS": "daemons",
-        }
-        for spec in SPECS_BY_ID.values():
-            title = str(getattr(spec, "title", "") or "")
-            if query in title.lower():
-                section = str(getattr(spec, "section", "") or "").upper()
-                menu_id = _section_to_menu.get(section)
-                if menu_id:
-                    try:
-                        self._on_topnav_menu(menu_id)
-                    except Exception:
-                        pass
-                    return
 
     def _on_rail_menu(self, menu_id: str):
         if menu_id == "backup":
@@ -862,17 +833,11 @@ class NavigationMixin:
             udid = getattr(dev, "udid", "") or ""
         except Exception:
             pass
-        if action == "enter":
-            # User order 2026-10-18 ronde 8: the dialog MUST include the
-            # manual button-press instructions for entering recovery, so
-            # the user can do it by hand if the software command fails.
-            if not self._show_recovery_enter_dialog():
-                return
-            if not udid:
-                QMessageBox.warning(
-                    self, "No device",
-                    "Connect an iPhone first (select it in the top bar).")
-                return
+        if action == "enter" and not udid:
+            QMessageBox.warning(
+                self, "No device",
+                "Connect an iPhone first (select it in the top bar).")
+            return
         name = ("Entering recovery mode" if action == "enter"
                 else "Exiting recovery mode")
         self.statusBar().showMessage(f"{name}... do not unplug the iPhone.",
@@ -899,31 +864,6 @@ class NavigationMixin:
         self._recovery_worker.finished.connect(_done)
         self._recovery_worker.start()
 
-
-    def _show_recovery_enter_dialog(self) -> bool:
-        """Show the Enter Recovery dialog with manual instructions.
-
-        Returns True if the user wants to proceed with the automatic
-        software command, False if they cancel.
-        """
-        from PySide6.QtWidgets import QMessageBox
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Enter Recovery Mode")
-        msg.setText(
-            "<b>Automatic:</b> click <b>Send Command</b> to send EnterRecovery "
-            "to the connected iPhone via software.<br><br>"
-            "<b>Manual (if the command fails):</b><br>"
-            "1. Connect the iPhone to this computer with a cable.<br>"
-            "2. Press and quickly release <b>Volume Up</b>.<br>"
-            "3. Press and quickly release <b>Volume Down</b>.<br>"
-            "4. Press and <b>hold the Side button</b> until the recovery "
-            "screen appears (cable pointing at a computer).")
-        send_btn = msg.addButton("Send Command",
-                                 QMessageBox.ButtonRole.AcceptRole)
-        msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
-        msg.setDefaultButton(send_btn)
-        msg.exec()
-        return msg.clickedButton() == send_btn
 
     def show_home(self):
         """Open the home page (single UI)."""

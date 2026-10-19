@@ -117,10 +117,6 @@ class IOSApplyPage(QWidget):
         status_layout = QVBoxLayout(status_card)
         status_layout.setContentsMargins(16, 12, 16, 12)
         status_layout.setSpacing(0)
-        # User order 2026-10-18 ronde 8: the status/log card auto-hides when
-        # the apply finishes — keep a reference so set_status can hide it.
-        self._status_card = status_card
-        self._status_hide_timer = None
 
         self.status_lbl = QLabel("")
         self.status_lbl.setWordWrap(True)
@@ -141,12 +137,6 @@ class IOSApplyPage(QWidget):
         content_layout.addStretch()
 
     def set_status(self, text: str):
-        from PySide6.QtCore import QTimer
-        # Cancel any pending auto-hide when new status arrives.
-        if self._status_hide_timer is not None:
-            self._status_hide_timer.stop()
-            self._status_hide_timer = None
-        self._status_card.show()
         self.status_lbl.setText(text or "")
         match = re.search(r"(\d+(?:\.\d+)?)\s*%", text or "")
         if not text:
@@ -161,16 +151,6 @@ class IOSApplyPage(QWidget):
             # visible and indeterminate, like the classic Apply page.
             self.progress_bar.setRange(0, 0)
             self.progress_bar.show()
-        # Auto-hide the status/log card when the apply is done (user order
-        # 2026-10-18 ronde 8): "Success" (or "Done"/"Complete") lingers for
-        # 3 seconds so the user sees it, then the card disappears.
-        lowered = (text or "").lower()
-        if any(w in lowered for w in ("success", "done", "complete",
-                                      "finished")):
-            self._status_hide_timer = QTimer(self)
-            self._status_hide_timer.setSingleShot(True)
-            self._status_hide_timer.timeout.connect(self._status_card.hide)
-            self._status_hide_timer.start(3000)
 
     def set_busy(self, busy: bool):
         self.apply_btn.setEnabled(not busy)

@@ -513,53 +513,17 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         # blanked first (every flavor shares this layout fixup).
         bar = self.ui.deviceBar
         layout = self.ui.horizontalLayout_4
-        # Tidy the device bar (user order 2026-10-18 ronde 8): even spacing
-        # and margins so the device pill + refresh button sit neatly.
-        layout.setSpacing(8)
-        layout.setContentsMargins(0, 4, 0, 4)
-        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter)
         layout.insertWidget(0, self.ui.titleBar)
         self.ui.titleBar.setText("")
         self.ui.titleBar.setStyleSheet(
             "background-color: transparent; border: none;")
-        # Search box at TOP-LEFT (user order 2026-10-19 21:28: circled white area).
-        # White transparent gaussian blur style (user order 2026-10-19 21:28).
-        # Guard against double-add on re-theme (method can run multiple times).
-        if not hasattr(self, "_device_search_box") or self._device_search_box is None:
-            from PySide6.QtWidgets import QLineEdit
-            from PySide6.QtGui import QAction as _QAction
-            from PySide6.QtGui import QIcon as _QIcon
-            _search_box = QLineEdit(bar)
-            _search_box.setPlaceholderText("Search tweaks...")
-            _search_box.setFixedHeight(36)
-            _search_box.setFixedWidth(240)
-            _search_box.setStyleSheet("""
-                QLineEdit {
-                    background-color: rgba(255, 255, 255, 0.25);
-                    border-radius: 18px;
-                    border: 1px solid rgba(255, 255, 255, 0.4);
-                    padding-left: 36px;
-                    padding-right: 12px;
-                    color: #1A1A1A;
-                    font-size: 13px;
-                }
-            """)
-            _search_icon = _QAction(_search_box)
-            _search_icon.setIcon(_QIcon(":/icon/ws-search.svg"))
-            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
-            _search_box.returnPressed.connect(
-                lambda: self._on_search_tweak_from_home(_search_box.text()))
-            # Insert at position 0 (left side), after titleBar
-            layout.insertWidget(1, _search_box)
-            self._device_search_box = _search_box
-
         c = self._color_theme.colors
         bar.setStyleSheet("background-color: transparent;")
         pill = self.ui.horizontalWidget_2
         pill.setStyleSheet(f"""
             QWidget#horizontalWidget_2 {{
-                background-color: rgba(255, 255, 255, 0.25);
-                border: 1px solid rgba(150, 180, 255, 0.4);
+                background-color: #FFFFFF;
+                border: 1px solid {c.card_border};
                 border-radius: 19px;
             }}
         """)

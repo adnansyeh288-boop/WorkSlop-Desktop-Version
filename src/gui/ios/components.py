@@ -253,13 +253,7 @@ class IOSCard(QFrame):
         # an explicit transparent background, otherwise children paint sharp
         # white rects over the rounded corners).
         c = ColorThemeManager.instance().colors
-        # Liquid glass TINTED DARK (user order 2026-10-19): semi-transparent
-        # dark surface so the Apple-logo canvas faintly shows through —
-        # "transparan ala ala tapi masih blur aman buat di baca".
-        # Alpha 210/255 keeps text fully readable.
-        _bg = QColor(c.bg_secondary)
-        _bg.setAlpha(210)
-        self._bg = _bg
+        self._bg = QColor(c.bg_secondary)
         self._border = QColor(c.card_border)
         self.setStyleSheet("background: transparent; border: none;"
                            " IOSCard QWidget { background: transparent; }")
@@ -269,14 +263,6 @@ class IOSCard(QFrame):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         radius = self.PILL_RADIUS_PX if self._pill else self.CARD_RADIUS_PX
-        # Luminous light-glow edge (user order 2026-10-18 ronde 8): a soft
-        # radiant halo around the card — "efek visual cahaya, solid di mata".
-        # Drawn as concentric translucent white strokes outside the border.
-        for i, alpha in ((4, 28), (3, 45), (2, 70)):
-            glow_rect = self.rect().adjusted(i, i, -i, -i)
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.setPen(QPen(QColor(255, 255, 255, alpha), 1))
-            p.drawRoundedRect(glow_rect, radius + i, radius + i)
         # Inset by half the pen width so the 1px border stays inside.
         rect = self.rect().adjusted(1, 1, -1, -1)
         p.setBrush(self._bg)

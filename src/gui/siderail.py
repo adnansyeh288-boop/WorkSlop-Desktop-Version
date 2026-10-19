@@ -25,7 +25,7 @@ MENUS = [
 ]
 
 RAIL_WIDTH = 100
-BTN_HEIGHT = 76
+BTN_HEIGHT = 68
 
 
 class SideRail(QWidget):
@@ -109,49 +109,40 @@ class SideRail(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        # Cobalt Flow: white icons on translucent cobalt glass pills.
-        btn.setIcon(theme_icon(icon_res, "#FFFFFF"))
+        c = ColorThemeManager.instance().colors
+        color = "#FFFFFF" if checked else c.accent
+        btn.setIcon(theme_icon(icon_res, color))
         btn.setIconSize(QSize(24, 24))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # Cobalt Flow: side rail pills match the top nav — small cobalt
-        # glass pills, white text (user order 2026-10-19: "ubah jadi pil
-        # kecil kecil seperti pil menu di atas dan warna nya sama").
+        # Fluid rounded buttons (18px on a 68px-wide button reads fully
+        # rounded). Blue-white identity, no gradients.
         self.setStyleSheet(f"""
             SideRail {{
-                background-color: transparent;
-                border: none;
+                background-color: {c.bg_secondary};
+                border: 1px solid {c.card_border};
+                border-radius: 22px;
             }}
-        """)
-        holder = self._scroll.widget()
-        holder.setStyleSheet("""
-            QWidget {
-                background: transparent;
+            SideRail QToolButton {{
+                background-color: transparent;
+                color: {c.text_primary};
                 border: none;
-            }
-            QToolButton {
-                background-color: rgba(255, 255, 255, 0.25);
-                color: #1A1A1A;
-                border: 1px solid rgba(255, 255, 255, 0.5);
-                border-radius: 34px;
+                border-radius: 18px;
                 font-size: 11px;
-                font-weight: 500;
+                font-weight: 600;
                 padding: 6px 2px;
-            }
-            QToolButton:hover {
-                background-color: rgba(255, 255, 255, 0.35);
-                border: 1px solid rgba(255, 255, 255, 0.7);
-            }
-            QToolButton:checked {
-                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #FFFFFF, stop:0.4 #FAFAFA, stop:1 #E8E8E8);
-                color: #0A0A0A;
-                border: 2px solid #FFFFFF;
-            }
-            QToolButton:pressed {
-                background-color: #D0D0D0;
-            }
+            }}
+            SideRail QToolButton:hover {{
+                background-color: {c.surface_hover};
+            }}
+            SideRail QToolButton:checked {{
+                background-color: {c.accent};
+                color: #FFFFFF;
+            }}
+            SideRail QToolButton:pressed {{
+                background-color: {c.accent_pressed};
+            }}
         """)
         for _menu_id, btn in self._buttons.items():
             self._update_icon(btn, btn.property("ws_icon_res"), btn.isChecked())

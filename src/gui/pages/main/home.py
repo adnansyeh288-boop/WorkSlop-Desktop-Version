@@ -3,7 +3,7 @@ from webbrowser import open_new_tab
 from ..page import Page
 from src.qt.mainwindow_ui import Ui_Nugget
 from src.gui.preset_widget import PresetWidget
-from src.gui.theme import ColorThemeManager, theme_icon
+from src.gui.theme import ColorThemeManager
 
 class HomePage(Page):
     def __init__(self, window, ui: Ui_Nugget):
@@ -85,124 +85,34 @@ class HomePage(Page):
             from PySide6.QtWidgets import QSizePolicy
             hero.setSizePolicy(QSizePolicy.Policy.Expanding,
                                QSizePolicy.Policy.Expanding)
+            vbox = QVBoxLayout(hero)
+            vbox.setContentsMargins(0, 8, 0, 8)
+            vbox.setSpacing(16)
+            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # HORIZONTAL hero (user order 2026-10-19): WS icon on the LEFT
-            # with text beside it (like the old days), 3 GitHub boxes on
-            # the right. Liquid glass style, anti-AI-slop.
-            hero_layout = QHBoxLayout(hero)
-            hero_layout.setContentsMargins(32, 16, 32, 16)
-            hero_layout.setSpacing(32)
-            hero_layout.setAlignment(Qt.AlignVCenter)
-
-            # LEFT: WS icon + title side by side.
-            left_box = QHBoxLayout()
-            left_box.setSpacing(20)
-            left_box.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-
-            # WS icon — app icon style: rounded box (like app icons) with
-            # cobalt gradient, white WS letters. Does NOT blend with bg.
-            # (user order 2026-10-19: "HARUS NYA ADA KOTAK APLIKASI").
-            # WS letters BIG — not tiny (user order 2026-10-19).
+            # 1. WS icon, centered (enlarged 1.5x; source PNG is 512px).
             icon_lbl = QLabel(hero)
-            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(84, 84))
-            icon_lbl.setPixmap(_icon_px)
-            icon_lbl.setAlignment(Qt.AlignCenter)
-            icon_lbl.setStyleSheet("""
-                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1A3578, stop:1 #0C1C4E);
-                border: 1px solid rgba(150, 180, 255, 0.5);
-                border-radius: 22px;
-                padding: 8px;
-            """)
-            icon_lbl.setFixedSize(100, 100)
-            left_box.addWidget(icon_lbl)
+            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(210, 210)))
+            icon_lbl.setAlignment(Qt.AlignHCenter)
+            icon_lbl.setStyleSheet("background: transparent;")
+            vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
 
-            title_box = QVBoxLayout()
-            title_box.setSpacing(4)
+            # 2. Title directly below the icon (enlarged proportionally).
             title = QLabel("WorkSlop Desktop", hero)
+            title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
-                "background: transparent; color: #FFFFFF;"
-                " font-size: 32px; font-weight: 600;")
-            title_box.addWidget(title)
+                f"background: transparent; color: {c0.text_primary};"
+                " font-size: 46px; font-weight: 700;")
+            vbox.addWidget(title, 0, Qt.AlignHCenter)
 
+            # 3. Developer credit + links below the title.
             self.credits_lbl = make_credits_label(
-                hero, c0.text_secondary, c0.accent, align_center=False)
+                hero, c0.text_secondary, c0.accent, align_center=True)
             self.credits_lbl.setStyleSheet(
-                "background: transparent; font-size: 14px; font-weight: 500;")
-            title_box.addWidget(self.credits_lbl)
-            left_box.addLayout(title_box)
+                "background: transparent; font-size: 17px; font-weight: 500;")
+            vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
 
-            hero_layout.addLayout(left_box)
-            hero_layout.addStretch(1)
-
-            # 4. GitHub credit boxes (user order 2026-10-18 ronde 8): three
-            # boxes below the title — Adnan.120hz, awesomenull (GoldenNugget
-            # dev), leminlimez (Nugget dev). Icons MUST come from the repo
-            # (:/icon/github.svg), not generated. Clicking a box opens the
-            # GitHub profile in the browser.
-            from PySide6.QtWidgets import QGridLayout
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
-            from src.gui.ios.components import IOSCard
-            # RIGHT: 3 GitHub boxes — liquid glass, not white glossy.
-            # Adnan.120hz clickable, others pure display.
-            gh_row = QHBoxLayout()
-            gh_row.setSpacing(12)
-            gh_row.setAlignment(Qt.AlignVCenter | Qt.AlignRight)
-            gh_profiles = [
-                ("Adnan.120hz", "https://github.com/adnan120hz"),
-                ("awesomenull", "https://github.com/awesomenull"),
-                ("leminlimez", "https://github.com/leminlimez"),
-            ]
-            for name, url in gh_profiles:
-                box = QWidget(hero)
-                _is_adnan = (name == "Adnan.120hz")
-                if _is_adnan:
-                    box.setCursor(Qt.PointingHandCursor)
-                else:
-                    box.setCursor(Qt.ArrowCursor)
-                box.setStyleSheet("""
-                    QWidget {
-                        background-color: rgba(255, 255, 255, 0.25);
-                        border: 1px solid rgba(150, 180, 255, 0.4);
-                        border-radius: 16px;
-                    }
-                    QWidget:hover {
-                        background-color: rgba(255, 255, 255, 0.35);
-                    }
-                """)
-                box_layout = QVBoxLayout(box)
-                box_layout.setContentsMargins(16, 12, 16, 12)
-                box_layout.setSpacing(8)
-                box_layout.setAlignment(Qt.AlignHCenter)
-                icon = QLabel(box)
-                icon.setPixmap(theme_icon(
-                    ":/icon/github.svg", "#FFFFFF").pixmap(40, 40))
-                icon.setAlignment(Qt.AlignHCenter)
-                icon.setStyleSheet("background: transparent; border: none;")
-                box_layout.addWidget(icon)
-                lbl = QLabel(name, box)
-                lbl.setAlignment(Qt.AlignHCenter)
-                lbl.setStyleSheet(
-                    "background: transparent; border: none; color: #FFFFFF;"
-                    " font-size: 13px; font-weight: 600;")
-                box_layout.addWidget(lbl)
-                box.setFixedWidth(140)
-                if _is_adnan:
-                    box.mousePressEvent = (
-                        lambda _e, u=url: QDesktopServices.openUrl(QUrl(u)))
-                gh_row.addWidget(box)
-            hero_layout.addLayout(gh_row)
-
-            # Search bar at top-right (user order 2026-10-19 ronde 11).
-            # Placed in its own container ABOVE the hero, not inside the
-            # centered vbox (which broke the layout).
-            from PySide6.QtWidgets import QLineEdit
-            from PySide6.QtGui import QAction as _QAction
-            # Search box moved to main window device bar (user order 2026-10-19).
-            # (Removed from here to avoid duplicate/misplaced search.)
-
-            host_layout.insertWidget(0, hero, 0, Qt.AlignHCenter)
+            host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)
 
         # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)
