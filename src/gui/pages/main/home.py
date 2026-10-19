@@ -106,25 +106,14 @@ class HomePage(Page):
             # "ada spasi jarak lumayan antara icon dan tulisan").
             vbox.addSpacing(32)
 
-            # 2. Title — CINEMATIC style (user order 2026-10-19: "100% ui baru
-            # inspirasi cinematic"). Light weight, uppercase, wide tracking,
-            # navy-white. Replaces the old bold glowing title.
-            title = QLabel("WORKSlOP DESKTOP", hero)
+            # 2. Title — blue UI style (user order 2026-10-19: back to blue).
+            # Dark navy, semibold. Clean, not AI-slop.
+            title = QLabel("WorkSlop Desktop", hero)
             title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
-                "background: transparent; color: #FFFFFF;"
-                " font-size: 44px; font-weight: 300;"
-                " letter-spacing: 8px;")
+                "background: transparent; color: #1D3045;"
+                " font-size: 38px; font-weight: 600;")
             vbox.addWidget(title, 0, Qt.AlignHCenter)
-
-            # Cinematic subtitle with wide tracking.
-            subtitle = QLabel("SUSTAINABLE POWER WITH PURPOSE", hero)
-            subtitle.setAlignment(Qt.AlignHCenter)
-            subtitle.setStyleSheet(
-                "background: transparent; color: rgba(255, 255, 255, 0.6);"
-                " font-size: 13px; font-weight: 400;"
-                " letter-spacing: 6px;")
-            vbox.addWidget(subtitle, 0, Qt.AlignHCenter)
 
             # 3. Developer credit + links below the title.
             self.credits_lbl = make_credits_label(

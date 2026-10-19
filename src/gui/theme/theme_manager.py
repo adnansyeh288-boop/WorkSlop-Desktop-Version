@@ -162,11 +162,10 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # Dark gray rebuild (user order 2026-10-18 ronde 9): the shipped palette
-        # is WS_DARK — dark #1e1e1e like Nugget's dark UI ("BUKAN TERANG!").
-        # Menu pills are white glossy with black text. WS_GRAY/WS_BLUE kept
-        # in colors.py for reference only.
-        return WS_DARK.with_accent(accent, hover, pressed)
+        # Blue rebuild (user order 2026-10-19): back to SKY — light blue
+        # like the v4 UI screenshots. Menus get liquid glass transparent blur.
+        # WS_DARK kept in colors.py for reference only.
+        return SKY.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""
