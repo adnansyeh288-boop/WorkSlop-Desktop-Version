@@ -90,35 +90,6 @@ class HomePage(Page):
             vbox.setSpacing(16)
             vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # Search bar at top-right (user order 2026-10-19 ronde 11:
-            # "search bar di pojok kanan atas, fluid corner, functional").
-            # Moved from ios/home.py (wrong page) to the actual HomePage.
-            from PySide6.QtWidgets import QLineEdit
-            from PySide6.QtGui import QAction as _QAction
-            _search_box = QLineEdit(hero)
-            _search_box.setPlaceholderText("Search tweaks...")
-            _search_box.setFixedHeight(40)
-            _search_box.setMinimumWidth(220)
-            _search_box.setMaximumWidth(300)
-            _search_box.setStyleSheet("""
-                QLineEdit {
-                    background-color: rgba(255, 255, 255, 240);
-                    border-radius: 20px;
-                    border: 1px solid #C8C8C8;
-                    padding-left: 40px;
-                    padding-right: 12px;
-                    color: #0A0A0A;
-                    font-size: 13px;
-                }
-            """)
-            _search_icon = _QAction(_search_box)
-            _search_icon.setIcon(QIcon(":/icon/ws-search.svg"))
-            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
-            # Functional: search tweak titles, navigate on Enter.
-            _search_box.returnPressed.connect(
-                lambda: self.window._on_search_tweak_from_home(_search_box.text()))
-            vbox.addWidget(_search_box, 0, Qt.AlignRight)
-
             # 1. WS icon, centered. FIXED size 120px to prevent cropping
             # (user order 2026-10-19: "icon workslop masih ke potong").
             # The icon was 180px and got clipped by the layout; 120px is
@@ -231,7 +202,40 @@ class HomePage(Page):
             gh_container.setStyleSheet("background: transparent;")
             vbox.addWidget(gh_container, 0, Qt.AlignHCenter)
 
-            host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)
+            # Search bar at top-right (user order 2026-10-19 ronde 11).
+            # Placed in its own container ABOVE the hero, not inside the
+            # centered vbox (which broke the layout).
+            from PySide6.QtWidgets import QLineEdit
+            from PySide6.QtGui import QAction as _QAction
+            _search_container = QWidget(self.ui.homePage)
+            _search_container.setStyleSheet("background: transparent;")
+            _search_hbox = QHBoxLayout(_search_container)
+            _search_hbox.setContentsMargins(0, 0, 16, 8)
+            _search_box = QLineEdit(_search_container)
+            _search_box.setPlaceholderText("Search tweaks...")
+            _search_box.setFixedHeight(40)
+            _search_box.setFixedWidth(280)
+            _search_box.setStyleSheet("""
+                QLineEdit {
+                    background-color: rgba(255, 255, 255, 240);
+                    border-radius: 20px;
+                    border: 1px solid #C8C8C8;
+                    padding-left: 40px;
+                    padding-right: 12px;
+                    color: #0A0A0A;
+                    font-size: 13px;
+                }
+            """)
+            _search_icon = _QAction(_search_box)
+            _search_icon.setIcon(QIcon(":/icon/ws-search.svg"))
+            _search_box.addAction(_search_icon, QLineEdit.ActionPosition.LeadingPosition)
+            _search_box.returnPressed.connect(
+                lambda: self.window._on_search_tweak_from_home(_search_box.text()))
+            _search_hbox.addStretch(1)
+            _search_hbox.addWidget(_search_box)
+            host_layout.insertWidget(idx, _search_container)
+
+            host_layout.insertWidget(idx + 1, hero, 0, Qt.AlignHCenter)
 
         # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)
