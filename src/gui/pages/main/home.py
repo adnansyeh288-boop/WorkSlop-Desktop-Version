@@ -110,7 +110,7 @@ class HomePage(Page):
             title_box.setSpacing(4)
             title = QLabel("WorkSlop Desktop", hero)
             title.setStyleSheet(
-                "background: transparent; color: #1D3045;"
+                "background: transparent; color: #FFFFFF;"
                 " font-size: 32px; font-weight: 600;")
             title_box.addWidget(title)
 
@@ -152,12 +152,12 @@ class HomePage(Page):
                     box.setCursor(Qt.ArrowCursor)
                 box.setStyleSheet("""
                     QWidget {
-                        background-color: rgba(255, 255, 255, 0.55);
-                        border: 1px solid rgba(255, 255, 255, 0.5);
+                        background-color: rgba(35, 64, 150, 0.55);
+                        border: 1px solid rgba(150, 180, 255, 0.4);
                         border-radius: 16px;
                     }
                     QWidget:hover {
-                        background-color: rgba(255, 255, 255, 0.75);
+                        background-color: rgba(35, 64, 150, 0.75);
                     }
                 """)
                 box_layout = QVBoxLayout(box)
@@ -166,14 +166,14 @@ class HomePage(Page):
                 box_layout.setAlignment(Qt.AlignHCenter)
                 icon = QLabel(box)
                 icon.setPixmap(theme_icon(
-                    ":/icon/github.svg", "#1D3045").pixmap(40, 40))
+                    ":/icon/github.svg", "#FFFFFF").pixmap(40, 40))
                 icon.setAlignment(Qt.AlignHCenter)
                 icon.setStyleSheet("background: transparent; border: none;")
                 box_layout.addWidget(icon)
                 lbl = QLabel(name, box)
                 lbl.setAlignment(Qt.AlignHCenter)
                 lbl.setStyleSheet(
-                    "background: transparent; border: none; color: #1D3045;"
+                    "background: transparent; border: none; color: #FFFFFF;"
                     " font-size: 13px; font-weight: 600;")
                 box_layout.addWidget(lbl)
                 box.setFixedWidth(140)

@@ -455,6 +455,60 @@ NUGGET_DARK = ThemeColors(
 
 
 # ---------------------------------------------------------------------------
+# Cobalt Flow palette (user direction locked 2026-09-30, Varian 3):
+# deep cobalt-blue liquid glass, fluid oversized rounded corners,
+# bubbles and transparency, restrained reflections. No AI slop.
+# ---------------------------------------------------------------------------
+COBALT = ThemeColors(
+    bg_primary="#0C1C4E",
+    bg_secondary="#122A6B",
+    bg_tertiary="#1A3578",
+    bg_input="#0F2458",
+    bg_elevated="#16307A",
+
+    text_primary="#FFFFFF",
+    text_secondary="#B8C9F0",
+    text_disabled="#6B7FA8",
+    text_inverse="#0C1C4E",
+
+    accent="#5B9BFF",
+    accent_hover="#7AB0FF",
+    accent_pressed="#4A8AEF",
+
+    success="#34C759",
+    error="#FF6B6B",
+    error_hover="#FF8585",
+    error_pressed="#E55555",
+    warning="#FFD60A",
+
+    border="rgba(150, 180, 255, 60)",
+    divider="rgba(150, 180, 255, 30)",
+
+    scrollbar="#2A4A9B",
+    scrollbar_pressed="#1E3A85",
+    selection="#5B9BFF",
+
+    card_border="rgba(150, 180, 255, 50)",
+    surface_hover="rgba(91, 155, 255, 0.12)",
+    danger_text="#FF6B6B",
+
+    bg_gradient_start="#0C1C4E",
+    bg_gradient_end="#050A20",
+    glass_bg="rgba(35, 64, 150, 110)",
+    glass_border="rgba(150, 180, 255, 40)",
+    bubble="rgba(140, 175, 255, 26)",
+
+    menu_bg="rgba(35, 64, 150, 0.55)",
+    menu_text="#FFFFFF",
+    menu_dim="#8AA0D0",
+    menu_active_bg="#5B9BFF",
+    menu_active_text="#FFFFFF",
+    brand="#5B9BFF",
+    brand_dim="#8AB4FF",
+)
+
+
+# ---------------------------------------------------------------------------
 # Accent presets: (normal, hover, pressed)
 # ---------------------------------------------------------------------------
 ACCENT_PRESETS = {

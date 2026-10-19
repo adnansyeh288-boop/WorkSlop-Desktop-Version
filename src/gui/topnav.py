@@ -110,32 +110,30 @@ class TopNavBar(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        # Liquid glass pills: dark navy icons on translucent white,
-        # white icons on blue checked pill.
-        color = "#FFFFFF" if checked else "#1D3045"
-        btn.setIcon(theme_icon(icon_res, color))
+        # Cobalt Flow: white icons on translucent cobalt glass pills.
+        btn.setIcon(theme_icon(icon_res, "#FFFFFF"))
         btn.setIconSize(QSize(20, 20))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # LIQUID GLASS pills (user order 2026-10-19): transparent blur,
-        # NOT white glossy. Semi-transparent white with subtle border,
-        # fully rounded (fluid corners). Checked = SKY blue accent.
+        # LIQUID GLASS pills on Cobalt Flow (user direction 2026-09-30 Varian 3):
+        # deep cobalt-blue, translucent glass pills, white text.
+        # Fully rounded (fluid corners). Checked = bright blue accent.
         # Anti-AI-slop: no excessive gradients, use real palette.
         pills = self._scroll.widget()
         pills.setStyleSheet(f"""
             QPushButton {{
-                background-color: rgba(255, 255, 255, 0.55);
-                color: #1D3045;
-                border: 1px solid rgba(255, 255, 255, 0.5);
+                background-color: rgba(35, 64, 150, 0.55);
+                color: #FFFFFF;
+                border: 1px solid rgba(150, 180, 255, 0.4);
                 border-radius: {PILL_HEIGHT // 2}px;
                 font-size: 13px;
                 font-weight: 500;
                 padding: 0 12px;
             }}
             QPushButton:hover {{
-                background-color: rgba(255, 255, 255, 0.75);
-                border: 1px solid rgba(255, 255, 255, 0.7);
+                background-color: rgba(35, 64, 150, 0.75);
+                border: 1px solid rgba(150, 180, 255, 0.6);
             }}
             QPushButton:checked {{
                 background-color: {c.accent};
@@ -143,7 +141,7 @@ class TopNavBar(QWidget):
                 border: 1px solid {c.accent};
             }}
             QPushButton:pressed {{
-                background-color: rgba(255, 255, 255, 0.4);
+                background-color: rgba(35, 64, 150, 0.4);
             }}
             QPushButton:disabled {{
                 color: {c.text_disabled};

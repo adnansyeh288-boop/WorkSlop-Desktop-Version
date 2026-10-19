@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal, QSettings
 from PySide6.QtGui import QColor, QPalette
 
-from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, WS_GRAY, WS_DARK, ACCENT_PRESETS
+from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, WS_GRAY, WS_DARK, COBALT, ACCENT_PRESETS
 from src.controllers.settings import migrate_legacy_key
 
 
@@ -162,10 +162,9 @@ class ColorThemeManager(QObject):
             pressed = QColor(accent).darker(130).name()
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
-        # Blue rebuild (user order 2026-10-19): back to SKY — light blue
-        # like the v4 UI screenshots. Menus get liquid glass transparent blur.
-        # WS_DARK kept in colors.py for reference only.
-        return SKY.with_accent(accent, hover, pressed)
+        # Cobalt Flow (user direction 2026-09-30 Varian 3, confirmed 2026-10-19):
+        # deep cobalt-blue liquid glass, fluid oversized rounded corners.
+        return COBALT.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""
