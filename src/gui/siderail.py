@@ -109,15 +109,16 @@ class SideRail(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        c = ColorThemeManager.instance().colors
-        color = "#FFFFFF" if checked else c.accent
-        btn.setIcon(theme_icon(icon_res, color))
+        # White pills → BLACK icons (user: "TULISAN HITAM"). Both checked
+        # and unchecked use black for visibility on white glossy pills.
+        btn.setIcon(theme_icon(icon_res, "#0A0A0A"))
         btn.setIconSize(QSize(24, 24))
 
     def _retheme(self):
         c = ColorThemeManager.instance().colors
-        # Fluid rounded buttons (18px on a 68px-wide button reads fully
-        # rounded). Gray-white identity, no gradients.
+        # White GLOSSY pills with BLACK text (user order 2026-10-19 ronde 10:
+        # "di samakan tambahin pallet pil warna putih kayak menu menu di atas").
+        # Same glossy white style as the top nav pills.
         # NOTE: the button stylesheet is set on the holder widget (not
         # SideRail) because the QScrollArea viewport breaks SideRail-
         # descendant selectors for the :checked state (user order
@@ -130,30 +131,34 @@ class SideRail(QWidget):
             }}
         """)
         holder = self._scroll.widget()
-        holder.setStyleSheet(f"""
-            QWidget {{
+        holder.setStyleSheet("""
+            QWidget {
                 background: transparent;
                 border: none;
-            }}
-            QToolButton {{
-                background-color: transparent;
-                color: {c.text_primary};
-                border: none;
+            }
+            QToolButton {
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                color: #0A0A0A;
+                border: 1px solid #D0D0D0;
                 border-radius: 18px;
                 font-size: 11px;
                 font-weight: 600;
                 padding: 6px 2px;
-            }}
-            QToolButton:hover {{
-                background-color: {c.surface_hover};
-            }}
-            QToolButton:checked {{
-                background-color: {c.accent};
-                color: #FFFFFF;
-            }}
-            QToolButton:pressed {{
-                background-color: {c.accent_pressed};
-            }}
+            }
+            QToolButton:hover {
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+            }
+            QToolButton:checked {
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFFFFF, stop:0.5 #F8F8F8, stop:1 #E8E8E8);
+                color: #0A0A0A;
+                border: 2px solid #8A8A8A;
+            }
+            QToolButton:pressed {
+                background-color: #D8D8D8;
+            }
         """)
         for _menu_id, btn in self._buttons.items():
             self._update_icon(btn, btn.property("ws_icon_res"), btn.isChecked())

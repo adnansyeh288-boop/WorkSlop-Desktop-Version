@@ -1,9 +1,10 @@
-"""SkyBackground: fresh light animated background for WorkSlop Desktop.
+"""SkyBackground: dark animated background for WorkSlop Desktop.
 
-A calm white-gray tech canvas with many softly-glowing white Apple logos
-drifting in the background. The big centered brand hero lives on the home
-page itself; this widget only paints the canvas and the floating logos
-behind every page.
+A dark #1e1e1e tech canvas (Nugget-style dark, user order 2026-10-19
+ronde 10) with many softly-glowing white Apple logos drifting in the
+background. The big centered brand hero lives on the home page itself;
+this widget only paints the canvas and the floating logos behind every
+page.
 
 Performance notes:
   * Every floater pixmap is pre-rendered once (size + tint + opacity baked in)
@@ -26,12 +27,12 @@ from PySide6.QtWidgets import QWidget
 # unlike a filesystem path next to the source tree.
 APPLE_SVG = ":/icon/apple.svg"
 
-BASE_BG = "#F4F4F4"
+BASE_BG = "#1e1e1e"
 
 # Luminous white tints for the drifting background logos (user order
-# 2026-10-18 ronde 8): "bersinar putih kayak cahaya tapi tetap solid di
-# mata" — shiny white like light, but solid. High opacity keeps them
-# solid; pure white on the light-gray canvas reads as glowing light.
+# 2026-10-19 ronde 10): "putih cahaya berkilau" — shiny glowing white.
+# On the dark #1e1e1e canvas, white logos naturally glow like light.
+# High opacity keeps them solid and visible.
 FLOAT_TINTS = ["#FFFFFF", "#FAFAFA", "#FFFFFF", "#F5F5F5", "#FFFFFF"]
 FLOAT_COUNT = 16
 

@@ -90,19 +90,37 @@ class HomePage(Page):
             vbox.setSpacing(16)
             vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
 
-            # 1. WS icon, centered (enlarged 1.5x; source PNG is 512px).
+            # 1. WS icon, centered. Size auto-adjusts to prevent cropping
+            # (user order 2026-10-19 ronde 10): responsive, not fixed.
+            # The icon scales with available space via sizeHint.
             icon_lbl = QLabel(hero)
-            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(210, 210)))
+            # Use 180px base (down from 210px) to prevent overlap with title.
+            # The label will scale the pixmap to fit while keeping aspect ratio.
+            _icon_px = QIcon(":/credits/workslop.png").pixmap(QSize(180, 180))
+            icon_lbl.setPixmap(_icon_px)
             icon_lbl.setAlignment(Qt.AlignHCenter)
             icon_lbl.setStyleSheet("background: transparent;")
+            # Allow the icon to shrink if space is tight (prevents cropping).
+            icon_lbl.setScaledContents(False)
+            from PySide6.QtWidgets import QSizePolicy as _SP
+            icon_lbl.setSizePolicy(_SP.Policy.Preferred, _SP.Policy.Preferred)
             vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
 
-            # 2. Title directly below the icon (enlarged proportionally).
+            # 2. Title directly below the icon. White GLOWING (user order
+            # 2026-10-19 ronde 10: "tulisan workslop desktop bercahaya putih").
             title = QLabel("WorkSlop Desktop", hero)
             title.setAlignment(Qt.AlignHCenter)
             title.setStyleSheet(
-                f"background: transparent; color: {c0.text_primary};"
-                " font-size: 46px; font-weight: 700;")
+                "background: transparent; color: #FFFFFF;"
+                " font-size: 42px; font-weight: 700;")
+            # White glow effect via drop shadow.
+            from PySide6.QtWidgets import QGraphicsDropShadowEffect
+            from PySide6.QtGui import QColor as _QC
+            _glow = QGraphicsDropShadowEffect(title)
+            _glow.setBlurRadius(20)
+            _glow.setColor(_QC(255, 255, 255, 180))
+            _glow.setOffset(0, 0)
+            title.setGraphicsEffect(_glow)
             vbox.addWidget(title, 0, Qt.AlignHCenter)
 
             # 3. Developer credit + links below the title.
@@ -131,22 +149,39 @@ class HomePage(Page):
                 ("leminlimez", "https://github.com/leminlimez"),
             ]
             for name, url in gh_profiles:
-                box = IOSCard(hero)
+                # White GLOSSY boxes with BLACK text (user order 2026-10-19
+                # ronde 10: "3 kotak github di ubah warna dari hitam to putih
+                # cahaya dan di sesuaikan untuk teks nya jadi warna hitam").
+                # Custom QWidget instead of IOSCard for the white glossy style.
+                box = QWidget(hero)
                 box.setCursor(Qt.PointingHandCursor)
+                box.setStyleSheet("""
+                    QWidget {
+                        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #FFFFFF, stop:0.45 #FAFAFA, stop:0.55 #F0F0F0, stop:1 #E8E8E8);
+                        border: 1px solid #D0D0D0;
+                        border-radius: 16px;
+                    }
+                    QWidget:hover {
+                        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #FFFFFF, stop:0.5 #F5F5F5, stop:1 #E0E0E0);
+                        border: 1px solid #B0B0B0;
+                    }
+                """)
                 box_layout = QVBoxLayout(box)
                 box_layout.setContentsMargins(16, 12, 16, 12)
                 box_layout.setSpacing(8)
                 box_layout.setAlignment(Qt.AlignHCenter)
                 icon = QLabel(box)
                 icon.setPixmap(theme_icon(
-                    ":/icon/github.svg", c0.text_primary).pixmap(40, 40))
+                    ":/icon/github.svg", "#0A0A0A").pixmap(40, 40))
                 icon.setAlignment(Qt.AlignHCenter)
-                icon.setStyleSheet("background: transparent;")
+                icon.setStyleSheet("background: transparent; border: none;")
                 box_layout.addWidget(icon)
                 lbl = QLabel(name, box)
                 lbl.setAlignment(Qt.AlignHCenter)
                 lbl.setStyleSheet(
-                    f"background: transparent; color: {c0.text_primary};"
+                    "background: transparent; border: none; color: #0A0A0A;"
                     " font-size: 13px; font-weight: 600;")
                 box_layout.addWidget(lbl)
                 box.setFixedWidth(140)

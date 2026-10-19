@@ -292,7 +292,9 @@ class IOSHomePage(QWidget):
         """)
 
     def _apply_icon(self, button, resource_path: str):
-        button.setIcon(theme_icon(resource_path, self._c.text_primary))
+        # White glossy buttons → BLACK icons for visibility (user order
+        # 2026-10-19 ronde 10).
+        button.setIcon(theme_icon(resource_path, "#0A0A0A"))
 
     def _paint_hero_logo(self):
         """Big Apple logo for the home hero, tinted with the accent color."""
