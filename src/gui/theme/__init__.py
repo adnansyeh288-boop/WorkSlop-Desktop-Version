@@ -25,7 +25,20 @@ def themed_stylesheet(style_key: str, **extra) -> str:
 
 
 def theme_icon(resource_path: str, color_hex: str) -> QIcon:
-    """Recolor a monochrome (white) SVG icon to *color_hex* using its alpha."""
+    """Recolor a monochrome (white) SVG icon to *color_hex* using its alpha.
+
+    SVGs are rasterized through QSvgRenderer (via :func:`theme_pixmap`),
+    NOT QImage: the QImage route goes through the qsvg image-format
+    plugin, which in the frozen Windows build silently returns a null
+    image for some bundled icons — the sidebar glyphs for Mobile Gestalt,
+    Status Bar, SpringBoard and Daemons vanished (their menu rows rendered
+    text-only) while other icons loaded fine. QSvgRenderer ships inside
+    the QtSvg module itself and renders the same files reliably (it is
+    what the Home tiles/social glyphs already use). Non-SVG inputs keep
+    the legacy QImage path below.
+    """
+    if str(resource_path).lower().endswith(".svg"):
+        return QIcon(theme_pixmap(resource_path, color_hex, 48))
     img = QImage(resource_path)
     img = img.convertToFormat(QImage.Format.Format_ARGB32)
     painter = QPainter(img)

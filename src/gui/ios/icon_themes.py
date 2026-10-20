@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtCore import Qt, QCoreApplication, QSize
-from PySide6.QtGui import QPixmap, QPainter, QColor, QPen
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QGridLayout,
     QPushButton, QToolButton, QFileDialog, QDialog, QDialogButtonBox,
@@ -14,6 +14,99 @@ from src.gui.dialogs.icon_pack_downloader import IconPackDownloaderDialog
 from src.gui.dialogs.app_list_dialog import AppListExportDialog
 from src.tweaks.tweaks import tweaks, TweakID
 from src.tweaks.icon_themes.icon_theme import IconTheme
+from src.controllers.files_handler import get_bundle_files
+
+
+# ---------------------------------------------------------------------------
+# iOS 18 Icon Pack (built-in — restored 2026-10-20 from the v15 page)
+# ---------------------------------------------------------------------------
+# The pack is bundled with the app (files/ios18_icons/{Light,Dark,Tinted}/,
+# shipped via compile.py's ``--add-data=files/:files``) — the icons are
+# already there, NOT import-only (user order 2026-10-20: "ios 18 icon udah
+# langsung ada, pake dari v15"). Artwork: "iOS 18 App Icons by
+# catwithabaloon" (https://github.com/catwithabaloon/iOS-18-icon-pack).
+# Catalog: (display name, bundle id, asset slug) — bundle IDs verified
+# against the iTunes lookup / system constants. 51 apps; Light artwork for
+# all, Dark has 50 (the pack ships no Dark Shortcuts), Tinted 51 of the set.
+IOS18_CATALOG = [
+    ("Shortcuts", "com.apple.shortcuts", "shortcuts"),
+    ("App Store", "com.apple.AppStore", "app-store"),
+    ("Settings", "com.apple.Preferences", "settings"),
+    ("Numbers", "com.apple.Numbers", "numbers"),
+    ("Pages", "com.apple.Pages", "pages"),
+    ("Keynote", "com.apple.Keynote", "keynote"),
+    ("Books", "com.apple.iBooks", "books"),
+    ("Calculator", "com.apple.calculator", "calculator"),
+    ("Calendar", "com.apple.mobilecal", "calendar"),
+    ("Camera", "com.apple.camera", "camera"),
+    ("Music Classical", "com.apple.music.classical", "music-classical"),
+    ("Clock", "com.apple.mobiletimer", "clock"),
+    ("Compass", "com.apple.compass", "compass"),
+    ("Contacts", "com.apple.AddressBook", "contacts"),
+    ("FaceTime", "com.apple.facetime", "facetime"),
+    ("Files", "com.apple.DocumentsApp", "files"),
+    ("Clips", "com.apple.clips", "clips"),
+    ("Find My", "com.apple.findmy", "find-my"),
+    ("Fitness", "com.apple.Fitness", "fitness"),
+    ("GarageBand", "com.apple.mobilegarageband", "garageband"),
+    ("Health", "com.apple.Health", "health"),
+    ("Home", "com.apple.Home", "home"),
+    ("Magnifier", "com.apple.Magnifier", "magnifier"),
+    ("Mail", "com.apple.mobilemail", "mail"),
+    ("Maps", "com.apple.Maps", "maps"),
+    ("Measure", "com.apple.measure", "measure"),
+    ("Music", "com.apple.Music", "music"),
+    ("News", "com.apple.news", "news"),
+    ("Notes", "com.apple.mobilenotes", "notes"),
+    ("Passwords", "com.apple.Passwords", "passwords"),
+    ("Phone", "com.apple.mobilephone", "phone"),
+    ("Photos", "com.apple.mobileslideshow", "photos"),
+    ("Podcasts", "com.apple.podcasts", "podcasts"),
+    ("Reminders", "com.apple.reminders", "reminders"),
+    ("Apple TV Remote", "com.apple.TVRemote", "apple-tv-remote"),
+    ("Safari", "com.apple.mobilesafari", "safari"),
+    ("Stocks", "com.apple.stocks", "stocks"),
+    ("Apple Store", "com.apple.store.Jolly", "apple-store"),
+    ("Swift Playgrounds", "com.apple.Playgrounds", "swift-playgrounds"),
+    ("TestFlight", "com.apple.TestFlight", "testflight"),
+    ("Tips", "com.apple.tips", "tips"),
+    ("Translate", "com.apple.Translate", "translate"),
+    ("Voice Memos", "com.apple.VoiceMemos", "voice-memos"),
+    ("Wallet", "com.apple.Passbook", "wallet"),
+    ("Watch", "com.apple.Bridge", "watch"),
+    ("Weather", "com.apple.weather", "weather"),
+    ("Messages", "com.apple.MobileSMS", "messages"),
+    ("iMovie", "com.apple.iMovie", "imovie"),
+    ("Apple Sports", "com.apple.sports", "apple-sports"),
+    ("TV", "com.apple.tv", "tv"),
+    ("Shazam", "com.shazam.Shazam", "shazam"),
+]
+
+# Variant: (display name, folder name) — the v15 set (user order
+# 2026-10-18: "tinted sesuai v15") plus the colored Tinted variants
+# (user order 2026-10-20: green, yellow, gray, brown, chocolate, cream,
+# white — each in Dark and Light). The colored folders are rendered from
+# the Tinted artwork by tools/generate_tinted_variants.py (duotone from
+# the glyph luminance, the same trick iOS's own tinted mode uses).
+IOS18_VARIANTS = [
+    ("Light", "Light"),
+    ("Dark", "Dark"),
+    ("Tinted", "Tinted"),
+    ("Tinted Green Dark", "Tinted-Green-Dark"),
+    ("Tinted Green Light", "Tinted-Green-Light"),
+    ("Tinted Yellow Dark", "Tinted-Yellow-Dark"),
+    ("Tinted Yellow Light", "Tinted-Yellow-Light"),
+    ("Tinted Gray Dark", "Tinted-Gray-Dark"),
+    ("Tinted Gray Light", "Tinted-Gray-Light"),
+    ("Tinted Brown Dark", "Tinted-Brown-Dark"),
+    ("Tinted Brown Light", "Tinted-Brown-Light"),
+    ("Tinted Chocolate Dark", "Tinted-Chocolate-Dark"),
+    ("Tinted Chocolate Light", "Tinted-Chocolate-Light"),
+    ("Tinted Cream Dark", "Tinted-Cream-Dark"),
+    ("Tinted Cream Light", "Tinted-Cream-Light"),
+    ("Tinted White Dark", "Tinted-White-Dark"),
+    ("Tinted White Light", "Tinted-White-Light"),
+]
 
 
 class IOSIconThemesPage(QWidget):
@@ -83,13 +176,11 @@ class IOSIconThemesPage(QWidget):
         actions_row.addWidget(reset_btn, 1)
         self.content_layout.addLayout(actions_row)
 
-        # -- iOS 18 Icon Pack (user order 2026-10-18): the pack choices
-        # live directly on this page — Light / Dark / Tinted / more
-        # tints — each one imports the variant's folder or .zip straight
-        # into the themes via the existing import machinery. The pack
-        # files themselves are user-supplied (not bundled in the repo).
-        # Modern layout (2026-10-20): one card per variant with a preview
-        # thumbnail; tapping the card starts the same import flow.
+        # -- iOS 18 Icon Pack (built-in, restored from v15 — user order
+        # 2026-10-20): the icons ship inside the app, not import-only.
+        # Each variant is an App-Library-style box with a real icon grid
+        # inside and its own Apply button below (adds the whole variant
+        # as icon themes) — per-box Apply, not one global Apply.
         pack_title = QLabel(QCoreApplication.translate(
             "Nugget", "iOS 18 Icon Pack"))
         pack_title.setObjectName("packTitle")
@@ -98,19 +189,21 @@ class IOSIconThemesPage(QWidget):
         self.content_layout.addWidget(pack_title)
         pack_hint = QLabel(QCoreApplication.translate(
             "Nugget",
-            "Import the iOS 18-style pack from your own files. Pick a "
-            "variant, choose its folder or .zip, and the icons apply "
-            "right away."))
+            "Built-in · iOS 18 App Icons by catwithabaloon. Pick a variant "
+            "below and tap its Apply button — the icons are added as icon "
+            "themes, ready for the Apply menu."))
         pack_hint.setObjectName("packHint")
         pack_hint.setWordWrap(True)
         self._pack_hint = pack_hint
         self.content_layout.addWidget(pack_hint)
-        pack_row = QHBoxLayout()
-        pack_row.setSpacing(12)
-        self._pack_card_labels = {}
-        for variant in ("Light", "Dark", "Tinted", "More Tints"):
-            pack_row.addWidget(self._create_pack_card(variant), 1)
-        self.content_layout.addLayout(pack_row)
+        # Variant boxes in a 2-column grid.
+        pack_grid = QGridLayout()
+        pack_grid.setSpacing(12)
+        pack_grid.setContentsMargins(0, 4, 0, 4)
+        self._pack_grid = pack_grid
+        self.content_layout.addLayout(pack_grid)
+        # NOTE: _build_pack_boxes() is called by _retheme() below — do NOT
+        # call it here too (double-build leaves stale boxes via deleteLater).
 
         self.themes_placeholder = QLabel(QCoreApplication.translate(
             "Nugget", "No icon themes yet. Tap + Add Icon or download a pack."))
@@ -129,65 +222,112 @@ class IOSIconThemesPage(QWidget):
         self._retheme()
         self.refresh_themes()
 
-    @staticmethod
-    def _pack_preview(variant: str) -> QPixmap:
-        """Small generated preview swatch for a pack variant card: a
-        rounded tile holding a 2x2 mini icon grid in the variant's colors."""
-        palettes = {
-            "Light": ("#FFFFFF", "#C9D4E2",
-                      ("#E9EEF4", "#E9EEF4", "#E9EEF4", "#E9EEF4")),
-            "Dark": ("#1D1D20", "#3A3A3E",
-                     ("#3A3A3E", "#3A3A3E", "#3A3A3E", "#3A3A3E")),
-            "Tinted": ("#D9E7FF", "#A9C8F5",
-                       ("#82B1FF", "#7FB0FF", "#5B93F5", "#9CC2FF")),
-            "More Tints": ("#FFFFFF", "#C9D4E2",
-                           ("#FF5A5A", "#FFB340", "#34C759", "#82B1FF")),
-        }
-        bg, border, squares = palettes.get(variant, palettes["Light"])
-        size = 144
-        pm = QPixmap(size, size)
-        pm.fill(Qt.transparent)
-        p = QPainter(pm)
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setBrush(QColor(bg))
-        p.setPen(QPen(QColor(border), 3))
-        p.drawRoundedRect(4, 4, size - 8, size - 8, 28, 28)
-        p.setPen(Qt.NoPen)
-        cell, gap, start = 44, 12, 22
-        for i, col in enumerate(squares):
-            x = start + (i % 2) * (cell + gap)
-            y = start + (i // 2) * (cell + gap)
-            p.setBrush(QColor(col))
-            p.drawRoundedRect(x, y, cell, cell, 12, 12)
-        p.end()
-        return pm
+    def _build_pack_boxes(self):
+        """Build the built-in iOS 18 pack variant boxes (App Library style).
 
-    def _create_pack_card(self, variant: str) -> QWidget:
-        """One tappable pack card: preview thumbnail, name, Import label."""
-        card = IOSCard(glass=True)
-        card.setCursor(Qt.PointingHandCursor)
-        card.setMinimumHeight(168)
-        v = QVBoxLayout(card)
-        v.setContentsMargins(12, 14, 12, 14)
-        v.setSpacing(8)
-        prev = QLabel()
-        prev.setAlignment(Qt.AlignCenter)
-        prev.setAttribute(Qt.WA_TransparentForMouseEvents)
-        prev.setPixmap(self._pack_preview(variant).scaled(
-            72, 72, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        v.addWidget(prev)
-        name = QLabel(QCoreApplication.translate("Nugget", variant))
-        name.setAlignment(Qt.AlignCenter)
-        name.setAttribute(Qt.WA_TransparentForMouseEvents)
-        v.addWidget(name)
-        imp = QLabel(QCoreApplication.translate("Nugget", "Import"))
-        imp.setAlignment(Qt.AlignCenter)
-        imp.setAttribute(Qt.WA_TransparentForMouseEvents)
-        v.addWidget(imp)
-        card.mousePressEvent = (
-            lambda e, var=variant: self._import_pack_variant(var))
-        self._pack_card_labels[variant] = (name, imp)
-        return card
+        Each box is an IOSCard sized to fit its icon grid, with the variant
+        name, the real icon count, a preview grid of the actual bundled
+        icons, and its own Apply button below the grid — per-box Apply,
+        not one global Apply. Restored from the v15 page (2026-10-20).
+        """
+        c = self._c
+        # Clear existing boxes.
+        while self._pack_grid.count():
+            item = self._pack_grid.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.deleteLater()
+        for col, (variant_name, folder) in enumerate(IOS18_VARIANTS):
+            box = IOSCard(glass=True)
+            box_layout = QVBoxLayout(box)
+            box_layout.setContentsMargins(14, 14, 14, 14)
+            box_layout.setSpacing(8)
+
+            title = QLabel(variant_name)
+            title.setStyleSheet(
+                f"color: {c.text_primary}; font-size: 15px; font-weight: 700; "
+                f"background: transparent;")
+            box_layout.addWidget(title)
+
+            # Count how many icons actually exist for this variant.
+            available = []
+            for _display, _bundle, slug in IOS18_CATALOG:
+                path = get_bundle_files(f"files/ios18_icons/{folder}/{slug}.png")
+                if path and os.path.isfile(path):
+                    available.append(path)
+            count = QLabel(f"{len(available)} icons")
+            count.setStyleSheet(
+                f"color: {c.text_secondary}; font-size: 12px; "
+                f"background: transparent;")
+            box_layout.addWidget(count)
+
+            # Preview grid: 4 columns x 2 rows of the real icons.
+            grid = QGridLayout()
+            grid.setSpacing(6)
+            grid.setContentsMargins(0, 4, 0, 4)
+            for i, path in enumerate(available[:8]):
+                lbl = QLabel()
+                lbl.setFixedSize(52, 52)
+                lbl.setStyleSheet("background: transparent;")
+                pm = QPixmap(path)
+                if not pm.isNull():
+                    lbl.setPixmap(pm.scaled(
+                        48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                grid.addWidget(lbl, i // 4, i % 4)
+            box_layout.addLayout(grid)
+
+            apply_btn = QPushButton(QCoreApplication.translate(
+                "Nugget", f"Apply {variant_name}"))
+            apply_btn.setCursor(Qt.PointingHandCursor)
+            apply_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {c.accent};
+                    color: #FFFFFF;
+                    border: none;
+                    border-radius: 18px;
+                    font-size: 14px;
+                    font-weight: 700;
+                    padding: 10px;
+                }}
+                QPushButton:hover {{ background-color: {c.accent_hover}; }}
+                QPushButton:pressed {{ background-color: {c.accent_pressed}; }}
+            """)
+            apply_btn.clicked.connect(
+                lambda _=False, v=variant_name, f=folder:
+                self._apply_pack_variant(v, f))
+            box_layout.addWidget(apply_btn)
+
+            self._pack_grid.addWidget(box, col // 2, col % 2)
+
+    def _apply_pack_variant(self, variant_name: str, folder: str):
+        """Add one built-in iOS 18 pack variant as icon themes."""
+        tweak = tweaks[TweakID.IconThemes]
+        tr = lambda s: QCoreApplication.translate("Nugget", s)
+        added = 0
+        existing = {t.bundle_id for t in tweak.themes}
+        for display_name, bundle_id, slug in IOS18_CATALOG:
+            if bundle_id in existing:
+                continue
+            path = get_bundle_files(f"files/ios18_icons/{folder}/{slug}.png")
+            if not path or not os.path.isfile(path):
+                continue
+            tweak.themes.append(IconTheme(
+                bundle_id=bundle_id,
+                display_name=display_name,
+                icon_path=path))
+            existing.add(bundle_id)
+            added += 1
+        if added:
+            tweak.set_enabled(True)
+            self.refresh_themes()
+            QMessageBox.information(
+                self.window, tr(f"iOS 18 Pack — {variant_name}"),
+                tr("Added {0} icons ({1}). Open the Apply menu to apply "
+                   "them to your iPhone.").format(added, variant_name))
+        else:
+            QMessageBox.warning(
+                self.window, tr(f"iOS 18 Pack — {variant_name}"),
+                tr("All {0} icons are already added.").format(variant_name))
 
     def _reset_themes(self):
         reply = QMessageBox.question(
@@ -258,14 +398,11 @@ class IOSIconThemesPage(QWidget):
             f"padding: 14px 0 0 0; background: transparent;")
         self._pack_hint.setStyleSheet(
             f"color: {c.text_secondary}; font-size: 13px; background: transparent;")
-        for name_lbl, imp_lbl in self._pack_card_labels.values():
-            name_lbl.setStyleSheet(
-                "font-size: 14px; font-weight: 700; color: #111827;"
-                " background: transparent;")
-            imp_lbl.setStyleSheet(
-                "font-size: 12px; font-weight: 600; "
-                "color: rgba(17, 24, 39, 0.62);"
-                " background: transparent;")
+        # Rebuild the built-in pack boxes so their colors follow the
+        # current palette too (v15 pattern: boxes are (re)built here,
+        # never in __init__ — a double build leaves stale boxes behind).
+        if hasattr(self, "_pack_grid"):
+            self._build_pack_boxes()
         self._reset_btn.setStyleSheet("""
             QPushButton#resetIconThemes {
                 background-color: #2563EB;
@@ -410,41 +547,7 @@ class IOSIconThemesPage(QWidget):
         if dialog.exec() == QDialog.Accepted and dialog.added_bundle_ids:
             self.refresh_themes()
 
-    def _import_pack_variant(self, variant: str):
-        """Import one iOS 18 pack variant from the user's own folder/.zip."""
-        from PySide6.QtWidgets import QInputDialog
-        tweak = tweaks[TweakID.IconThemes]
-        tr = lambda s: QCoreApplication.translate("Nugget", s)
-        options = [tr("Pack folder…"), tr("Pack .zip file…")]
-        choice, ok = QInputDialog.getItem(
-            self.window, tr(f"iOS 18 Pack — {variant}"),
-            tr("Import the variant from:"),
-            options, 0, False)
-        if not ok:
-            return
-        if options.index(choice) == 0:
-            folder = QFileDialog.getExistingDirectory(
-                self.window, tr(f"Choose the {variant} pack folder"))
-            if not folder:
-                return
-            added, _skipped = tweak.import_pack(folder)
-        else:
-            path, _ = QFileDialog.getOpenFileName(
-                self.window, tr(f"Choose the {variant} pack .zip"),
-                "", "Icon packs (*.zip)")
-            if not path:
-                return
-            added, _skipped = tweak.import_pack_zip(path)
-        if added:
-            tweak.set_enabled(True)
-            self.refresh_themes()
-            QMessageBox.information(
-                self.window, tr(f"iOS 18 Pack — {variant}"),
-                tr("Imported {0} icons ({1}).").format(added, variant))
-        else:
-            QMessageBox.warning(
-                self.window, tr(f"iOS 18 Pack — {variant}"),
-                tr("No icons found in the selected {0} pack.").format(variant))
+
 
 
 class IconThemeDialog(QDialog):

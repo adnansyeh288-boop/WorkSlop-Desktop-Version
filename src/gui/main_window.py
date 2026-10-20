@@ -228,7 +228,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.ios_apply = IOSApplyPage(self)
         self.ios_springboard = IOSSectionPage(self, Section.SPRINGBOARD)
         self.ios_internal = IOSSectionPage(self, Section.INTERNAL)
-        self.ios_liquidglass = IOSSectionPage(self, Section.LIQUID_GLASS)
+        self.ios_liquidglass = IOSSectionPage(
+            self, Section.LIQUID_GLASS, extra_sections=[Section.DOCK])
         self.ios_iconthemes = IOSIconThemesPage(self)
         self.ios_passthemes = IOSPasscodeThemePage(self)
         self.ios_gestalt = IOSMobileGestaltPage(self)
@@ -389,7 +390,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         card.setObjectName("windowCard")
         card.setStyleSheet(
             "QFrame#windowCard { background-color: #FFFFFF;"
-            " border: 1px solid #E2E8F0; border-radius: 24px; }")
+            " border: none; border-radius: 24px; }")
         self.body_row = QtWidgets.QHBoxLayout(card)
         self.body_row.setContentsMargins(10, 10, 10, 10)
         self.body_row.setSpacing(8)

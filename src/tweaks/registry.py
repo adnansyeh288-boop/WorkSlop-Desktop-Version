@@ -17,6 +17,7 @@ from .tweak_names import TweakID
 
 class Section(Enum):
     LIQUID_GLASS = "Liquid Glass"
+    DOCK = "Dock"
     SPRINGBOARD = "SpringBoard"
     FEATURE_FLAGS = "Feature Flags"
     INTERNAL = "Internal Options"
@@ -33,6 +34,7 @@ class Kind(Enum):
 # the Sidebar uses the same keys to know which page owns a section.
 SECTION_FEATURES: dict[Section, str] = {
     Section.LIQUID_GLASS: "Liquid Glass",
+    Section.DOCK: "Liquid Glass",
     Section.SPRINGBOARD: "Springboard",
     Section.FEATURE_FLAGS: "Feature Flags",
     Section.INTERNAL: "Internal",
@@ -327,7 +329,7 @@ SPECS: tuple[TweakSpec, ...] = (
     _t(TweakID.DisableHSGlassExterior, Section.LIQUID_GLASS, "Disable Home Screen Glass Exterior",
        GP, "SolariumEnableHomeScreenExteriorEffects", value=False,
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Home Screen (verified-structure: DesignLibrary binary pattern SolariumEnable<Area>ExteriorEffects). Enabled when the switch is ON. Unverified on device — needs device test.")),
-    _t(TweakID.DisableDockGlassExterior, Section.LIQUID_GLASS, "Disable Dock Glass Exterior",
+    _t(TweakID.DisableDockGlassExterior, Section.DOCK, "Disable Dock Glass Exterior",
        GP, "SolariumEnableDockExteriorEffects", value=False,
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Dock (verified-structure). Enabled when the switch is ON. Unverified on device — needs device test.")),
     _t(TweakID.DisableKeyboardGlassExterior, Section.LIQUID_GLASS, "Disable Keyboard Glass Exterior",
@@ -366,19 +368,19 @@ SPECS: tuple[TweakSpec, ...] = (
        min_version="26.0", max_version="26.1", description=QT_TRANSLATE_NOOP("Nugget", "PLACEHOLDER: Specific Solarium flags not yet defined. Channel dead on 26.2+. WARNING: Can break Control Center.")),
     _t(TweakID.DisallowGlassTime, Section.LIQUID_GLASS, "Disallow Glass on LS Clock", GP, "SBDisallowGlassTime",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow glass effect on Lock Screen clock.")),
-    _t(TweakID.DisableGlassDock, Section.LIQUID_GLASS, "Disable Glass on Dock", GP, "SBDisableGlassDock",
+    _t(TweakID.DisableGlassDock, Section.DOCK, "Disable Glass on Dock", GP, "SBDisableGlassDock",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disable Liquid Glass on Dock — dock falls back to the frosted platter material underneath.")),
     _t(TweakID.FlatIconsEverywhere, Section.LIQUID_GLASS, "Flat Icons Everywhere", GP, "SBUseFlatIconsEverywhere",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Force all icons flat, no 3D/glass effect.")),
     _t(TweakID.DisableWidgetSpecular, Section.LIQUID_GLASS, "Disable Widget Specular", GP, "SBDisableWidgetSpecular",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove specular highlight from widgets.")),
-    _t(TweakID.DisableDockSpecular, Section.LIQUID_GLASS, "Disable Dock Specular", GP, "SBDisableDockSpecular",
+    _t(TweakID.DisableDockSpecular, Section.DOCK, "Disable Dock Specular", GP, "SBDisableDockSpecular",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove specular highlight from dock.")),
     _t(TweakID.DisableFolderSpecular, Section.LIQUID_GLASS, "Disable Folder Specular", GP, "SBDisableFolderSpecular",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove specular highlight from folders.")),
     _t(TweakID.ExcludeClearGlassShadows, Section.LIQUID_GLASS, "Exclude Clear Glass Shadows", GP, "SBExcludeAllClearGlassShadows",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove all Clear Glass shadows.")),
-    _t(TweakID.ExcludeDockShadow, Section.LIQUID_GLASS, "Exclude Dock Shadow", GP, "SBExcludeDockShadow",
+    _t(TweakID.ExcludeDockShadow, Section.DOCK, "Exclude Dock Shadow", GP, "SBExcludeDockShadow",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove dock drop shadow.")),
     _t(TweakID.ExcludeSearchShadow, Section.LIQUID_GLASS, "Exclude Search Shadow", GP, "SBExcludeSearchShadow",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Remove search field shadow.")),

@@ -600,9 +600,16 @@ class IOSTweaksPage(QWidget):
 
 
 class IOSSectionPage(QWidget):
-    """Standalone iOS-style page for a single tweak section."""
+    """Standalone iOS-style page for a single tweak section.
 
-    def __init__(self, window, section: Section, parent=None):
+    ``extra_sections`` renders additional registry sections as their own
+    collapsibles on the same page (the Liquid Glass page also carries the
+    Dock section, user order 2026-10-20). The page still counts as a
+    single-section page for the Eligibility/Risky isolation rule.
+    """
+
+    def __init__(self, window, section: Section, parent=None,
+                 extra_sections=()):
         super().__init__(parent)
         self.window = window
         self.section = section
@@ -615,7 +622,11 @@ class IOSSectionPage(QWidget):
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         self._scroll = scroll
-        self.content = IOSSectionContent(window, [section], self)
+        # Extra sections render FIRST: the Dock group must sit at the top
+        # of the Liquid Glass page, not below its 26 rows (user could not
+        # find the dock tweaks in the long single list, 2026-10-20).
+        self.content = IOSSectionContent(
+            window, [*extra_sections, section], self)
         scroll.setWidget(self.content)
         layout.addWidget(scroll)
 
