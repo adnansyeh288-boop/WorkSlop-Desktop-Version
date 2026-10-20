@@ -25,7 +25,7 @@ from PySide6.QtWidgets import QWidget
 # unlike a filesystem path next to the source tree.
 APPLE_SVG = ":/icon/apple.svg"
 
-BASE_BG = "#F2F7FF"
+BASE_BG = "#DCEAFF"
 
 # Soft blue tints for the drifting background logos (light enough to never
 # fight with page content drawn above).
@@ -88,7 +88,9 @@ class SkyBackground(QWidget):
         self._floaters: list[_Floater] = []
         self._t = 0.0
         self._timer = QTimer(self)
-        self._timer.setInterval(33)  # ~30 fps
+        # 120fps (user order 2026-10-20): v15 was 60fps, v16 must be
+        # faster and smooth, not choppy. 8ms interval ~= 120fps.
+        self._timer.setInterval(8)
         self._timer.timeout.connect(self._tick)
         self._seed_floaters()
 
@@ -123,9 +125,10 @@ class SkyBackground(QWidget):
     def _tick(self):
         if not self.isVisible():
             return
-        self._t += 0.033
+        # 120fps tick: 8ms per frame.
+        self._t += 0.008
         for f in self._floaters:
-            f.ry -= f.speed * 0.033
+            f.ry -= f.speed * 0.008
             if f.ry < -0.12:
                 f.ry = 1.12
         self.update()

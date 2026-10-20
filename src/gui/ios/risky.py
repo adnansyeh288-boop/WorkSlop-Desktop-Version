@@ -58,7 +58,7 @@ class RiskySection(QWidget):
             make_switch_column,
         )
         self._make_switch_column = make_switch_column
-        card = IOSCard()
+        card = IOSCard(glass=True)
         card.setMinimumHeight(ROW_CARD_MIN_HEIGHT)
         lay = QHBoxLayout(card)
         lay.setContentsMargins(ROW_CARD_HMARGIN, ROW_CARD_VMARGIN,

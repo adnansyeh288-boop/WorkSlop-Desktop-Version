@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt, QCoreApplication, QTimer
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea,
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QScrollArea,
     QComboBox, QLineEdit, QListWidget, QListWidgetItem, QMessageBox, QInputDialog,
-    QFileDialog, QDialog, QPushButton, QButtonGroup
+    QFileDialog, QDialog, QPushButton, QButtonGroup, QSizePolicy
 )
 from pathlib import Path
 
@@ -48,11 +48,23 @@ class IOSSettingsPage(QWidget):
         layout.addWidget(self._scroll)
 
         self.content_layout = QVBoxLayout(content)
-        self.content_layout.setContentsMargins(16, 16, 16, 32)
-        self.content_layout.setSpacing(8)
+        self.content_layout.setContentsMargins(24, 20, 24, 40)
+        self.content_layout.setSpacing(16)
 
-        # WorkSlop-style layout: grouped cards with icon tiles, one section
-        # per concern. All handlers live in _build_settings_ui and below.
+        # Feature-block dashboard (user order 2026-10-20): every feature
+        # area is its own blue-glass card in a 2-column grid, unlike the
+        # single-column lists of the tweak menus. Wide blocks (Backup,
+        # Presets) span both columns. Cards are placed in build order by
+        # _ws_section via _grid_place.
+        self._grid = QGridLayout()
+        self._grid.setSpacing(16)
+        self._grid.setColumnStretch(0, 1)
+        self._grid.setColumnStretch(1, 1)
+        self.content_layout.addLayout(self._grid)
+        self._grid_row = 0
+        self._grid_col = 0
+
+        # All handlers live in _build_settings_ui and below.
         self._build_settings_ui()
 
         self.refresh_presets()
@@ -94,23 +106,70 @@ class IOSSettingsPage(QWidget):
                 pass  # widget was rebuilt away (device rows refresh)
         self._fn_styled = live
 
-    # ---------- WorkSlop-style rows (icon tile + title + control) ----------
-    # Mirrors the WorkSlop iOS app's SettingsView: grouped cards, an icon
-    # tile per row, dividers between rows, controls indented or right-aligned.
+    # ---------- Feature blocks (glass cards in a 2-column grid) ----------
+    # Layout (user order 2026-10-20): Settings is organised by feature
+    # blocks — each area (This device, Appearance, Backup, ...) is its
+    # own blue-glass card (IOSCard glass=True, same look as the tweak
+    # pages) with the feature title as an in-card header, white text,
+    # and its rows inside. Wide blocks span both grid columns. The
+    # ``code`` argument on the row builders is the old icon-tile code,
+    # kept in the signatures so call sites stay unchanged; it is no
+    # longer rendered.
+
+    def _on_glass(self) -> bool:
+        """True when the cards are blue glass (themed interfaces). In
+        the Full Nugget interface the tracked styles fall back to the
+        Nugget palette, exactly as before."""
+        return not self._full_nugget
 
     def _ws_card(self):
-        card = IOSCard()
+        card = IOSCard(glass=True)
         lay = QVBoxLayout(card)
-        lay.setContentsMargins(16, 6, 16, 6)
+        lay.setContentsMargins(18, 14, 18, 14)
         lay.setSpacing(0)
         return card, lay
 
-    def _ws_section(self, title: str):
-        self.content_layout.addWidget(IOSSectionHeader(
-            QCoreApplication.translate("Nugget", title)))
+    def _grid_place(self, widget, span: int):
+        if span > 1:
+            if self._grid_col != 0:
+                self._grid_row += 1
+                self._grid_col = 0
+            self._grid.addWidget(widget, self._grid_row, 0, 1, 2)
+            self._grid_row += 1
+        else:
+            self._grid.addWidget(widget, self._grid_row, self._grid_col)
+            self._grid_col += 1
+            if self._grid_col >= 2:
+                self._grid_col = 0
+                self._grid_row += 1
+
+    def _ws_section(self, title: str, span: int = 1):
         card, lay = self._ws_card()
-        self.content_layout.addWidget(card)
-        return lay
+        header = QLabel(QCoreApplication.translate("Nugget", title))
+
+        def qss(c):
+            if self._on_glass():
+                return (
+                    "color: #FFFFFF; font-size: 15px; font-weight: 700; "
+                    "background-color: transparent;")
+            return (
+                f"color: {c.text_primary}; font-size: 15px; font-weight: 700; "
+                f"background-color: transparent;")
+        header.setStyleSheet(qss(self._palette()))
+        self._track_styled(header, qss)
+        lay.addWidget(header)
+        self._ws_divider(lay)
+        # Rows live in their own sub-layout: the device block rebuilds
+        # its rows with _clear_layout, which must never eat the header.
+        rows = QVBoxLayout()
+        rows.setContentsMargins(0, 0, 0, 0)
+        rows.setSpacing(0)
+        # Pack rows at the top when the grid stretches this card to a
+        # taller row neighbour's height (e.g. Safety next to Updates).
+        rows.setAlignment(Qt.AlignmentFlag.AlignTop)
+        lay.addLayout(rows)
+        self._grid_place(card, span)
+        return rows
 
     def _ws_divider(self, lay):
         from PySide6.QtWidgets import QFrame
@@ -118,33 +177,28 @@ class IOSSettingsPage(QWidget):
         line.setFrameShape(QFrame.HLine)
 
         def qss(c):
+            if self._on_glass():
+                return (
+                    "background-color: rgba(255, 255, 255, 0.35); "
+                    "min-height: 1px; max-height: 1px; border: none;")
             return (
                 f"background-color: {c.border}; min-height: 1px; max-height: 1px; "
-                f"margin-left: 44px; border: none;")
+                f"border: none;")
         line.setStyleSheet(qss(self._palette()))
         self._track_styled(line, qss)
         lay.addWidget(line)
-
-    def _ws_icon(self, code: str) -> QLabel:
-        lbl = QLabel(code)
-        lbl.setFixedSize(32, 32)
-        lbl.setAlignment(Qt.AlignCenter)
-
-        def qss(c):
-            return (
-                f"background-color: {c.bg_input}; color: {c.brand}; "
-                f"font-size: 11px; font-weight: 700; border-radius: 18px;")
-        lbl.setStyleSheet(qss(self._palette()))
-        self._track_styled(lbl, qss)
-        return lbl
 
     def _ws_title(self, text: str) -> QLabel:
         lbl = QLabel(text)
         lbl.setWordWrap(True)
 
         def qss(c):
+            if self._on_glass():
+                return (
+                    "color: #FFFFFF; font-size: 15px; font-weight: 600; "
+                    "background-color: transparent;")
             return (
-                f"color: {c.text_primary}; font-size: 14px; font-weight: 600; "
+                f"color: {c.text_primary}; font-size: 15px; font-weight: 600; "
                 f"background-color: transparent;")
         lbl.setStyleSheet(qss(self._palette()))
         self._track_styled(lbl, qss)
@@ -155,6 +209,10 @@ class IOSSettingsPage(QWidget):
         lbl.setWordWrap(True)
 
         def qss(c):
+            if self._on_glass():
+                return (
+                    "color: rgba(255, 255, 255, 0.88); font-size: 13px; "
+                    "background-color: transparent;")
             return (
                 f"color: {c.text_secondary}; font-size: 13px; "
                 f"background-color: transparent;")
@@ -167,10 +225,10 @@ class IOSSettingsPage(QWidget):
         if not first:
             self._ws_divider(lay)
         row = QWidget()
+        row.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         h = QHBoxLayout(row)
-        h.setContentsMargins(0, 10, 0, 10)
+        h.setContentsMargins(0, 14, 0, 14)
         h.setSpacing(12)
-        h.addWidget(self._ws_icon(code))
         lbl = self._ws_title(title)
         h.addWidget(lbl, 1)
         switch = IOSSwitch(checked)
@@ -184,10 +242,10 @@ class IOSSettingsPage(QWidget):
         if not first:
             self._ws_divider(lay)
         row = QWidget()
+        row.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         h = QHBoxLayout(row)
-        h.setContentsMargins(0, 10, 0, 10)
+        h.setContentsMargins(0, 14, 0, 14)
         h.setSpacing(12)
-        h.addWidget(self._ws_icon(code))
         h.addWidget(self._ws_title(title), 1)
         val = self._ws_value(value)
         val.setAlignment(Qt.AlignRight)
@@ -196,22 +254,19 @@ class IOSSettingsPage(QWidget):
         return val
 
     def _ws_control_row(self, lay, code: str, title: str, first=False):
-        """Icon + title on top, indented container below for a control."""
+        """Title on top, full-width container below for a wide control."""
         if not first:
             self._ws_divider(lay)
         wrap = QWidget()
+        wrap.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         v = QVBoxLayout(wrap)
-        v.setContentsMargins(0, 10, 0, 10)
-        v.setSpacing(8)
-        top = QHBoxLayout()
-        top.setSpacing(12)
-        top.addWidget(self._ws_icon(code))
-        top.addWidget(self._ws_title(title), 1)
-        v.addLayout(top)
+        v.setContentsMargins(0, 14, 0, 14)
+        v.setSpacing(10)
+        v.addWidget(self._ws_title(title))
         body = QWidget()
         body_lay = QVBoxLayout(body)
-        body_lay.setContentsMargins(44, 0, 0, 0)
-        body_lay.setSpacing(8)
+        body_lay.setContentsMargins(0, 0, 0, 0)
+        body_lay.setSpacing(10)
         v.addWidget(body)
         lay.addWidget(wrap)
         return body_lay
@@ -225,29 +280,46 @@ class IOSSettingsPage(QWidget):
         btn.clicked.connect(on_click)
 
         def btn_qss(c):
+            if self._on_glass():
+                return """
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 18px;
+                color: #FFFFFF;
+                font-size: 15px; font-weight: 600;
+                text-align: left;
+                padding: 14px 4px;
+            }
+            QPushButton:hover { background-color: rgba(255, 255, 255, 0.16); }
+        """
             return f"""
             QPushButton {{
                 background-color: transparent;
                 border: none;
                 border-radius: 18px;
                 color: {c.text_primary};
-                font-size: 14px; font-weight: 600;
+                font-size: 15px; font-weight: 600;
                 text-align: left;
-                padding: 10px 4px;
+                padding: 14px 4px;
             }}
             QPushButton:hover {{ background-color: {c.bg_input}; }}
         """
         btn.setStyleSheet(btn_qss(self._palette()))
         self._track_styled(btn, btn_qss)
         row = QWidget()
+        row.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         h = QHBoxLayout(row)
-        h.setContentsMargins(0, 2, 0, 2)
+        h.setContentsMargins(0, 4, 0, 4)
         h.setSpacing(12)
-        h.addWidget(self._ws_icon(code))
         h.addWidget(btn, 1)
         chev = QLabel("›")
 
         def chev_qss(c):
+            if self._on_glass():
+                return (
+                    "color: rgba(255, 255, 255, 0.88); font-size: 18px; "
+                    "background-color: transparent;")
             return (
                 f"color: {c.text_secondary}; font-size: 18px; "
                 f"background-color: transparent;")
@@ -264,6 +336,10 @@ class IOSSettingsPage(QWidget):
             item = lay.takeAt(0)
             w = item.widget()
             if w is not None:
+                # Unparent first so the row stops painting immediately;
+                # deleteLater alone leaves it visible until the deferred
+                # delete runs, which showed up as ghost rows on rebuild.
+                w.setParent(None)
                 w.deleteLater()
 
     def _build_device_rows(self):
@@ -355,8 +431,8 @@ class IOSSettingsPage(QWidget):
             pref.auto_refresh_posterboard,
             self._make_setting_handler("auto_refresh_posterboard"))
 
-        # --- Backup ---
-        bk_lay = self._ws_section("Backup")
+        # --- Backup (wide: location rows + actions span both columns) ---
+        bk_lay = self._ws_section("Backup", span=2)
         cache_switch = self._ws_switch_row(
             bk_lay, "FC", tr("Use Fast Backup Cache (Experimental)"),
             pref.use_backup_cache,
@@ -387,8 +463,8 @@ class IOSSettingsPage(QWidget):
             pref.supervised, self._make_setting_handler("supervised"))
         self._make_org_name_row(st_lay)
 
-        # --- Presets ---
-        pr_lay = self._ws_section("Presets")
+        # --- Presets (wide: the preset manager spans both columns) ---
+        pr_lay = self._ws_section("Presets", span=2)
         self.autosave_switch = self._ws_switch_row(
             pr_lay, "AS", tr("Save Tweaks Automatically"),
             self.window.device_manager.pref_manager.tweak_autosave,
@@ -397,7 +473,7 @@ class IOSSettingsPage(QWidget):
             "Saves your tweak selection to a built-in \"AutoSave\" preset "
             "and restores it on the next launch. Turn off to keep changes "
             "for this session only."))
-        hint.setContentsMargins(44, 4, 0, 4)
+        hint.setContentsMargins(0, 2, 0, 6)
         pr_lay.addWidget(hint)
         self._make_preset_rows(pr_lay)
 
@@ -518,10 +594,10 @@ class IOSSettingsPage(QWidget):
         pref = self.window.device_manager.pref_manager
         self._ws_divider(lay)
         row = QWidget()
+        row.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         h = QHBoxLayout(row)
-        h.setContentsMargins(0, 10, 0, 10)
+        h.setContentsMargins(0, 14, 0, 14)
         h.setSpacing(12)
-        h.addWidget(self._ws_icon("ON"))
         h.addWidget(self._ws_title(tr("Enter Organization Name")), 1)
         self.org_value_lbl = self._ws_value(
             pref.organization_name if pref.organization_name
@@ -530,6 +606,9 @@ class IOSSettingsPage(QWidget):
         edit_btn = QLabel("\u270e")
 
         def edit_qss(c):
+            if self._on_glass():
+                return (
+                    "color: #FFFFFF; font-size: 17px; background-color: transparent;")
             return (
                 f"color: {c.brand}; font-size: 17px; background-color: transparent;")
         edit_btn.setStyleSheet(edit_qss(self._palette()))
@@ -598,10 +677,28 @@ class IOSSettingsPage(QWidget):
             self._retheme_update_combo()
 
     def _retheme_update_combo(self):
-        # Only the Full Nugget dark palette needs an explicit combo
-        # style; the themed interfaces keep the native look untouched.
-        if not self._full_nugget:
-            self.update_channel_drp.setStyleSheet("")
+        # Full Nugget dark palette and the blue-glass themed look both
+        # need an explicit combo style; nothing else touches it.
+        if self._on_glass():
+            self.update_channel_drp.setStyleSheet("""
+            QComboBox {
+                background-color: rgba(255, 255, 255, 0.30);
+                border: none;
+                border-radius: 20px;
+                color: #FFFFFF;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            QComboBox::drop-down { border: none; width: 24px; }
+            QComboBox QAbstractItemView {
+                background-color: #FFFFFF;
+                border: 1px solid #C4D6E8;
+                border-radius: 14px;
+                color: #1A1A1A;
+                selection-background-color: #DCEAFF;
+                selection-color: #1A1A1A;
+            }
+        """)
             return
         c = self._palette()
         self.update_channel_drp.setStyleSheet(f"""
@@ -624,6 +721,24 @@ class IOSSettingsPage(QWidget):
         """)
 
     def _retheme_preset_inputs(self):
+        if self._on_glass():
+            from PySide6.QtGui import QPalette, QColor
+            for edit in (self._preset_name_txt, self._preset_desc_txt):
+                edit.setStyleSheet("""
+                QLineEdit {
+                    background-color: rgba(255, 255, 255, 0.30);
+                    border: none;
+                    border-radius: 20px;
+                    color: #FFFFFF;
+                    font-size: 14px;
+                    padding: 10px 14px;
+                }
+            """)
+                pal = edit.palette()
+                pal.setColor(QPalette.ColorRole.PlaceholderText,
+                             QColor(255, 255, 255, 170))
+                edit.setPalette(pal)
+            return
         c = self._palette()
         for edit in (self._preset_name_txt, self._preset_desc_txt):
             edit.setStyleSheet(f"""
@@ -638,6 +753,20 @@ class IOSSettingsPage(QWidget):
             """)
 
     def _retheme_preset_list(self):
+        if self._on_glass():
+            self._preset_list.setStyleSheet("""
+            QListWidget {
+                background-color: rgba(255, 255, 255, 0.22);
+                border: none;
+                border-radius: 18px;
+                color: #FFFFFF;
+                font-size: 13px;
+                padding: 4px;
+            }
+            QListWidget::item { padding: 8px; }
+            QListWidget::item:selected { background-color: rgba(255, 255, 255, 0.35); color: #FFFFFF; }
+        """)
+            return
         c = self._palette()
         self._preset_list.setStyleSheet(f"""
             QListWidget {{
@@ -917,6 +1046,18 @@ class IOSSettingsPage(QWidget):
         btn.setCursor(Qt.PointingHandCursor)
 
         def qss(c):
+            if self._on_glass():
+                return """
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.30);
+                border: none;
+                border-radius: 20px;
+                color: #FFFFFF;
+                font-size: 13px;
+                padding: 11px 16px;
+            }
+            QPushButton:hover { background-color: rgba(255, 255, 255, 0.45); }
+        """
             return f"""
             QPushButton {{
                 background-color: {c.scrollbar};
@@ -924,7 +1065,7 @@ class IOSSettingsPage(QWidget):
                 border-radius: 20px;
                 color: {c.text_primary};
                 font-size: 13px;
-                padding: 8px 12px;
+                padding: 11px 16px;
             }}
             QPushButton:hover {{ background-color: {c.surface_hover}; }}
         """

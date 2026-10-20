@@ -1,9 +1,26 @@
-from PySide6.QtCore import QCoreApplication
-from webbrowser import open_new_tab
+"""WorkSlop Desktop home page — UI rebuild 2026-10-20.
+
+Layout (user spec):
+  LEFT  : blue WorkSlop app-icon + "WorkSlop Desktop" title + credits.
+  RIGHT : REAL iPhone preview (device database, frame/screen/cutout layers).
+  BELOW : Apply Tweaks (white blur transparent) + Cancel Apply (blue).
+
+No AI slop. No static stickers.
+"""
+from PySide6.QtCore import Qt, QSize, QCoreApplication
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+    QSizePolicy,
+)
+
 from ..page import Page
 from src.qt.mainwindow_ui import Ui_Nugget
 from src.gui.preset_widget import PresetWidget
 from src.gui.theme import ColorThemeManager
+from src.gui.iphone_preview import IPhonePreview
+from src.gui.brand_credits import make_credits_label
+
 
 class HomePage(Page):
     def __init__(self, window, ui: Ui_Nugget):
@@ -12,107 +29,134 @@ class HomePage(Page):
         self.ui = ui
         self.show_uuid = False
         self.preset_widget = None
+        self._preview = None
 
     def load_page(self):
-        ## HOME PAGE ACTIONS
         self.ui.phoneVersionLbl.linkActivated.connect(self.toggle_version_label)
-        self.ui.discordBtn.clicked.connect(lambda: open_new_tab("https://discord.gg/Rm6r4zeE3y"))
 
-        # The device identity labels ("No Device / Please connect a
-        # device.", a phone name, ...) were clipped to a few characters
-        # by the generated layout; give the label column room and let
-        # long lines wrap instead of cutting mid-word.
-        from PySide6.QtWidgets import QSizePolicy
+        from PySide6.QtWidgets import QSizePolicy as _SP
         for _lbl in (self.ui.phoneNameLbl, self.ui.phoneVersionLbl):
             _lbl.setWordWrap(True)
             _lbl.setMinimumWidth(190)
-            _lbl.setSizePolicy(QSizePolicy.Policy.Expanding,
-                               QSizePolicy.Policy.Preferred)
+            _lbl.setSizePolicy(_SP.Policy.Expanding, _SP.Policy.Preferred)
         self.ui.verticalWidget_15.setMinimumWidth(220)
 
-        self._trim_to_logo_header()
+        self._build_home()
         self._inject_preset_widget()
-        # (Full Nugget restyle removed 2026-10-18 with the 3-UI system.)
 
-    def set_full_nugget(self, enabled: bool):
-        """Full Nugget (third interface) restyle of the preset block:
-        Nugget-color preset text on the dark Home, the "UI reference:
-        Nugget UI" credit with its GitHub button above the banner.
-        Other interfaces keep the themed look untouched."""
-        widget = getattr(self, "preset_widget", None)
-        if widget is not None:
-            widget.apply_full_nugget_style(enabled)
-        credits = getattr(self, "credits_lbl", None)
-        if credits is not None:
-            from src.gui.brand_credits import credits_html
-            if enabled:
-                credits.setText(credits_html("#e8e8e8", "#3b82f7"))
-            else:
-                c = ColorThemeManager.instance().colors
-                credits.setText(credits_html(c.text_secondary, c.accent))
-
-    def _trim_to_logo_header(self):
-        """Round 2 (user order 2026-10-18): vertical-centered hero.
-
-        Layout from top to bottom, all centered:
-          1. WorkSlop (WS) icon
-          2. "WorkSlop Desktop" title directly below the icon
-          3. "Developer Adnan.120hz · TikTok · GitHub · Official Website"
-             below the title.
-        The old horizontal band (horizontalWidget_14) is hidden and
-        replaced in place. The generated file is not edited.
-        """
-        from PySide6.QtCore import Qt, QSize
-        from PySide6.QtGui import QIcon
-        from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget
-        from src.gui.brand_credits import make_credits_label
-
+    # -- layout ---------------------------------------------------------
+    def _build_home(self):
         c0 = ColorThemeManager.instance().colors
 
-        # Hide the old horizontal band.
         band = getattr(self.ui, "horizontalWidget_14", None)
         host_layout = self.ui.verticalLayout_2
-        hero = None
         if band is not None:
             idx = host_layout.indexOf(band)
             band.setVisible(False)
             host_layout.removeWidget(band)
+        else:
+            idx = 0
 
-            hero = QWidget(self.ui.homePage)
-            hero.setObjectName("wsHero")
-            # Expand so the hero block sits in the vertical middle of the
-            # content area (user order 2026-10-18: bigger + more centered).
-            from PySide6.QtWidgets import QSizePolicy
-            hero.setSizePolicy(QSizePolicy.Policy.Expanding,
-                               QSizePolicy.Policy.Expanding)
-            vbox = QVBoxLayout(hero)
-            vbox.setContentsMargins(0, 8, 0, 8)
-            vbox.setSpacing(16)
-            vbox.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        hero = QWidget(self.ui.homePage)
+        hero.setObjectName("wsHero")
+        hero.setSizePolicy(QSizePolicy.Policy.Expanding,
+                           QSizePolicy.Policy.Expanding)
+        hero.setStyleSheet("background: transparent;")
 
-            # 1. WS icon, centered (enlarged 1.5x; source PNG is 512px).
-            icon_lbl = QLabel(hero)
-            icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(210, 210)))
-            icon_lbl.setAlignment(Qt.AlignHCenter)
-            icon_lbl.setStyleSheet("background: transparent;")
-            vbox.addWidget(icon_lbl, 0, Qt.AlignHCenter)
+        root = QVBoxLayout(hero)
+        root.setContentsMargins(24, 12, 24, 12)
+        root.setSpacing(18)
 
-            # 2. Title directly below the icon (enlarged proportionally).
-            title = QLabel("WorkSlop Desktop", hero)
-            title.setAlignment(Qt.AlignHCenter)
-            title.setStyleSheet(
-                f"background: transparent; color: {c0.text_primary};"
-                " font-size: 46px; font-weight: 700;")
-            vbox.addWidget(title, 0, Qt.AlignHCenter)
+        # -- top row: LEFT branding | RIGHT iPhone preview ----------------
+        top = QHBoxLayout()
+        top.setSpacing(32)
 
-            # 3. Developer credit + links below the title.
-            self.credits_lbl = make_credits_label(
-                hero, c0.text_secondary, c0.accent, align_center=True)
-            self.credits_lbl.setStyleSheet(
-                "background: transparent; font-size: 17px; font-weight: 500;")
-            vbox.addWidget(self.credits_lbl, 0, Qt.AlignHCenter)
+        # LEFT: blue WorkSlop app-icon + title + credits.
+        left = QVBoxLayout()
+        left.setSpacing(14)
+        left.setAlignment(Qt.AlignVCenter)
 
-            host_layout.insertWidget(idx, hero, 0, Qt.AlignHCenter)
+        icon_lbl = QLabel(hero)
+        icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(120, 120)))
+        icon_lbl.setStyleSheet("background: transparent;")
+        left.addWidget(icon_lbl, 0, Qt.AlignLeft)
+
+        title = QLabel("WorkSlop Desktop", hero)
+        title.setStyleSheet(
+            f"background: transparent; color: {c0.text_primary};"
+            " font-size: 34px; font-weight: 800;")
+        left.addWidget(title, 0, Qt.AlignLeft)
+
+        self.credits_lbl = make_credits_label(
+            hero, c0.text_secondary, c0.accent, align_center=False)
+        self.credits_lbl.setStyleSheet(
+            "background: transparent; font-size: 14px; font-weight: 500;")
+        left.addWidget(self.credits_lbl, 0, Qt.AlignLeft)
+
+        # Apply row under the credits (left column, not overlapping phone).
+        apply_row = QHBoxLayout()
+        apply_row.setSpacing(12)
+
+        apply_btn = QPushButton(
+            QCoreApplication.translate("Nugget", "Apply Tweaks"), hero)
+        apply_btn.setCursor(Qt.PointingHandCursor)
+        apply_btn.setFixedHeight(52)
+        apply_btn.setMinimumWidth(220)
+        apply_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #5B9BFF;
+                border: 1px solid #5B9BFF;
+                border-radius: 26px;
+                color: #FFFFFF;
+                font-size: 16px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #6BABFF;
+            }
+            QPushButton:pressed {
+                background-color: #3B82F6;
+            }
+        """)
+        apply_btn.clicked.connect(self._on_home_apply)
+        apply_row.addWidget(apply_btn)
+
+        cancel_btn = QPushButton(
+            QCoreApplication.translate("Nugget", "Cancel Apply"), hero)
+        cancel_btn.setCursor(Qt.PointingHandCursor)
+        cancel_btn.setFixedHeight(52)
+        cancel_btn.setMinimumWidth(160)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1A3578;
+                border: 1px solid #1A3578;
+                border-radius: 26px;
+                color: #FFFFFF;
+                font-size: 16px;
+                font-weight: 700;
+            }
+            QPushButton:hover {
+                background-color: #24448F;
+            }
+            QPushButton:pressed {
+                background-color: #122A6B;
+            }
+        """)
+        cancel_btn.clicked.connect(self._on_home_cancel_apply)
+        apply_row.addWidget(cancel_btn)
+        apply_row.addStretch(1)
+        left.addLayout(apply_row)
+
+        left.addStretch(1)
+        top.addLayout(left, 1)
+
+        # RIGHT: real iPhone preview (device database driven).
+        self._preview = IPhonePreview(hero)
+        top.addWidget(self._preview, 0, Qt.AlignRight | Qt.AlignVCenter)
+
+        root.addLayout(top, 1)
+
+        host_layout.insertWidget(idx, hero)
 
         # Brand the big button icon too (kept for compat, hidden with band).
         hero_btn = getattr(self.ui, "bigNuggetBtn", None)
@@ -127,15 +171,51 @@ class HomePage(Page):
         if credits is not None:
             credits.setVisible(False)
 
+    def _on_home_apply(self):
+        """Apply Tweaks from the home page."""
+        self.window.on_applyPageBtn_clicked()
+
+    def _on_home_cancel_apply(self):
+        """Cancel a running apply (best-effort)."""
+        mgr = getattr(self.window, "device_manager", None)
+        cancel = getattr(mgr, "cancel_apply", None)
+        if callable(cancel):
+            try:
+                cancel()
+            except Exception:
+                pass
+        try:
+            self.window.statusBar().showMessage("Apply cancelled.")
+        except Exception:
+            pass
+
+    def refresh_preview(self, model_id: str = "", name: str = "", info: str = ""):
+        """Push live device data into the iPhone preview."""
+        if self._preview is None:
+            return
+        if model_id:
+            self._preview.set_model(model_id)
+        self._preview.set_device(name, info)
+
+    def set_full_nugget(self, enabled: bool):
+        widget = getattr(self, "preset_widget", None)
+        if widget is not None:
+            widget.apply_full_nugget_style(enabled)
+        credits = getattr(self, "credits_lbl", None)
+        if credits is not None:
+            from src.gui.brand_credits import credits_html
+            if enabled:
+                credits.setText(credits_html("#e8e8e8", "#3b82f7"))
+            else:
+                c = ColorThemeManager.instance().colors
+                credits.setText(credits_html(c.text_secondary, c.accent))
+
     def _inject_preset_widget(self):
-        """Add the active-preset banner at the bottom of the home page."""
         layout = self.ui.verticalLayout_2
         self.preset_widget = PresetWidget(
             window=self.window,
             on_manage=self.window.open_presets_section,
             ios_style=False)
-        # Place it above the version label at the very bottom, then keep the
-        # version label pinned below it.
         if hasattr(self.ui, "appVersionLbl"):
             layout.insertWidget(layout.indexOf(self.ui.appVersionLbl),
                                 self.preset_widget)
@@ -149,9 +229,7 @@ class HomePage(Page):
 
     ## ACTIONS
     def updatePhoneInfo(self):
-        # name label
         self.ui.phoneNameLbl.setText(self.window.device_manager.get_current_device_name())
-        # version label
         ver = self.window.device_manager.get_current_device_version()
         build = self.window.device_manager.get_current_device_build()
         self.show_uuid = False
@@ -159,6 +237,17 @@ class HomePage(Page):
             self.show_version_text(version=ver, build=build)
         else:
             self.ui.phoneVersionLbl.setText(QCoreApplication.tr("Please connect a device."))
+        # Push live data to the iPhone preview.
+        try:
+            model = ""
+            dev = getattr(self.window, "data_singleton", None)
+            if dev is not None and getattr(dev, "current_device", None) is not None:
+                model = getattr(dev.current_device, "model", "") or ""
+            name = self.window.device_manager.get_current_device_name()
+            info = f"iOS {ver} ({build})" if ver else "Please connect a device."
+            self.refresh_preview(model_id=model, name=name, info=info)
+        except Exception:
+            pass
 
     def toggle_version_label(self):
         if self.show_uuid:

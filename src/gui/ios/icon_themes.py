@@ -1,9 +1,9 @@
 import os
 
 from PySide6.QtCore import Qt, QCoreApplication, QSize
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QPainter, QColor, QPen
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea,
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QGridLayout,
     QPushButton, QToolButton, QFileDialog, QDialog, QDialogButtonBox,
     QLineEdit, QMessageBox,
 )
@@ -36,8 +36,8 @@ class IOSIconThemesPage(QWidget):
         layout.addWidget(scroll)
 
         self.content_layout = QVBoxLayout(content)
-        self.content_layout.setContentsMargins(16, 16, 16, 32)
-        self.content_layout.setSpacing(8)
+        self.content_layout.setContentsMargins(20, 20, 20, 36)
+        self.content_layout.setSpacing(14)
 
         hint = QLabel(QCoreApplication.translate(
             "Nugget",
@@ -51,35 +51,45 @@ class IOSIconThemesPage(QWidget):
         self._hint = hint
         self.content_layout.addWidget(hint)
 
-        reset_btn = QPushButton(QCoreApplication.translate(
-            "Nugget", "Reset Icon Themes"))
-        reset_btn.setObjectName("resetIconThemes")
-        reset_btn.setCursor(Qt.PointingHandCursor)
-        reset_btn.clicked.connect(self._reset_themes)
-        self._reset_btn = reset_btn
-        self.content_layout.addWidget(reset_btn)
-
+        # Quick actions in one row of equal, easy-to-hit buttons (modern
+        # layout, user order 2026-10-20 — was three stacked full-width rows).
+        actions_row = QHBoxLayout()
+        actions_row.setSpacing(10)
         download_btn = QPushButton(QCoreApplication.translate(
             "Nugget", "Download Icon Packs"))
         download_btn.setObjectName("downloadIconPacks")
         download_btn.setCursor(Qt.PointingHandCursor)
+        download_btn.setMinimumHeight(48)
         download_btn.clicked.connect(self.show_download_packs)
         self._download_btn = download_btn
-        self.content_layout.addWidget(download_btn)
+        actions_row.addWidget(download_btn, 1)
 
         apps_btn = QPushButton(QCoreApplication.translate(
             "Nugget", "Apps on iPhone"))
         apps_btn.setObjectName("appsOnIphone")
         apps_btn.setCursor(Qt.PointingHandCursor)
+        apps_btn.setMinimumHeight(48)
         apps_btn.clicked.connect(self.show_app_list_export)
         self._apps_btn = apps_btn
-        self.content_layout.addWidget(apps_btn)
+        actions_row.addWidget(apps_btn, 1)
+
+        reset_btn = QPushButton(QCoreApplication.translate(
+            "Nugget", "Reset Icon Themes"))
+        reset_btn.setObjectName("resetIconThemes")
+        reset_btn.setCursor(Qt.PointingHandCursor)
+        reset_btn.setMinimumHeight(48)
+        reset_btn.clicked.connect(self._reset_themes)
+        self._reset_btn = reset_btn
+        actions_row.addWidget(reset_btn, 1)
+        self.content_layout.addLayout(actions_row)
 
         # -- iOS 18 Icon Pack (user order 2026-10-18): the pack choices
         # live directly on this page — Light / Dark / Tinted / more
         # tints — each one imports the variant's folder or .zip straight
         # into the themes via the existing import machinery. The pack
         # files themselves are user-supplied (not bundled in the repo).
+        # Modern layout (2026-10-20): one card per variant with a preview
+        # thumbnail; tapping the card starts the same import flow.
         pack_title = QLabel(QCoreApplication.translate(
             "Nugget", "iOS 18 Icon Pack"))
         pack_title.setObjectName("packTitle")
@@ -96,17 +106,10 @@ class IOSIconThemesPage(QWidget):
         self._pack_hint = pack_hint
         self.content_layout.addWidget(pack_hint)
         pack_row = QHBoxLayout()
-        pack_row.setSpacing(10)
-        self._pack_btns = {}
+        pack_row.setSpacing(12)
+        self._pack_card_labels = {}
         for variant in ("Light", "Dark", "Tinted", "More Tints"):
-            b = QPushButton(QCoreApplication.translate("Nugget", variant))
-            b.setObjectName("packVariantBtn")
-            b.setCursor(Qt.PointingHandCursor)
-            b.clicked.connect(
-                lambda _=False, v=variant: self._import_pack_variant(v))
-            self._pack_btns[variant] = b
-            pack_row.addWidget(b)
-        pack_row.addStretch(1)
+            pack_row.addWidget(self._create_pack_card(variant), 1)
         self.content_layout.addLayout(pack_row)
 
         self.themes_placeholder = QLabel(QCoreApplication.translate(
@@ -114,14 +117,77 @@ class IOSIconThemesPage(QWidget):
         self.themes_placeholder.setAlignment(Qt.AlignCenter)
         self.content_layout.addWidget(self.themes_placeholder)
 
-        self._themes_box = QVBoxLayout()
-        self._themes_box.setSpacing(8)
+        # Applied themes as a clean two-column card grid.
+        self._themes_box = QGridLayout()
+        self._themes_box.setSpacing(12)
+        self._themes_box.setColumnStretch(0, 1)
+        self._themes_box.setColumnStretch(1, 1)
         self.content_layout.addLayout(self._themes_box)
 
         self.content_layout.addStretch()
 
         self._retheme()
         self.refresh_themes()
+
+    @staticmethod
+    def _pack_preview(variant: str) -> QPixmap:
+        """Small generated preview swatch for a pack variant card: a
+        rounded tile holding a 2x2 mini icon grid in the variant's colors."""
+        palettes = {
+            "Light": ("#FFFFFF", "#C9D4E2",
+                      ("#E9EEF4", "#E9EEF4", "#E9EEF4", "#E9EEF4")),
+            "Dark": ("#1D1D20", "#3A3A3E",
+                     ("#3A3A3E", "#3A3A3E", "#3A3A3E", "#3A3A3E")),
+            "Tinted": ("#D9E7FF", "#A9C8F5",
+                       ("#5B9BFF", "#7FB0FF", "#3B82F6", "#9CC2FF")),
+            "More Tints": ("#FFFFFF", "#C9D4E2",
+                           ("#FF5A5A", "#FFB340", "#34C759", "#5B9BFF")),
+        }
+        bg, border, squares = palettes.get(variant, palettes["Light"])
+        size = 144
+        pm = QPixmap(size, size)
+        pm.fill(Qt.transparent)
+        p = QPainter(pm)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setBrush(QColor(bg))
+        p.setPen(QPen(QColor(border), 3))
+        p.drawRoundedRect(4, 4, size - 8, size - 8, 28, 28)
+        p.setPen(Qt.NoPen)
+        cell, gap, start = 44, 12, 22
+        for i, col in enumerate(squares):
+            x = start + (i % 2) * (cell + gap)
+            y = start + (i // 2) * (cell + gap)
+            p.setBrush(QColor(col))
+            p.drawRoundedRect(x, y, cell, cell, 12, 12)
+        p.end()
+        return pm
+
+    def _create_pack_card(self, variant: str) -> QWidget:
+        """One tappable pack card: preview thumbnail, name, Import label."""
+        card = IOSCard(glass=True)
+        card.setCursor(Qt.PointingHandCursor)
+        card.setMinimumHeight(168)
+        v = QVBoxLayout(card)
+        v.setContentsMargins(12, 14, 12, 14)
+        v.setSpacing(8)
+        prev = QLabel()
+        prev.setAlignment(Qt.AlignCenter)
+        prev.setAttribute(Qt.WA_TransparentForMouseEvents)
+        prev.setPixmap(self._pack_preview(variant).scaled(
+            72, 72, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        v.addWidget(prev)
+        name = QLabel(QCoreApplication.translate("Nugget", variant))
+        name.setAlignment(Qt.AlignCenter)
+        name.setAttribute(Qt.WA_TransparentForMouseEvents)
+        v.addWidget(name)
+        imp = QLabel(QCoreApplication.translate("Nugget", "Import"))
+        imp.setAlignment(Qt.AlignCenter)
+        imp.setAttribute(Qt.WA_TransparentForMouseEvents)
+        v.addWidget(imp)
+        card.mousePressEvent = (
+            lambda e, var=variant: self._import_pack_variant(var))
+        self._pack_card_labels[variant] = (name, imp)
+        return card
 
     def _reset_themes(self):
         reply = QMessageBox.question(
@@ -151,29 +217,31 @@ class IOSIconThemesPage(QWidget):
             "background: transparent; border: none;"
             " IOSIconThemesPage QWidget { background: transparent; }")
         self._hint.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
-        self._download_btn.setStyleSheet(f"""
-            QPushButton#downloadIconPacks {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.border};
+        self._download_btn.setStyleSheet("""
+            QPushButton#downloadIconPacks {
+                background-color: #5B9BFF;
+                border: none;
                 border-radius: 20px;
-                color: {c.accent};
+                color: #FFFFFF;
                 font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
-            }}
-            QPushButton#downloadIconPacks:hover {{ background-color: {c.surface_hover}; }}
+            }
+            QPushButton#downloadIconPacks:hover { background-color: #6FA8FF; }
+            QPushButton#downloadIconPacks:pressed { background-color: #3B82F6; }
         """)
-        self._apps_btn.setStyleSheet(f"""
-            QPushButton#appsOnIphone {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.border};
+        self._apps_btn.setStyleSheet("""
+            QPushButton#appsOnIphone {
+                background-color: #5B9BFF;
+                border: none;
                 border-radius: 20px;
-                color: {c.accent};
+                color: #FFFFFF;
                 font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
-            }}
-            QPushButton#appsOnIphone:hover {{ background-color: {c.surface_hover}; }}
+            }
+            QPushButton#appsOnIphone:hover { background-color: #6FA8FF; }
+            QPushButton#appsOnIphone:pressed { background-color: #3B82F6; }
         """)
         self.themes_placeholder.setStyleSheet(
             f"color: {c.text_secondary}; font-size: 15px; padding: 24px 0;")
@@ -182,30 +250,26 @@ class IOSIconThemesPage(QWidget):
             f"padding: 14px 0 0 0; background: transparent;")
         self._pack_hint.setStyleSheet(
             f"color: {c.text_secondary}; font-size: 13px; background: transparent;")
-        for b in self._pack_btns.values():
-            b.setStyleSheet(f"""
-                QPushButton#packVariantBtn {{
-                    background-color: {c.bg_secondary};
-                    border: 1px solid {c.border};
-                    border-radius: 20px;
-                    color: {c.accent};
-                    font-size: 14px;
-                    font-weight: 600;
-                    padding: 12px 18px;
-                }}
-                QPushButton#packVariantBtn:hover {{ background-color: {c.surface_hover}; }}
-            """)
-        self._reset_btn.setStyleSheet(f"""
-            QPushButton#resetIconThemes {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.border};
+        for name_lbl, imp_lbl in self._pack_card_labels.values():
+            name_lbl.setStyleSheet(
+                "font-size: 14px; font-weight: 700; color: #FFFFFF;"
+                " background: transparent;")
+            imp_lbl.setStyleSheet(
+                "font-size: 12px; font-weight: 600; "
+                "color: rgba(255, 255, 255, 0.9);"
+                " background: transparent;")
+        self._reset_btn.setStyleSheet("""
+            QPushButton#resetIconThemes {
+                background-color: #5B9BFF;
+                border: none;
                 border-radius: 20px;
-                color: {c.error};
-                font-size: 15px;
+                color: #FFFFFF;
+                font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
-            }}
-            QPushButton#resetIconThemes:hover {{ background-color: {c.surface_hover}; }}
+            }
+            QPushButton#resetIconThemes:hover { background-color: #6FA8FF; }
+            QPushButton#resetIconThemes:pressed { background-color: #3B82F6; }
         """)
         # Rebuild the theme cards so their hardcoded label colors follow the
         # current palette too.
@@ -216,29 +280,30 @@ class IOSIconThemesPage(QWidget):
         tweak = tweaks[TweakID.IconThemes]
         themes = tweak.themes
         self.themes_placeholder.setVisible(not themes)
-        # clear the box
+        # clear the grid
         while self._themes_box.count():
             item = self._themes_box.takeAt(0)
             w = item.widget()
             if w is not None:
                 w.deleteLater()
-        if not themes:
-            return
-        for theme in themes:
-            self._themes_box.addWidget(self._create_theme_card(theme))
+        # two-column card grid
+        for i, theme in enumerate(themes):
+            self._themes_box.addWidget(
+                self._create_theme_card(theme), i // 2, i % 2)
 
     def _create_theme_card(self, theme: IconTheme) -> QWidget:
         c = self._c
-        card = IOSCard()
+        card = IOSCard(glass=True)
         row = QHBoxLayout(card)
-        row.setContentsMargins(12, 12, 12, 12)
+        row.setContentsMargins(14, 14, 14, 14)
         row.setSpacing(12)
 
         icon_lbl = QLabel()
-        icon_lbl.setFixedSize(56, 56)
+        icon_lbl.setFixedSize(64, 64)
         icon_lbl.setAlignment(Qt.AlignCenter)
         icon_lbl.setStyleSheet(
-            f"background-color: {c.bg_secondary}; border-radius: 20px;")
+            f"background-color: {c.bg_secondary}; border-radius: 20px;"
+            f" color: {c.text_primary};")
         pixmap = None
         data = theme.get_icon_data()
         # B18: get_icon_data() returns the actual icon PNG bytes (loading them
@@ -261,30 +326,30 @@ class IOSIconThemesPage(QWidget):
             icon_lbl.setText(QCoreApplication.translate("Nugget", "?"))
         else:
             icon_lbl.setPixmap(pixmap.scaled(
-                52, 52, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         row.addWidget(icon_lbl)
 
         text_col = QVBoxLayout()
         text_col.setSpacing(2)
         bundle_lbl = QLabel(theme.bundle_id)
-        bundle_lbl.setStyleSheet(f"font-size: 14px; font-weight: 600; color: {c.text_primary};")
+        bundle_lbl.setStyleSheet("font-size: 14px; font-weight: 600; color: #FFFFFF; background: transparent;")
         bundle_lbl.setWordWrap(True)
         text_col.addWidget(bundle_lbl)
         name_text = theme.display_name if theme.display_name else QCoreApplication.translate("Nugget", "Hide label")
         name_lbl = QLabel(name_text)
-        name_lbl.setStyleSheet(f"font-size: 12px; color: {c.text_secondary};")
+        name_lbl.setStyleSheet("font-size: 12px; color: rgba(255, 255, 255, 0.88); background: transparent;")
         name_lbl.setWordWrap(True)
         text_col.addWidget(name_lbl)
         row.addLayout(text_col, 1)
 
         del_btn = QToolButton()
         del_btn.setIconSize(QSize(18, 18))
-        del_btn.setIcon(theme_icon(":/icon/trash.svg", c.text_secondary))
+        del_btn.setIcon(theme_icon(":/icon/trash.svg", "#FFFFFF"))
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.setStyleSheet(
-            f"QToolButton {{ background-color: {c.surface_hover}; color: {c.error}; "
-            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
-            f"QToolButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}"
+            "QToolButton { background-color: rgba(255, 255, 255, 0.30); color: #FFFFFF; "
+            "border: none; border-radius: 20px; padding: 7px; }"
+            f"QToolButton:hover {{ background-color: {c.error}; color: #FFFFFF; }}"
         )
         del_btn.clicked.connect(lambda: self._remove_theme(theme.bundle_id))
         row.addWidget(del_btn)

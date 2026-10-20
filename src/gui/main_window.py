@@ -361,15 +361,13 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.shell_layout.setContentsMargins(0, 0, 0, 0)
         self.shell_layout.setSpacing(0)
         self.shell_layout.addWidget(self.ui.deviceBar)
-        # Round 2 (user order 2026-10-18): menus move to the TOP. The top
-        # nav bar carries every tweak family as its own pill (no "All
-        # Tweaks" grouping); a slim side rail holds the overflow menus
-        # (Backup/Apply/Settings + recovery & tutorial menus).
+        # UI rebuild 2026-10-20 (user order): menus move to the LEFT and
+        # RIGHT edges, vertically centered — NOT a centered top bar.
+        # Left rail = tweak families, right rail = utilities.
         from src.gui.topnav import TopNavBar
         from src.gui.siderail import SideRail
         self.topnav = TopNavBar(self)
         self.topnav.menu_selected.connect(self._on_topnav_menu)
-        self.shell_layout.addWidget(self.topnav)
         self.body_row = QtWidgets.QHBoxLayout()
         self.body_row.setContentsMargins(12, 10, 12, 12)
         self.body_row.setSpacing(12)
@@ -382,6 +380,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.workslop_sidebar = WorkSlopSidebar(self)
         self.workslop_sidebar.menu_selected.connect(self._on_workslop_menu)
         self.workslop_sidebar.hide()
+        # NEW: left rail | content | right rail
+        self.body_row.addWidget(self.topnav)
         self.body_row.addWidget(self.content_stack, 1)
         self.siderail = SideRail(self)
         self.siderail.menu_selected.connect(self._on_rail_menu)
@@ -504,64 +504,111 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self._retheme_classic()
 
     def _style_device_pill(self):
-        """Restyle the top device bar as a clean status pill.
+        """Device status as TWO CIRCLES (user order 2026-10-20).
 
-        The picker group moves to the right; the old title text becomes a
-        plain expanding spacer.
+        The old "None" text pill / dropdown is REMOVED. Instead:
+          - phoneIconBtn: 36x36 circle, GREEN (#22C55E) when a device is
+            detected, GRAY (#9CA3AF) when not.
+          - refreshBtn: 36x36 blue circle, clickable to refresh.
+        Color is refreshed by _update_device_circles() after each
+        refresh_devices_finished().
         """
-        # The picker group moves to the right and the old title text is
-        # blanked first (every flavor shares this layout fixup).
         bar = self.ui.deviceBar
         layout = self.ui.horizontalLayout_4
-        layout.insertWidget(0, self.ui.titleBar)
+        layout.setSpacing(10)
+        layout.setContentsMargins(0, 6, 12, 6)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight
+                            | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        # Title text becomes a plain expanding spacer on the left.
+        try:
+            layout.insertWidget(0, self.ui.titleBar)
+        except Exception:
+            pass
         self.ui.titleBar.setText("")
         self.ui.titleBar.setStyleSheet(
             "background-color: transparent; border: none;")
-        c = self._color_theme.colors
         bar.setStyleSheet("background-color: transparent;")
+
+        # Kill the old text pill entirely.
         pill = self.ui.horizontalWidget_2
-        pill.setStyleSheet(f"""
-            QWidget#horizontalWidget_2 {{
-                background-color: #FFFFFF;
-                border: 1px solid {c.card_border};
-                border-radius: 19px;
-            }}
-        """)
-        self.ui.devicePicker.setStyleSheet(f"""
-            QComboBox {{
-                background-color: transparent;
-                border: none;
-                color: {c.text_primary};
-                font-size: 13px;
-                font-weight: 500;
-                min-height: 36px;
-                padding-left: 10px;
-            }}
-            QComboBox::drop-down {{ border: none; width: 22px; }}
-            QComboBox::down-arrow {{
-                image: url(:/icon/caret-down-fill.svg);
-                width: 12px; height: 12px; margin-right: 8px;
-            }}
-            QComboBox QAbstractItemView {{
-                background-color: {c.bg_tertiary};
-                border: 1px solid {c.border};
-                border-radius: 20px;
-                color: {c.text_primary};
-                selection-background-color: {c.accent};
-            }}
-        """)
-        self.ui.refreshBtn.setStyleSheet(f"""
+        pill.setStyleSheet("background-color: transparent; border: none;")
+        self.ui.devicePicker.hide()
+        inner = self.ui.horizontalWidget_3
+        inner.setStyleSheet("background-color: transparent; border: none;")
+        # Phone + refresh circles sit side by side: pin both containers to
+        # their content width and set the pill's own layout spacing, so the
+        # two circles stay close (small gap, user 2026-10-20).
+        _fixed = QtWidgets.QSizePolicy.Policy.Fixed
+        inner.setSizePolicy(_fixed, _fixed)
+        pill.setSizePolicy(_fixed, _fixed)
+        _pill_layout = pill.layout()
+        if _pill_layout is not None:
+            _pill_layout.setSpacing(8)
+            _pill_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Phone status circle REMOVED (user 2026-10-20): the device bar
+        # keeps only the refresh button.
+        self._phone_circle_gray = "#9CA3AF"
+        self._phone_circle_green = "#22C55E"
+        phone = self.ui.phoneIconBtn
+        phone.hide()
+        phone.setEnabled(False)
+        phone.setFixedSize(36, 36)
+        phone.setMinimumSize(36, 36)
+        phone.setMaximumSize(36, 36)
+        phone.setIconSize(QtCore.QSize(18, 18))
+        # WA_StyledBackground ensures border-radius paints on QToolButton.
+        phone.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
+        phone.setStyleSheet(f"""
             QToolButton {{
-                background-color: {c.accent};
+                background-color: {self._phone_circle_gray};
                 border: none;
-                border-radius: 17px;
-                color: #FFFFFF;
+                border-radius: 18px;
+                min-width: 36px;
+                max-width: 36px;
+                min-height: 36px;
+                max-height: 36px;
             }}
-            QToolButton:hover {{ background-color: {c.accent_hover}; }}
-            QToolButton:pressed {{ background-color: {c.accent_pressed}; }}
         """)
-        self.ui.phoneIconBtn.setStyleSheet(
-            "background-color: transparent; border: none;")
+        try:
+            from src.gui.theme import theme_icon
+            phone.setIcon(theme_icon(":/icon/ws2-device.svg", "#FFFFFF"))
+        except Exception:
+            pass
+
+        # Refresh circle (WorkSlop blue).
+        refresh = self.ui.refreshBtn
+        refresh.setFixedSize(36, 36)
+        refresh.setMinimumSize(36, 36)
+        refresh.setMaximumSize(36, 36)
+        refresh.setIconSize(QtCore.QSize(18, 18))
+        refresh.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
+        refresh.setStyleSheet("""
+            QToolButton {
+                background-color: #1A3578;
+                border: none;
+                border-radius: 18px;
+                min-width: 36px;
+                max-width: 36px;
+                min-height: 36px;
+                max-height: 36px;
+            }
+            QToolButton:hover { background-color: #24448F; }
+            QToolButton:pressed { background-color: #122A6B; }
+        """)
+        try:
+            from src.gui.theme import theme_icon as _ti
+            refresh.setIcon(_ti(":/icon/ws2-refresh.svg", "#FFFFFF"))
+        except Exception:
+            pass
+
+    def _update_device_circles(self, has_device: bool):
+        """Phone circle removed (user 2026-10-20) — refresh button only.
+
+        Kept as a no-op so existing callers in main_window_mixins keep
+        working; device state is no longer shown in the device bar.
+        """
+        return
 
     def _retheme_classic(self):
         """Re-color the classic shell: chrome icons, device picker, version

@@ -250,7 +250,7 @@ class IOSSectionContent(QWidget):
             if tweak_id not in tweaks:
                 return
             tweak = tweaks[tweak_id]
-            card = IOSCard(pill=True)
+            card = IOSCard(pill=True, glass=True)
             card.setMinimumHeight(ROW_CARD_MIN_HEIGHT)
             if tweak_id == TweakID.ForceSolariumFallback:
                 self.force_solarium_fallback_card = card
@@ -268,8 +268,8 @@ class IOSSectionContent(QWidget):
             label = QLabel(title)
             label.setWordWrap(True)
             label.setStyleSheet(
-                f"color: {c.text_primary}; font-size: {ROW_LABEL_FONT_PX}px;"
-                " background-color: transparent;")
+                "color: #FFFFFF; font-size: %dpx;"
+                " background-color: transparent;" % ROW_LABEL_FONT_PX)
             self._switch_labels.append(label)
             # Wave 11 (user order 2026-10-03): no UNPROVEN / device-test
             # badge or extra tooltip warning on any row. Tweaks that passed
@@ -303,7 +303,7 @@ class IOSSectionContent(QWidget):
             # 2026-10-01) instead of skipped — the dialog cannot be opened.
             lock_reason = "" if is_compatible(tweak_id) else _lock_reason(tweak_id, device_ver, is_iphone, device_build)
             tweak = tweaks[tweak_id]
-            card = IOSCard(pill=True)
+            card = IOSCard(pill=True, glass=True)
             card.setMinimumHeight(ROW_CARD_MIN_HEIGHT)
             if lock_reason:
                 card.setEnabled(False)
@@ -311,7 +311,7 @@ class IOSSectionContent(QWidget):
             card_layout.setContentsMargins(
                 ROW_CARD_HMARGIN, ROW_CARD_VMARGIN, ROW_CARD_HMARGIN, ROW_CARD_VMARGIN)
             card_layout.setSpacing(0)
-            row = IOSSettingsRow(title)
+            row = IOSSettingsRow(title, glass=True)
             row.setMinimumHeight(ROW_CARD_MIN_HEIGHT - 2 * ROW_CARD_VMARGIN)
             tip = description
             if lock_reason:
@@ -336,7 +336,7 @@ class IOSSectionContent(QWidget):
             # 2026-10-01) instead of skipped — the dialog cannot be opened.
             lock_reason = "" if is_compatible(tweak_id) else _lock_reason(tweak_id, device_ver, is_iphone, device_build)
             tweak = tweaks[tweak_id]
-            card = IOSCard(pill=True)
+            card = IOSCard(pill=True, glass=True)
             card.setMinimumHeight(ROW_CARD_MIN_HEIGHT)
             if lock_reason:
                 card.setEnabled(False)
@@ -344,7 +344,7 @@ class IOSSectionContent(QWidget):
             card_layout.setContentsMargins(
                 ROW_CARD_HMARGIN, ROW_CARD_VMARGIN, ROW_CARD_HMARGIN, ROW_CARD_VMARGIN)
             card_layout.setSpacing(0)
-            row = IOSSettingsRow(title)
+            row = IOSSettingsRow(title, glass=True)
             row.setMinimumHeight(ROW_CARD_MIN_HEIGHT - 2 * ROW_CARD_VMARGIN)
             tip = description
             if tip:
@@ -524,11 +524,10 @@ class IOSSectionContent(QWidget):
             self.force_solarium_fallback_card.setVisible(visible)
 
     def _retheme(self):
-        c = ColorThemeManager.instance().colors
         for lbl in self._switch_labels:
             lbl.setStyleSheet(
-                f"color: {c.text_primary}; font-size: {ROW_LABEL_FONT_PX}px;"
-                " background-color: transparent;")
+                "color: #FFFFFF; font-size: %dpx;"
+                " background-color: transparent;" % ROW_LABEL_FONT_PX)
 
     def _show_text_input_dialog(self, tweak_id: TweakID, title: str, current: str, row: IOSSettingsRow):
         if not self._current_compatible(tweak_id):

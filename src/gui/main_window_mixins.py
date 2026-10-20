@@ -257,6 +257,11 @@ class DeviceBarMixin:
             self.ui.devicePicker.setEnabled(False)
             self.ui.devicePicker.addItem(self.noneText)
             self.show_home()
+            # Phone status circle -> gray (no device).
+            try:
+                self._update_device_circles(False)
+            except Exception:
+                pass
 
             # hide all pages
             self.ui.sidebarDiv1.hide()
@@ -310,7 +315,13 @@ class DeviceBarMixin:
 
             # HotLoad-hidden features are carved out of the Sidebar and iOS home
             self._apply_hidden_feature_gating()
-        
+
+        # Phone status circle -> green (device detected).
+        try:
+            self._update_device_circles(len(self.device_manager.devices) > 0)
+        except Exception:
+            pass
+
         # update the selected device
         self.ui.devicePicker.setCurrentIndex(0)
         # HotLoad-hidden features are carved out of the Sidebar and iOS home
@@ -781,15 +792,14 @@ class NavigationMixin:
     def _mirror_nav_visibility(self):
         """Mirror the legacy sidebar buttons' visibility (device-gated
         features) into the top nav bar. The old buttons remain the source
-        of truth in the device-refresh flow."""
+        of truth in the device-refresh flow.
+
+        NOTE (user 2026-10-20): rail menus are NEVER hidden — all menus
+        stay visible even with no device connected.
+        """
         for mid in self.topnav.menu_ids():
             btn = self.topnav._buttons[mid]
-            legacy_name = btn.property("legacy_btn")
-            legacy = getattr(self.ui, legacy_name, None)
-            if legacy is not None:
-                # isVisibleTo would be False while the sidebar is hidden,
-                # so read the explicit visible flag instead.
-                btn.setVisible(legacy.isVisible())
+            btn.setVisible(True)
         # The rail menus are never device-gated.
         for _mid, btn in self.siderail._buttons.items():
             btn.setVisible(True)

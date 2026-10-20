@@ -220,12 +220,21 @@ class IOSSectionHeader(QLabel):
 
 class IOSCard(QFrame):
     """White card surface. Pass pill=True for single-row toggle rows to get
-    a full-capsule shape (round 2 fluid-corner order)."""
+    a full-capsule shape (round 2 fluid-corner order).
+
+    Pass glass=True for the WorkSlop blue-glass look used on the tweak
+    pages (user order 2026-10-20): a translucent blue fill
+    rgba(91,155,255,0.20) with a rgba(91,155,255,0.45) border — the
+    gaussian-blur-style transparent blue of the menu boxes (#5B9BFF),
+    painted over the page backdrop instead of an opaque white surface.
+    """
 
     PILL_RADIUS_PX = 30
     CARD_RADIUS_PX = 22
+    GLASS_BG = (91, 155, 255, 168)      # rgba(91,155,255,0.66) — frosted blur
+    GLASS_BORDER = (91, 155, 255, 210)  # rgba(91,155,255,0.82)
 
-    def __init__(self, parent=None, pill: bool = False):
+    def __init__(self, parent=None, pill: bool = False, glass: bool = False):
         super().__init__(parent)
         self.setObjectName("iosCard")
         # NOTE (Round 4, user order): QFrame.StyledPanel draws square frame
@@ -233,6 +242,7 @@ class IOSCard(QFrame):
         # boxy. NoFrame lets the stylesheet border + radius paint cleanly.
         self.setFrameShape(QFrame.NoFrame)
         self._pill = bool(pill)
+        self._glass = bool(glass)
         self._bg = QColor("#FFFFFF")
         self._border = QColor("#C4D6E8")
         self._retheme()
@@ -253,10 +263,21 @@ class IOSCard(QFrame):
         # an explicit transparent background, otherwise children paint sharp
         # white rects over the rounded corners).
         c = ColorThemeManager.instance().colors
-        self._bg = QColor(c.bg_secondary)
-        self._border = QColor(c.card_border)
-        self.setStyleSheet("background: transparent; border: none;"
-                           " IOSCard QWidget { background: transparent; }")
+        if self._glass:
+            self._bg = QColor(*self.GLASS_BG)
+            self._border = QColor(*self.GLASS_BORDER)
+            # White text on the blue glass so tweak titles stay readable
+            # (user 2026-10-20).
+            self.setStyleSheet(
+                "background: transparent; border: none;"
+                " IOSCard QWidget { background: transparent; }"
+                " IOSCard QLabel { color: #FFFFFF;"
+                " background: transparent; }")
+        else:
+            self._bg = QColor(c.bg_secondary)
+            self._border = QColor(c.card_border)
+            self.setStyleSheet("background: transparent; border: none;"
+                               " IOSCard QWidget { background: transparent; }")
         self.update()
 
     def paintEvent(self, event):
@@ -426,16 +447,22 @@ class IOSNavBar(QWidget):
 
 
 class IOSSettingsRow(QPushButton):
-    def __init__(self, title: str, parent=None):
+    def __init__(self, title: str, parent=None, glass: bool = False):
         super().__init__(title, parent)
         self.setObjectName("iosSettingsRow")
         self.setCursor(Qt.PointingHandCursor)
         self.setText(f"{title}  ›")
+        self._glass = bool(glass)
         self._retheme()
         _auto_retheme(self)
 
     def _retheme(self):
         self.setStyleSheet(t("settings_row"))
+        if self._glass:
+            # White text on the blue glass cards (user 2026-10-20).
+            self.setStyleSheet(
+                self.styleSheet()
+                + "\n#iosSettingsRow { color: #FFFFFF; }")
 
 
 class IOSPrimaryButton(QPushButton):

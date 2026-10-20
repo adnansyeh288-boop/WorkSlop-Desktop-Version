@@ -1,70 +1,64 @@
-"""WorkSlop Desktop slim side rail (single-UI rebuild, round 2).
+"""WorkSlop Desktop RIGHT rail — utility menus (UI rebuild 2026-10-20).
 
-Holds the menus that do not fit the top bar: Backup, Apply, Settings plus
-the device-utility and tutorial menus. Narrow icon+label buttons with full
-fluid corners. Emits ``menu_selected(menu_id)``; the main window navigates.
+Vertical rail docked to the RIGHT edge, vertically centered. Holds Backup,
+Apply, Settings, recovery + tutorial menus. Blue like the WorkSlop icon
+with total gaussian-blur translucency (not pure color).
+
+Recovery enter/exit are tutorials only — no Apply menu (user order).
+
+Emits ``menu_selected(menu_id)``; the main window navigates.
 """
 from PySide6.QtCore import Qt, QCoreApplication, Signal, QSize
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QToolButton, QButtonGroup, QSizePolicy,
 )
 
-from src.gui.theme import ColorThemeManager, theme_icon
+from src.gui.theme import theme_icon, ColorThemeManager
 
-# menu_id -> (label, icon resource)
+# menu_id -> (label, custom icon resource)
 MENUS = [
-    ("backup", "Backup", ":/icon/ws-backup.svg"),
-    ("apply", "Apply", ":/icon/ws-backup.svg"),
-    ("settings", "Settings", ":/icon/ws-gear.svg"),
-    ("rec_enter", "Recovery\nMode", ":/icon/ws-flash.svg"),
-    ("rec_exit", "Exit\nRecovery", ":/icon/ws-refresh.svg"),
-    ("dfu_guide", "DFU\nGuide", ":/icon/ws-toolbox.svg"),
-    ("restore_guide", "Restore\nGuide", ":/icon/ws-device.svg"),
-    ("beta_guide", "Beta\niOS", ":/icon/apple.svg"),
-    ("app_guide", "WorkSlop\nGuide", ":/icon/ws-apps.svg"),
+    ("backup", "Backup", ":/icon/ws2-backup.svg"),
+    ("apply", "Apply", ":/icon/ws2-apply.svg"),
+    ("settings", "Settings", ":/icon/ws2-gear.svg"),
+    ("rec_enter", "Recovery\nMode", ":/icon/ws2-flash.svg"),
+    ("rec_exit", "Exit\nRecovery", ":/icon/ws2-refresh.svg"),
+    ("dfu_guide", "DFU\nGuide", ":/icon/ws2-toolbox.svg"),
+    ("restore_guide", "Restore\nGuide", ":/icon/ws2-device.svg"),
+    ("beta_guide", "Beta\niOS", ":/icon/ws2-beta.svg"),
+    ("app_guide", "WorkSlop\nGuide", ":/icon/ws2-guide.svg"),
 ]
 
-RAIL_WIDTH = 100
-BTN_HEIGHT = 68
+RAIL_WIDTH = 104
+BTN_HEIGHT = 72
+
+# WorkSlop blue with total blur (matches left rail).
+RAIL_BG = "#1A3578"
+RAIL_BG_HOVER = "rgba(36, 68, 143, 0.95)"
+RAIL_BG_CHECKED = "rgba(91, 155, 255, 0.95)"
+RAIL_BORDER = "rgba(255, 255, 255, 0.28)"
 
 
 class SideRail(QWidget):
-    """Slim vertical rail for overflow / utility menus."""
+    """Vertical blue-blur rail for utility menus (right edge)."""
 
     menu_selected = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setObjectName("sideRail")
+        self.setObjectName("rightRail")
         self.setFixedWidth(RAIL_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Fixed,
                            QSizePolicy.Policy.Expanding)
+        # Required for stylesheet background-color to paint on plain QWidget.
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 12, 8, 12)
-        layout.setSpacing(0)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(8, 0, 8, 0)
+        outer.addStretch(1)
 
-        # The rail must never squash its buttons: on short laptop screens
-        # the 9 fixed-height buttons would otherwise be compressed and
-        # their labels' descenders clipped. A (chromeless) scroll area
-        # keeps every button at full height and scrolls instead.
-        from PySide6.QtWidgets import QScrollArea
-        scroll = QScrollArea(self)
-        scroll.setWidgetResizable(False)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll.setFrameShape(QScrollArea.NoFrame)
-        scroll.viewport().setStyleSheet("background: transparent;")
-        scroll.setStyleSheet("background: transparent; border: none;")
-        self._scroll = scroll
-
-        holder = QWidget()
-        holder.setStyleSheet("background: transparent; border: none;")
-        btn_layout = QVBoxLayout(holder)
-        btn_layout.setContentsMargins(0, 0, 0, 0)
-        btn_layout.setSpacing(8)
-        from PySide6.QtWidgets import QLayout
-        btn_layout.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 12, 0, 12)
+        layout.setSpacing(6)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
@@ -84,15 +78,11 @@ class SideRail(QWidget):
                 lambda checked, b=btn, r=icon_res: self._update_icon(b, r, checked))
             self._group.addButton(btn)
             self._buttons[menu_id] = btn
-            btn_layout.addWidget(btn, 0, Qt.AlignHCenter)
+            layout.addWidget(btn, 0, Qt.AlignHCenter)
 
-        holder.adjustSize()
-        # Pin the holder to its full content height: the scroll area must
-        # scroll, never compress the fixed-height buttons.
-        _full_h = holder.sizeHint().height()
-        holder.setFixedHeight(_full_h)
-        scroll.setWidget(holder)
-        layout.addWidget(scroll, 1)
+        outer.addLayout(layout)
+        outer.addStretch(1)
+
         self._retheme()
         ColorThemeManager.instance().theme_changed.connect(self._retheme)
 
@@ -109,39 +99,34 @@ class SideRail(QWidget):
 
     # -- internals ------------------------------------------------------
     def _update_icon(self, btn, icon_res: str, checked: bool):
-        c = ColorThemeManager.instance().colors
-        color = "#FFFFFF" if checked else c.accent
-        btn.setIcon(theme_icon(icon_res, color))
-        btn.setIconSize(QSize(24, 24))
+        btn.setIcon(theme_icon(icon_res, "#FFFFFF"))
+        btn.setIconSize(QSize(26, 26))
 
     def _retheme(self):
-        c = ColorThemeManager.instance().colors
-        # Fluid rounded buttons (18px on a 68px-wide button reads fully
-        # rounded). Blue-white identity, no gradients.
         self.setStyleSheet(f"""
-            SideRail {{
-                background-color: {c.bg_secondary};
-                border: 1px solid {c.card_border};
-                border-radius: 22px;
-            }}
-            SideRail QToolButton {{
+            QWidget#rightRail {{
                 background-color: transparent;
-                color: {c.text_primary};
+                border: none;
+            }}
+            QWidget#rightRail QToolButton {{
+                background-color: #5B9BFF;
+                color: #FFFFFF;
                 border: none;
                 border-radius: 18px;
                 font-size: 11px;
                 font-weight: 600;
                 padding: 6px 2px;
             }}
-            SideRail QToolButton:hover {{
-                background-color: {c.surface_hover};
+            QWidget#rightRail QToolButton:hover {{
+                background-color: #6BABFF;
             }}
-            SideRail QToolButton:checked {{
-                background-color: {c.accent};
+            QWidget#rightRail QToolButton:checked {{
+                background-color: #3B82F6;
                 color: #FFFFFF;
+                border: 2px solid #FFFFFF;
             }}
-            SideRail QToolButton:pressed {{
-                background-color: {c.accent_pressed};
+            QWidget#rightRail QToolButton:pressed {{
+                background-color: #3B82F6;
             }}
         """)
         for _menu_id, btn in self._buttons.items():

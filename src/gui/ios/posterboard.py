@@ -37,6 +37,17 @@ class TemplatePreviewCard(QLabel):
 
 
 class IOSPosterboardPage(QWidget):
+    """PosterBoard page — 100% layout redo (user order 2026-10-20).
+
+    New flow (visual-first):
+      1. IMPORT HERO — big primary import action at the very top.
+      2. Tab bar (Tendies / Templates / Video) right under the hero.
+      3. Tab stack (wallpaper content).
+      4. Delivery mode — compact segmented selector (not a big card).
+      5. Database tools — collapsible section (Configurations mode only).
+      6. Reset — danger zone pinned at the very bottom.
+    """
+
     def __init__(self, window, parent=None):
         super().__init__(parent)
         self.window = window
@@ -47,65 +58,116 @@ class IOSPosterboardPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Reset PosterBoard card
-        reset_card = IOSCard()
-        reset_layout = QVBoxLayout(reset_card)
-        reset_layout.setContentsMargins(16, 12, 16, 12)
-        reset_layout.setSpacing(8)
+        # ---- 1. IMPORT HERO (primary action, top) ----------------------
+        hero = IOSCard()
+        hero_layout = QHBoxLayout(hero)
+        hero_layout.setContentsMargins(20, 16, 20, 16)
+        hero_layout.setSpacing(16)
 
-        self._reset_btn = QPushButton(QCoreApplication.translate("Nugget", "Reset PosterBoard"))
-        self._reset_btn.setCursor(Qt.PointingHandCursor)
-        self._reset_btn.clicked.connect(self._reset_posterboard)
-        reset_layout.addWidget(self._reset_btn)
+        hero_text = QVBoxLayout()
+        hero_text.setSpacing(4)
+        hero_title = QLabel(QCoreApplication.translate(
+            "Nugget", "PosterBoard"))
+        hero_title.setObjectName("pbHeroTitle")
+        hero_sub = QLabel(QCoreApplication.translate(
+            "Nugget", "Wallpapers, templates & video backgrounds"))
+        hero_sub.setObjectName("pbHeroSub")
+        hero_sub.setWordWrap(True)
+        hero_text.addWidget(hero_title)
+        hero_text.addWidget(hero_sub)
+        hero_layout.addLayout(hero_text, 1)
 
-        self._reset_caption = QLabel(QCoreApplication.translate(
-            "Nugget",
-            "Recovery for when a wallpaper misbehaves: clears the delivered "
-            "descriptors on the next apply and PosterBoard rebuilds itself. "
-            "No database is restored, so this cannot corrupt the store."
-        ))
-        self._reset_caption.setWordWrap(True)
-        reset_layout.addWidget(self._reset_caption)
+        self._import_hero_btn = QPushButton(QCoreApplication.translate(
+            "Nugget", "Import Wallpapers"))
+        self._import_hero_btn.setCursor(Qt.PointingHandCursor)
+        self._import_hero_btn.setObjectName("pbImportHero")
+        self._import_hero_btn.setFixedHeight(48)
+        self._import_hero_btn.setMinimumWidth(200)
+        self._import_hero_btn.clicked.connect(self.show_add_tendies_dialog)
+        hero_layout.addWidget(self._import_hero_btn, 0, Qt.AlignVCenter)
 
-        layout.addWidget(reset_card)
+        layout.addWidget(hero)
+        self._hero_card = hero
+        self._hero_title = hero_title
+        self._hero_sub = hero_sub
 
-        # Delivery mode card (Nugget v7.4 flow, WorkSlop styling):
-        # Descriptors = file-only delivery (default, easy recovery);
-        # Configurations = database-backed (opt-in, advanced).
-        mode_card = IOSCard()
-        mode_layout = QVBoxLayout(mode_card)
-        mode_layout.setContentsMargins(16, 12, 16, 12)
+        # ---- 2. Tab bar (under the hero) -------------------------------
+        self._tab_bar = QWidget()
+        self._tab_bar.setFixedHeight(56)
+        tab_layout = QHBoxLayout(self._tab_bar)
+        tab_layout.setContentsMargins(0, 8, 0, 0)
+        tab_layout.setSpacing(0)
+
+        self.tendies_tab_btn = self._make_tab_button(
+            QCoreApplication.translate("Nugget", "Tendies"),
+            ":/icon/wallpaper.svg", 0)
+        self.templates_tab_btn = self._make_tab_button(
+            QCoreApplication.translate("Nugget", "Templates"),
+            ":/icon/photo-stack.svg", 1)
+        self.video_tab_btn = self._make_tab_button(
+            QCoreApplication.translate("Nugget", "Video"),
+            ":/icon/play-circle.svg", 2)
+
+        tab_layout.addWidget(self.tendies_tab_btn, 1)
+        tab_layout.addWidget(self.templates_tab_btn, 1)
+        tab_layout.addWidget(self.video_tab_btn, 1)
+        layout.addWidget(self._tab_bar)
+
+        # ---- 3. Tab stack ----------------------------------------------
+        self.tab_stack = QStackedWidget()
+        layout.addWidget(self.tab_stack, 1)
+
+        self.tendies_page = self._create_tendies_tab()
+        self.tab_stack.addWidget(self.tendies_page)
+
+        self.templates_page = self._create_templates_tab()
+        self.tab_stack.addWidget(self.templates_page)
+
+        self.video_page = self._create_video_tab()
+        self.tab_stack.addWidget(self.video_page)
+
+        # ---- 4. Delivery mode (compact segmented) ----------------------
+        mode_bar = QWidget()
+        mode_bar.setObjectName("pbModeBar")
+        mode_layout = QHBoxLayout(mode_bar)
+        mode_layout.setContentsMargins(16, 8, 16, 8)
         mode_layout.setSpacing(8)
 
-        self._mode_descriptors = QCheckBox(QCoreApplication.translate(
-            "Nugget", "Descriptors (recommended)"))
-        self._mode_configs = QCheckBox(QCoreApplication.translate(
-            "Nugget", "Configurations (database, advanced)"))
+        mode_lbl = QLabel(QCoreApplication.translate("Nugget", "Delivery:"))
+        mode_lbl.setObjectName("pbModeLabel")
+        mode_layout.addWidget(mode_lbl)
+
+        self._mode_descriptors = QPushButton(QCoreApplication.translate(
+            "Nugget", "Descriptors"))
+        self._mode_descriptors.setCheckable(True)
         self._mode_descriptors.setChecked(True)
-        self._mode_descriptors.stateChanged.connect(
-            lambda state: self._on_mode_toggled(False, state))
-        self._mode_configs.stateChanged.connect(
-            lambda state: self._on_mode_toggled(True, state))
+        self._mode_descriptors.setCursor(Qt.PointingHandCursor)
+        self._mode_descriptors.setObjectName("pbModeBtn")
+        self._mode_descriptors.clicked.connect(
+            lambda: self._on_mode_toggled(False, True))
         mode_layout.addWidget(self._mode_descriptors)
+
+        self._mode_configs = QPushButton(QCoreApplication.translate(
+            "Nugget", "Configurations"))
+        self._mode_configs.setCheckable(True)
+        self._mode_configs.setCursor(Qt.PointingHandCursor)
+        self._mode_configs.setObjectName("pbModeBtn")
+        self._mode_configs.clicked.connect(
+            lambda: self._on_mode_toggled(True, True))
         mode_layout.addWidget(self._mode_configs)
+        mode_layout.addStretch(1)
+        layout.addWidget(mode_bar)
 
         self._mode_caption = QLabel(QCoreApplication.translate(
             "Nugget",
-            "Descriptors: wallpapers are delivered as files and PosterBoard "
-            "loads them itself — the database is never touched, so a bad "
-            "wallpaper can simply be removed or reset. Configurations: "
-            "descriptors are also registered in the device database "
-            "(fetched on apply); only needed for descriptor sets that "
-            "refuse to appear otherwise."
-        ))
+            "Descriptors: wallpapers delivered as files (recommended). "
+            "Configurations: also registered in the device database."))
         self._mode_caption.setWordWrap(True)
-        mode_layout.addWidget(self._mode_caption)
+        self._mode_caption.setObjectName("pbModeCaption")
+        self._mode_caption.setContentsMargins(16, 0, 16, 8)
+        layout.addWidget(self._mode_caption)
 
-        layout.addWidget(mode_card)
-
-        # Configurations data card (v7.4 page flow: the database tools
-        # live on the PosterBoard page, not in Settings). Visible only in
-        # Configurations mode; Descriptors mode never touches the DB.
+        # ---- 5. Database tools (collapsible, Configurations only) ------
         self._config_card = IOSCard()
         config_layout = QVBoxLayout(self._config_card)
         config_layout.setContentsMargins(16, 12, 16, 12)
@@ -147,38 +209,25 @@ class IOSPosterboardPage(QWidget):
         layout.addWidget(self._config_card)
         self._refresh_saved_ids()
 
-        # Tab bar
-        self.tab_stack = QStackedWidget()
-        layout.addWidget(self.tab_stack)
-
-        # Tendies tab
-        self.tendies_page = self._create_tendies_tab()
-        self.tab_stack.addWidget(self.tendies_page)
-
-        # Templates tab
-        self.templates_page = self._create_templates_tab()
-        self.tab_stack.addWidget(self.templates_page)
-
-        # Video tab
-        self.video_page = self._create_video_tab()
-        self.tab_stack.addWidget(self.video_page)
-
-        # Bottom tab bar
-        self._tab_bar = QWidget()
-        self._tab_bar.setFixedHeight(56)
-        tab_layout = QHBoxLayout(self._tab_bar)
-        tab_layout.setContentsMargins(0, 0, 0, 0)
-        tab_layout.setSpacing(0)
-
-        self.tendies_tab_btn = self._make_tab_button(QCoreApplication.translate("Nugget", "Tendies"), ":/icon/wallpaper.svg", 0)
-        self.templates_tab_btn = self._make_tab_button(QCoreApplication.translate("Nugget", "Templates"), ":/icon/photo-stack.svg", 1)
-        self.video_tab_btn = self._make_tab_button(QCoreApplication.translate("Nugget", "Video"), ":/icon/play-circle.svg", 2)
-
-        tab_layout.addWidget(self.tendies_tab_btn, 1)
-        tab_layout.addWidget(self.templates_tab_btn, 1)
-        tab_layout.addWidget(self.video_tab_btn, 1)
-
-        layout.addWidget(self._tab_bar)
+        # ---- 6. Reset (danger zone, bottom) -----------------------------
+        reset_bar = QWidget()
+        reset_bar.setObjectName("pbResetBar")
+        reset_layout = QHBoxLayout(reset_bar)
+        reset_layout.setContentsMargins(16, 8, 16, 12)
+        reset_layout.setSpacing(8)
+        self._reset_btn = QPushButton(QCoreApplication.translate(
+            "Nugget", "Reset PosterBoard"))
+        self._reset_btn.setCursor(Qt.PointingHandCursor)
+        self._reset_btn.setObjectName("pbResetBtn")
+        self._reset_btn.clicked.connect(self._reset_posterboard)
+        reset_layout.addWidget(self._reset_btn)
+        self._reset_caption = QLabel(QCoreApplication.translate(
+            "Nugget",
+            "Recovery: clears delivered descriptors on next apply."))
+        self._reset_caption.setWordWrap(True)
+        self._reset_caption.setObjectName("pbResetCaption")
+        reset_layout.addWidget(self._reset_caption, 1)
+        layout.addWidget(reset_bar)
 
         self._tendie_nam = QNetworkAccessManager(self)
         self._tendie_preview_replies = []
@@ -206,11 +255,59 @@ class IOSPosterboardPage(QWidget):
 
     def _retheme(self):
         c = self._palette()
-        # Round 6: no panels — page floats on the Apple-logo watermark.
-        # (The bottom tab bar keeps its own surface.)
+        # Redo 2026-10-20: page floats transparent; hero card + controls
+        # get their own surfaces.
         self.setStyleSheet(
             "background: transparent; border: none;"
             " IOSPosterboardPage QWidget { background: transparent; }")
+        # Hero
+        if hasattr(self, "_hero_title"):
+            self._hero_title.setStyleSheet(
+                f"background: transparent; color: {c.text_primary};"
+                " font-size: 22px; font-weight: 800;")
+        if hasattr(self, "_hero_sub"):
+            self._hero_sub.setStyleSheet(
+                f"background: transparent; color: {c.text_secondary};"
+                " font-size: 13px;")
+        if hasattr(self, "_import_hero_btn"):
+            self._import_hero_btn.setStyleSheet(f"""
+                QPushButton#pbImportHero {{
+                    background-color: {c.accent};
+                    border: none;
+                    border-radius: 24px;
+                    color: #FFFFFF;
+                    font-size: 15px;
+                    font-weight: 700;
+                    padding: 0 24px;
+                }}
+                QPushButton#pbImportHero:hover {{
+                    background-color: {c.accent_hover};
+                }}
+                QPushButton#pbImportHero:pressed {{
+                    background-color: {c.accent_pressed};
+                }}
+            """)
+        # Mode segmented buttons
+        for btn in (self._mode_descriptors, self._mode_configs):
+            btn.setStyleSheet(f"""
+                QPushButton#pbModeBtn {{
+                    background-color: {c.bg_secondary};
+                    border: 1px solid {c.card_border};
+                    border-radius: 16px;
+                    color: {c.text_secondary};
+                    font-size: 13px;
+                    font-weight: 600;
+                    padding: 8px 18px;
+                }}
+                QPushButton#pbModeBtn:checked {{
+                    background-color: {c.accent};
+                    border: 1px solid {c.accent};
+                    color: #FFFFFF;
+                }}
+                QPushButton#pbModeBtn:hover {{
+                    background-color: {c.surface_hover};
+                }}
+            """)
         self._reset_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {c.scrollbar};
@@ -223,10 +320,6 @@ class IOSPosterboardPage(QWidget):
             }}
             QPushButton:hover {{ background-color: {c.surface_hover}; }}
         """)
-        self._reset_caption.setStyleSheet(f"color: {c.text_secondary}; font-size: 12px;")
-        self._mode_descriptors.setStyleSheet(f"color: {c.text_primary}; font-size: 14px;")
-        self._mode_configs.setStyleSheet(f"color: {c.text_primary}; font-size: 14px;")
-        self._mode_caption.setStyleSheet(f"color: {c.text_secondary}; font-size: 12px;")
         self._tab_bar.setStyleSheet(
             f"background-color: {c.bg_primary}; border-top: 1px solid {c.bg_secondary};"
         )
@@ -243,6 +336,15 @@ class IOSPosterboardPage(QWidget):
                     color: {c.accent};
                 }}
             """)
+            # Recolor tab icons to match theme (fixes missing/invisible icons).
+            try:
+                from src.gui.theme import theme_icon
+                res = btn.property("_ws_icon_res")
+                if res:
+                    tint = c.accent if btn.isChecked() else c.text_secondary
+                    btn.setIcon(theme_icon(res, tint))
+            except Exception:
+                pass
         self._retheme_tendies_tab()
         self._retheme_templates_tab()
         self._retheme_video_tab()
@@ -391,8 +493,16 @@ class IOSPosterboardPage(QWidget):
         btn = QToolButton()
         btn.setText(text)
         btn.setIconSize(QSize(24, 24))
-        from PySide6.QtGui import QIcon
-        btn.setIcon(QIcon(icon_path))
+        # Recolor via theme_icon so the icon is visible on any theme
+        # (raw QIcon kept Apple-black CoreSVG invisible on dark).
+        try:
+            from src.gui.theme import theme_icon, ColorThemeManager
+            c = ColorThemeManager.instance().colors
+            btn.setIcon(theme_icon(icon_path, c.text_primary))
+            btn.setProperty("_ws_icon_res", icon_path)
+        except Exception:
+            from PySide6.QtGui import QIcon
+            btn.setIcon(QIcon(icon_path))
         btn.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         btn.setCheckable(True)
         btn.setAutoExclusive(True)
@@ -741,16 +851,28 @@ class IOSPosterboardPage(QWidget):
         self._retheme()
 
     def _on_mode_toggled(self, configs: bool, state):
-        # stateChanged delivers Qt.CheckState (an enum, not an int, in
-        # PySide6 6.x) — normalise via .value so the int comparison holds.
-        if getattr(state, "value", state) != 2:  # Qt.CheckState.Checked
-            return  # the paired handler re-checks the other box
+        # Called from checkable QPushButtons (segmented) — state is True
+        # when the button was clicked. Also tolerates the old QCheckBox
+        # CheckState for safety.
+        if isinstance(state, bool):
+            if not state:
+                return
+        else:
+            # stateChanged delivers Qt.CheckState (an enum, not an int, in
+            # PySide6 6.x) — normalise via .value so the int comparison holds.
+            if getattr(state, "value", state) != 2:  # Qt.CheckState.Checked
+                return  # the paired handler re-checks the other box
         try:
             from src.tweaks.tweak_loader import tweaks, TweakID
             pb = tweaks.get(TweakID.PosterBoard)
             if pb is not None:
                 pb.use_configs = bool(configs)
+            # Segmented behavior: exactly one side checked.
+            me = self._mode_configs if configs else self._mode_descriptors
             other = self._mode_descriptors if configs else self._mode_configs
+            me.blockSignals(True)
+            me.setChecked(True)
+            me.blockSignals(False)
             other.blockSignals(True)
             other.setChecked(False)
             other.blockSignals(False)
