@@ -150,7 +150,7 @@ class IOSSettingsPage(QWidget):
         def qss(c):
             if self._on_glass():
                 return (
-                    "color: #FFFFFF; font-size: 15px; font-weight: 700; "
+                    "color: #111827; font-size: 15px; font-weight: 700; "
                     "background-color: transparent;")
             return (
                 f"color: {c.text_primary}; font-size: 15px; font-weight: 700; "
@@ -179,7 +179,7 @@ class IOSSettingsPage(QWidget):
         def qss(c):
             if self._on_glass():
                 return (
-                    "background-color: rgba(255, 255, 255, 0.35); "
+                    "background-color: #E4E9F0; "
                     "min-height: 1px; max-height: 1px; border: none;")
             return (
                 f"background-color: {c.border}; min-height: 1px; max-height: 1px; "
@@ -195,7 +195,7 @@ class IOSSettingsPage(QWidget):
         def qss(c):
             if self._on_glass():
                 return (
-                    "color: #FFFFFF; font-size: 15px; font-weight: 600; "
+                    "color: #111827; font-size: 15px; font-weight: 600; "
                     "background-color: transparent;")
             return (
                 f"color: {c.text_primary}; font-size: 15px; font-weight: 600; "
@@ -211,7 +211,7 @@ class IOSSettingsPage(QWidget):
         def qss(c):
             if self._on_glass():
                 return (
-                    "color: rgba(255, 255, 255, 0.88); font-size: 13px; "
+                    "color: rgba(17, 24, 39, 0.62); font-size: 13px; "
                     "background-color: transparent;")
             return (
                 f"color: {c.text_secondary}; font-size: 13px; "
@@ -286,12 +286,12 @@ class IOSSettingsPage(QWidget):
                 background-color: transparent;
                 border: none;
                 border-radius: 18px;
-                color: #FFFFFF;
+                color: #111827;
                 font-size: 15px; font-weight: 600;
                 text-align: left;
                 padding: 14px 4px;
             }
-            QPushButton:hover { background-color: rgba(255, 255, 255, 0.16); }
+            QPushButton:hover { background-color: rgba(17, 24, 39, 0.05); }
         """
             return f"""
             QPushButton {{
@@ -318,7 +318,7 @@ class IOSSettingsPage(QWidget):
         def chev_qss(c):
             if self._on_glass():
                 return (
-                    "color: rgba(255, 255, 255, 0.88); font-size: 18px; "
+                    "color: rgba(17, 24, 39, 0.55); font-size: 18px; "
                     "background-color: transparent;")
             return (
                 f"color: {c.text_secondary}; font-size: 18px; "
@@ -608,7 +608,7 @@ class IOSSettingsPage(QWidget):
         def edit_qss(c):
             if self._on_glass():
                 return (
-                    "color: #FFFFFF; font-size: 17px; background-color: transparent;")
+                    "color: #2563EB; font-size: 17px; background-color: transparent;")
             return (
                 f"color: {c.brand}; font-size: 17px; background-color: transparent;")
         edit_btn.setStyleSheet(edit_qss(self._palette()))
@@ -682,10 +682,10 @@ class IOSSettingsPage(QWidget):
         if self._on_glass():
             self.update_channel_drp.setStyleSheet("""
             QComboBox {
-                background-color: rgba(255, 255, 255, 0.30);
-                border: none;
-                border-radius: 20px;
-                color: #FFFFFF;
+                background-color: #F1F4F8;
+                border: 1px solid #DEE5EE;
+                border-radius: 12px;
+                color: #111827;
                 font-size: 14px;
                 padding: 8px 12px;
             }
@@ -695,7 +695,7 @@ class IOSSettingsPage(QWidget):
                 border: 1px solid #C4D6E8;
                 border-radius: 14px;
                 color: #1A1A1A;
-                selection-background-color: #DCEAFF;
+                selection-background-color: #EAF1FE;
                 selection-color: #1A1A1A;
             }
         """)
@@ -726,17 +726,17 @@ class IOSSettingsPage(QWidget):
             for edit in (self._preset_name_txt, self._preset_desc_txt):
                 edit.setStyleSheet("""
                 QLineEdit {
-                    background-color: rgba(255, 255, 255, 0.30);
-                    border: none;
-                    border-radius: 20px;
-                    color: #FFFFFF;
+                    background-color: #F7F9FC;
+                    border: 1px solid #DEE5EE;
+                    border-radius: 12px;
+                    color: #111827;
                     font-size: 14px;
                     padding: 10px 14px;
                 }
             """)
                 pal = edit.palette()
                 pal.setColor(QPalette.ColorRole.PlaceholderText,
-                             QColor(255, 255, 255, 170))
+                             QColor(17, 24, 39, 110))
                 edit.setPalette(pal)
             return
         c = self._palette()
@@ -756,15 +756,15 @@ class IOSSettingsPage(QWidget):
         if self._on_glass():
             self._preset_list.setStyleSheet("""
             QListWidget {
-                background-color: rgba(255, 255, 255, 0.22);
-                border: none;
-                border-radius: 18px;
-                color: #FFFFFF;
+                background-color: #F7F9FC;
+                border: 1px solid #DEE5EE;
+                border-radius: 14px;
+                color: #111827;
                 font-size: 13px;
                 padding: 4px;
             }
             QListWidget::item { padding: 8px; }
-            QListWidget::item:selected { background-color: rgba(255, 255, 255, 0.35); color: #FFFFFF; }
+            QListWidget::item:selected { background-color: #2563EB; color: #FFFFFF; }
         """)
             return
         c = self._palette()
@@ -1049,14 +1049,14 @@ class IOSSettingsPage(QWidget):
             if self._on_glass():
                 return """
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.30);
-                border: none;
-                border-radius: 20px;
-                color: #FFFFFF;
+                background-color: #F1F4F8;
+                border: 1px solid #DEE5EE;
+                border-radius: 12px;
+                color: #374151;
                 font-size: 13px;
                 padding: 11px 16px;
             }
-            QPushButton:hover { background-color: rgba(255, 255, 255, 0.45); }
+            QPushButton:hover { background-color: #E4E9F0; }
         """
             return f"""
             QPushButton {{

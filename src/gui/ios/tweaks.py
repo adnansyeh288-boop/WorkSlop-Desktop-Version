@@ -268,7 +268,7 @@ class IOSSectionContent(QWidget):
             label = QLabel(title)
             label.setWordWrap(True)
             label.setStyleSheet(
-                "color: #FFFFFF; font-size: %dpx;"
+                "color: #111827; font-size: %dpx;"
                 " background-color: transparent;" % ROW_LABEL_FONT_PX)
             self._switch_labels.append(label)
             # Wave 11 (user order 2026-10-03): no UNPROVEN / device-test
@@ -428,38 +428,47 @@ class IOSSectionContent(QWidget):
             for spec in SPECS_BY_SECTION[section]:
                 renderers[spec.kind](spec, collapsible.body_layout)
 
-        # Eligibility section (ported from leminlimez/Nugget's eligibility
-        # page: EU Enabler, Apple Intelligence, spoofing). Rendered as a
-        # collapsible section like the registry sections above.
-        try:
-            current_device = self.window.device_manager.data_singleton.current_device
-        except Exception:
-            current_device = None
-        load_eligibility(current_device)
-        elig_collapsible = IOSCollapsibleSection(
-            QCoreApplication.translate("Nugget", "Eligibility"),
-            expanded="Eligibility" not in collapsed_sections)
-        elig_collapsible.body_layout.setSpacing(_ROW_GAP)
-        elig_collapsible.toggled.connect(
-            lambda expanded: _save_collapsed_section("Eligibility", not expanded))
-        layout.addWidget(elig_collapsible)
-        elig_section = EligibilitySection(self.window)
-        elig_collapsible.body_layout.addWidget(elig_section)
-        elig_section.refresh()
+        # Eligibility + Risky are standalone feature blocks, NOT part
+        # of any registry Section. They belong ONLY on the full tweaks
+        # page: single-section pages (Liquid Glass, SpringBoard,
+        # Internal) must show their own tweaks and nothing else
+        # (user order 2026-10-20: eligibility/spoofing rows were
+        # appearing inside the Liquid Glass menu).
+        _full_page = (self.sections is None
+                      or set(self.sections) == set(Section))
+        if _full_page:
+            # Eligibility section (ported from leminlimez/Nugget's eligibility
+            # page: EU Enabler, Apple Intelligence, spoofing). Rendered as a
+            # collapsible section like the registry sections above.
+            try:
+                current_device = self.window.device_manager.data_singleton.current_device
+            except Exception:
+                current_device = None
+            load_eligibility(current_device)
+            elig_collapsible = IOSCollapsibleSection(
+                QCoreApplication.translate("Nugget", "Eligibility"),
+                expanded="Eligibility" not in collapsed_sections)
+            elig_collapsible.body_layout.setSpacing(_ROW_GAP)
+            elig_collapsible.toggled.connect(
+                lambda expanded: _save_collapsed_section("Eligibility", not expanded))
+            layout.addWidget(elig_collapsible)
+            elig_section = EligibilitySection(self.window)
+            elig_collapsible.body_layout.addWidget(elig_section)
+            elig_section.refresh()
 
-        # Risky section (ported from leminlimez/Nugget's risky page:
-        # Disable OTA Updates, Custom Resolution). Rendered as a
-        # collapsible section like Eligibility above.
-        risky_collapsible = IOSCollapsibleSection(
-            QCoreApplication.translate("Nugget", "Risky"),
-            expanded="Risky" not in collapsed_sections)
-        risky_collapsible.body_layout.setSpacing(_ROW_GAP)
-        risky_collapsible.toggled.connect(
-            lambda expanded: _save_collapsed_section("Risky", not expanded))
-        layout.addWidget(risky_collapsible)
-        risky_section = RiskySection(self.window)
-        risky_collapsible.body_layout.addWidget(risky_section)
-        risky_section.refresh()
+            # Risky section (ported from leminlimez/Nugget's risky page:
+            # Disable OTA Updates, Custom Resolution). Rendered as a
+            # collapsible section like Eligibility above.
+            risky_collapsible = IOSCollapsibleSection(
+                QCoreApplication.translate("Nugget", "Risky"),
+                expanded="Risky" not in collapsed_sections)
+            risky_collapsible.body_layout.setSpacing(_ROW_GAP)
+            risky_collapsible.toggled.connect(
+                lambda expanded: _save_collapsed_section("Risky", not expanded))
+            layout.addWidget(risky_collapsible)
+            risky_section = RiskySection(self.window)
+            risky_collapsible.body_layout.addWidget(risky_section)
+            risky_section.refresh()
 
         layout.addStretch()
 
@@ -526,7 +535,7 @@ class IOSSectionContent(QWidget):
     def _retheme(self):
         for lbl in self._switch_labels:
             lbl.setStyleSheet(
-                "color: #FFFFFF; font-size: %dpx;"
+                "color: #111827; font-size: %dpx;"
                 " background-color: transparent;" % ROW_LABEL_FONT_PX)
 
     def _show_text_input_dialog(self, tweak_id: TweakID, title: str, current: str, row: IOSSettingsRow):

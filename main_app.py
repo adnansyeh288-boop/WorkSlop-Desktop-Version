@@ -297,17 +297,18 @@ def main() -> int:
     translator.fix_ui_for_rtl(widget.ui)
     # Reference-layout proportions: the blue header tabs + device panel
     # need a desktop-tool width, so open at 1240x820 instead of 800x600.
-    # On smaller laptop screens, fit inside the available geometry so
-    # nothing is cut off — the pages scroll instead of clipping.
+    # On smaller laptop screens, fit inside the available geometry, but
+    # never below the verified-clean floor (1180x740, MainWindow): below
+    # it the Home hero overlaps/clips instead of scrolling.
     try:
         from PySide6.QtGui import QGuiApplication
         avail = QGuiApplication.primaryScreen().availableGeometry()
-        start_w = min(1240, max(1024, avail.width()))
-        start_h = min(820, max(640, avail.height()))
+        start_w = min(1240, max(1180, avail.width()))
+        start_h = min(820, max(740, avail.height()))
     except Exception:
         start_w, start_h = 1240, 820
     widget.resize(start_w, start_h)
-    widget.setMinimumSize(1024, 600)
+    widget.setMinimumSize(1180, 740)
     widget.show()
 
     # First-launch dialogs (interface picker + backup reminder) are deferred

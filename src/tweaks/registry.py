@@ -367,7 +367,7 @@ SPECS: tuple[TweakSpec, ...] = (
     _t(TweakID.DisallowGlassTime, Section.LIQUID_GLASS, "Disallow Glass on LS Clock", GP, "SBDisallowGlassTime",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow glass effect on Lock Screen clock.")),
     _t(TweakID.DisableGlassDock, Section.LIQUID_GLASS, "Disable Glass on Dock", GP, "SBDisableGlassDock",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disable Liquid Glass on Dock — solid style.")),
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disable Liquid Glass on Dock — dock falls back to the frosted platter material underneath.")),
     _t(TweakID.FlatIconsEverywhere, Section.LIQUID_GLASS, "Flat Icons Everywhere", GP, "SBUseFlatIconsEverywhere",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Force all icons flat, no 3D/glass effect.")),
     _t(TweakID.DisableWidgetSpecular, Section.LIQUID_GLASS, "Disable Widget Specular", GP, "SBDisableWidgetSpecular",

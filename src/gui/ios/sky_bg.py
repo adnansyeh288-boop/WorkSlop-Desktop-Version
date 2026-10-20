@@ -25,12 +25,12 @@ from PySide6.QtWidgets import QWidget
 # unlike a filesystem path next to the source tree.
 APPLE_SVG = ":/icon/apple.svg"
 
-BASE_BG = "#DCEAFF"
+BASE_BG = "#FFFFFF"
 
 # Soft blue tints for the drifting background logos (light enough to never
 # fight with page content drawn above).
 FLOAT_TINTS = ["#BFD9FA", "#A9CBF7", "#C9DFFB", "#9DC2F2", "#D4E4FC"]
-FLOAT_COUNT = 16
+FLOAT_COUNT = 0  # clean-light design (2026-10-20): flat page, no logos
 
 
 def _tinted_apple(size: int, color_hex: str, opacity: float,

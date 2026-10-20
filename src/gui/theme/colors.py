@@ -343,10 +343,64 @@ NUGGET_DARK = ThemeColors(
 
 
 # ---------------------------------------------------------------------------
+# CLEAN palette (user-picked Canva reference "clean light", 2026-10-20):
+# flat light-grey page, ONE big white window card, royal-blue accent
+# (#2563EB), dark slate text, hairline borders. No glass, no gradients.
+# ---------------------------------------------------------------------------
+CLEAN = ThemeColors(
+    bg_primary="#FFFFFF",
+    bg_secondary="#FFFFFF",
+    bg_tertiary="#EDF0F5",
+    bg_input="#F4F6F9",
+    bg_elevated="#FFFFFF",
+
+    text_primary="#111827",
+    text_secondary="#5B6472",
+    text_disabled="#9AA3B2",
+    text_inverse="#FFFFFF",
+
+    accent="#2563EB",
+    accent_hover="#1D4ED8",
+    accent_pressed="#1E40AF",
+
+    success="#2FA84F",
+    error="#E5484D",
+    error_hover="#F0666A",
+    error_pressed="#C03540",
+    warning="#E8930C",
+
+    border="#D9E0EA",
+    divider="#E4E9F0",
+
+    scrollbar="#B9C6D6",
+    scrollbar_pressed="#93A7BE",
+    selection="#2563EB",
+
+    card_border="#DEE5EE",
+    surface_hover="#EEF3FA",
+    danger_text="#C03540",
+
+    bg_gradient_start="#FFFFFF",
+    bg_gradient_end="#EDF0F5",
+    glass_bg="#FFFFFF",
+    glass_border="#DEE5EE",
+    bubble="rgba(37, 99, 235, 0.08)",
+
+    menu_bg="#FFFFFF",
+    menu_text="#1F2937",
+    menu_dim="#8A93A3",
+    menu_active_bg="#EAF1FE",
+    menu_active_text="#2563EB",
+    brand="#2563EB",
+    brand_dim="#93B4F5",
+)
+
+
+# ---------------------------------------------------------------------------
 # Accent presets: (normal, hover, pressed)
 # ---------------------------------------------------------------------------
 ACCENT_PRESETS = {
-    "blue":     ("#0B65D8", "#005CB8", "#004A94"),
+    "blue":     ("#2563EB", "#1D4ED8", "#1E40AF"),
     "purple":   ("#AF52DE", "#9B47C4", "#893DAB"),
     "pink":     ("#FF2D55", "#E6284D", "#CC2244"),
     "red":      ("#FF3B30", "#E6352B", "#CC2F26"),

@@ -229,10 +229,10 @@ class IOSCard(QFrame):
     painted over the page backdrop instead of an opaque white surface.
     """
 
-    PILL_RADIUS_PX = 30
+    PILL_RADIUS_PX = 16
     CARD_RADIUS_PX = 22
-    GLASS_BG = (91, 155, 255, 168)      # rgba(91,155,255,0.66) — frosted blur
-    GLASS_BORDER = (91, 155, 255, 210)  # rgba(91,155,255,0.82)
+    GLASS_BG = (255, 255, 255, 255)     # clean-light: opaque white slab
+    GLASS_BORDER = (222, 229, 238, 255)  # hairline #DEE5EE
 
     def __init__(self, parent=None, pill: bool = False, glass: bool = False):
         super().__init__(parent)
@@ -254,9 +254,9 @@ class IOSCard(QFrame):
             # survives theme changes. Cards sit in scroll areas — the
             # shadow may clip at viewport edges, which is accepted.
             shadow = QGraphicsDropShadowEffect(self)
-            shadow.setColor(QColor(25, 55, 120, 110))
-            shadow.setBlurRadius(16)
-            shadow.setOffset(0, 5)
+            shadow.setColor(QColor(15, 23, 42, 22))
+            shadow.setBlurRadius(10)
+            shadow.setOffset(0, 2)
             self.setGraphicsEffect(shadow)
             self._glass_shadow = shadow
         # Don't create a default layout - let the caller decide
@@ -278,12 +278,12 @@ class IOSCard(QFrame):
         if self._glass:
             self._bg = QColor(*self.GLASS_BG)
             self._border = QColor(*self.GLASS_BORDER)
-            # White text on the blue glass so tweak titles stay readable
-            # (user 2026-10-20).
+            # Dark text on the white slab so tweak titles stay readable
+            # (clean-light design, user 2026-10-20).
             self.setStyleSheet(
                 "background: transparent; border: none;"
                 " IOSCard QWidget { background: transparent; }"
-                " IOSCard QLabel { color: #FFFFFF;"
+                " IOSCard QLabel { color: #111827;"
                 " background: transparent; }")
         else:
             self._bg = QColor(c.bg_secondary)
@@ -299,28 +299,18 @@ class IOSCard(QFrame):
         # Inset by half the pen width so the 1px border stays inside.
         rect = self.rect().adjusted(1, 1, -1, -1)
         if self._glass:
-            # 3D depth (user order 2026-10-20): vertical gradient slab in
-            # the same frosted-blue family + bevel (top highlight, bottom
-            # shade). The drop shadow itself is a QGraphicsDropShadowEffect
-            # installed in __init__ (glass cards only).
+            # Clean-light slab (user-picked reference 2026-10-20): plain
+            # white with the faintest vertical shade + hairline border.
+            # No blue glass, no bevels.
             path = QPainterPath()
             path.addRoundedRect(QRectF(rect), radius, radius)
             grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-            grad.setColorAt(0, QColor(148, 186, 255, 225))
-            grad.setColorAt(1, QColor(104, 152, 235, 225))
+            grad.setColorAt(0, QColor(255, 255, 255, 255))
+            grad.setColorAt(1, QColor(250, 251, 253, 255))
             p.fillPath(path, grad)
             p.setPen(QPen(self._border, 1))
             p.setBrush(Qt.NoBrush)
             p.drawPath(path)
-            p.save()
-            p.setClipPath(path)
-            top_y = rect.top() + 1
-            p.setPen(QPen(QColor(255, 255, 255, 110), 1))
-            p.drawLine(rect.left(), top_y, rect.right(), top_y)
-            bot_y = rect.bottom() - 1
-            p.setPen(QPen(QColor(20, 50, 120, 60), 1))
-            p.drawLine(rect.left(), bot_y, rect.right(), bot_y)
-            p.restore()
         else:
             p.setBrush(self._bg)
             p.setPen(QPen(self._border, 1))
@@ -495,10 +485,10 @@ class IOSSettingsRow(QPushButton):
     def _retheme(self):
         self.setStyleSheet(t("settings_row"))
         if self._glass:
-            # White text on the blue glass cards (user 2026-10-20).
+            # Dark text on the white slab cards (clean-light 2026-10-20).
             self.setStyleSheet(
                 self.styleSheet()
-                + "\n#iosSettingsRow { color: #FFFFFF; }")
+                + "\n#iosSettingsRow { color: #111827; }")
 
 
 class IOSPrimaryButton(QPushButton):
@@ -596,7 +586,7 @@ class IOSSwitch(QPushButton):
         c = ColorThemeManager.instance().colors
         p = self._progress
         off = QColor(c.border)
-        on = QColor(c.success)
+        on = QColor(c.accent)
         track = QColor(
             round(off.red() + (on.red() - off.red()) * p),
             round(off.green() + (on.green() - off.green()) * p),

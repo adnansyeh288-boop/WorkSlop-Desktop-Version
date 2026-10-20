@@ -219,42 +219,36 @@ class IOSIconThemesPage(QWidget):
         self._hint.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
         self._download_btn.setStyleSheet("""
             QPushButton#downloadIconPacks {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                background-color: #2563EB;
                 border: none;
-                border-radius: 20px;
+                border-radius: 12px;
                 color: #FFFFFF;
                 font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
             }
             QPushButton#downloadIconPacks:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+                background-color: #1D4ED8;
             }
             QPushButton#downloadIconPacks:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6B99EC, stop:1 #5B93F5);
+                background-color: #1E40AF;
             }
         """)
         self._apps_btn.setStyleSheet("""
             QPushButton#appsOnIphone {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                background-color: #2563EB;
                 border: none;
-                border-radius: 20px;
+                border-radius: 12px;
                 color: #FFFFFF;
                 font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
             }
             QPushButton#appsOnIphone:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+                background-color: #1D4ED8;
             }
             QPushButton#appsOnIphone:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6B99EC, stop:1 #5B93F5);
+                background-color: #1E40AF;
             }
         """)
         self.themes_placeholder.setStyleSheet(
@@ -266,30 +260,27 @@ class IOSIconThemesPage(QWidget):
             f"color: {c.text_secondary}; font-size: 13px; background: transparent;")
         for name_lbl, imp_lbl in self._pack_card_labels.values():
             name_lbl.setStyleSheet(
-                "font-size: 14px; font-weight: 700; color: #FFFFFF;"
+                "font-size: 14px; font-weight: 700; color: #111827;"
                 " background: transparent;")
             imp_lbl.setStyleSheet(
                 "font-size: 12px; font-weight: 600; "
-                "color: rgba(255, 255, 255, 0.9);"
+                "color: rgba(17, 24, 39, 0.62);"
                 " background: transparent;")
         self._reset_btn.setStyleSheet("""
             QPushButton#resetIconThemes {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                background-color: #2563EB;
                 border: none;
-                border-radius: 20px;
+                border-radius: 12px;
                 color: #FFFFFF;
                 font-size: 14px;
                 font-weight: 600;
                 padding: 12px;
             }
             QPushButton#resetIconThemes:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+                background-color: #1D4ED8;
             }
             QPushButton#resetIconThemes:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6B99EC, stop:1 #5B93F5);
+                background-color: #1E40AF;
             }
         """)
         # Rebuild the theme cards so their hardcoded label colors follow the
@@ -353,23 +344,23 @@ class IOSIconThemesPage(QWidget):
         text_col = QVBoxLayout()
         text_col.setSpacing(2)
         bundle_lbl = QLabel(theme.bundle_id)
-        bundle_lbl.setStyleSheet("font-size: 14px; font-weight: 600; color: #FFFFFF; background: transparent;")
+        bundle_lbl.setStyleSheet("font-size: 14px; font-weight: 600; color: #111827; background: transparent;")
         bundle_lbl.setWordWrap(True)
         text_col.addWidget(bundle_lbl)
         name_text = theme.display_name if theme.display_name else QCoreApplication.translate("Nugget", "Hide label")
         name_lbl = QLabel(name_text)
-        name_lbl.setStyleSheet("font-size: 12px; color: rgba(255, 255, 255, 0.88); background: transparent;")
+        name_lbl.setStyleSheet("font-size: 12px; color: rgba(17, 24, 39, 0.66); background: transparent;")
         name_lbl.setWordWrap(True)
         text_col.addWidget(name_lbl)
         row.addLayout(text_col, 1)
 
         del_btn = QToolButton()
         del_btn.setIconSize(QSize(18, 18))
-        del_btn.setIcon(theme_icon(":/icon/trash.svg", "#FFFFFF"))
+        del_btn.setIcon(theme_icon(":/icon/trash.svg", "#5B6472"))
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.setStyleSheet(
-            "QToolButton { background-color: rgba(255, 255, 255, 0.30); color: #FFFFFF; "
-            "border: none; border-radius: 20px; padding: 7px; }"
+            "QToolButton { background-color: #F1F4F8; color: #374151; "
+            "border: 1px solid #DEE5EE; border-radius: 12px; padding: 7px; }"
             f"QToolButton:hover {{ background-color: {c.error}; color: #FFFFFF; }}"
         )
         del_btn.clicked.connect(lambda: self._remove_theme(theme.bundle_id))

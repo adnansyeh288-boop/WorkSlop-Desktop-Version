@@ -18,6 +18,9 @@
         <file>icon/discord.svg</file>
         <file>icon/heart-fill.svg</file>
         <file>icon/github.svg</file>
+        <file>icon/gnu.svg</file>
+        <file>icon/tiktok.svg</file>
+        <file>icon/xcode.svg</file>
         <file>icon/twitter.svg</file>
         <file>icon/file-earmark-zip.svg</file>
         <file>icon/folder.svg</file>
@@ -59,6 +62,7 @@
         <file>icon/ws2-signal.svg</file>
         <file>icon/ws2-apps.svg</file>
         <file>icon/ws2-sliders.svg</file>
+        <file>icon/ws2-internal.svg</file>
         <file>icon/ws2-glass.svg</file>
         <file>icon/ws2-daemons.svg</file>
         <file>icon/ws2-wallpaper.svg</file>

@@ -97,8 +97,8 @@ STYLES = {
     """,
 
     "section_header": (
-        "font-size: 12px; font-weight: 700; color: {brand}; "
-        "letter-spacing: 1.5px; padding-left: 4px;"
+        "font-size: 13px; font-weight: 700; color: {text_primary}; "
+        "letter-spacing: 0.2px; padding-left: 4px;"
     ),
 
     # Header of an IOSCollapsibleSection: same look as a plain section header,
@@ -107,14 +107,14 @@ STYLES = {
         QPushButton#iosCollapsibleHeader {{
             background: transparent;
             border: none;
-            color: {brand};
-            font-size: 12px;
+            color: {text_primary};
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.2px;
             text-align: left;
             padding: 10px 4px 10px 4px;
         }}
-        QPushButton#iosCollapsibleHeader:hover {{ color: {text_primary}; }}
+        QPushButton#iosCollapsibleHeader:hover {{ color: {accent}; }}
         QPushButton#iosCollapsibleHeader:checked {{ color: {text_primary}; }}
     """,
 
@@ -143,11 +143,11 @@ STYLES = {
             border-radius: 18px;
         }}
         QPushButton:hover {{
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(17, 24, 39, 0.05);
             color: {text_primary};
         }}
         QPushButton:pressed {{
-            background: rgba(255, 255, 255, 0.14);
+            background: rgba(17, 24, 39, 0.09);
             color: {text_primary};
         }}
     """,
@@ -169,7 +169,7 @@ STYLES = {
     "settings_row": """
         QPushButton {{
             background-color: {bg_secondary};
-            border-radius: 20px;
+            border-radius: 14px;
             color: {text_primary};
             font-size: 15px;
             text-align: left;
@@ -181,15 +181,15 @@ STYLES = {
 
     "primary_button": """
         QPushButton {{
-            background-color: {text_primary};
-            border-radius: 20px;
-            color: {text_inverse};
+            background-color: {accent};
+            border-radius: 12px;
+            color: #FFFFFF;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
             border: none;
             padding: 12px 20px;
         }}
-        QPushButton:hover {{ background-color: {accent}; color: #FFFFFF; }}
+        QPushButton:hover {{ background-color: {accent_hover}; color: #FFFFFF; }}
         QPushButton:pressed {{ background-color: {accent_pressed}; color: #FFFFFF; }}
         QPushButton:disabled {{ background-color: {bg_tertiary}; color: {text_disabled}; }}
     """,
@@ -197,7 +197,7 @@ STYLES = {
     "danger_button": """
         QPushButton {{
             background-color: {error};
-            border-radius: 20px;
+            border-radius: 12px;
             color: #ffffff;
             font-size: 15px;
             font-weight: 700;

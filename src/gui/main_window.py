@@ -358,9 +358,12 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         shell_layout.addWidget(content)
         self._sky_bg.lower()
         self.shell_layout = QtWidgets.QVBoxLayout(content)
-        self.shell_layout.setContentsMargins(0, 0, 0, 0)
-        self.shell_layout.setSpacing(0)
-        self.shell_layout.addWidget(self.ui.deviceBar)
+        self.shell_layout.setContentsMargins(16, 14, 16, 16)
+        self.shell_layout.setSpacing(10)
+        # The window IS the white card (user order 2026-10-20): no big
+        # title/subtitle header and no device bar above the card — the
+        # device status + refresh live INSIDE the card, above the page
+        # stack (see the right column built below).
         # UI rebuild 2026-10-20 (user order): menus move to the LEFT and
         # RIGHT edges, vertically centered — NOT a centered top bar.
         # Left rail = tweak families, right rail = utilities.
@@ -368,9 +371,6 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         from src.gui.siderail import SideRail
         self.topnav = TopNavBar(self)
         self.topnav.menu_selected.connect(self._on_topnav_menu)
-        self.body_row = QtWidgets.QHBoxLayout()
-        self.body_row.setContentsMargins(12, 10, 12, 12)
-        self.body_row.setSpacing(12)
         # Legacy sidebars are retired from the layout (round 2): their
         # button objects stay alive as the visibility source of truth for
         # the device-refresh flow, but they are no longer shown.
@@ -380,19 +380,78 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         self.workslop_sidebar = WorkSlopSidebar(self)
         self.workslop_sidebar.menu_selected.connect(self._on_workslop_menu)
         self.workslop_sidebar.hide()
-        # NEW: left rail | content | right rail
-        self.body_row.addWidget(self.topnav)
-        self.body_row.addWidget(self.content_stack, 1)
         self.siderail = SideRail(self)
         self.siderail.menu_selected.connect(self._on_rail_menu)
-        self.body_row.addWidget(self.siderail)
+        # Clean-light shell (user-picked reference, 2026-10-20): ONE white
+        # window card; inside it a single left sidebar (tweak families,
+        # hairline, utility menus) next to the page stack.
+        card = QtWidgets.QFrame(content)
+        card.setObjectName("windowCard")
+        card.setStyleSheet(
+            "QFrame#windowCard { background-color: #FFFFFF;"
+            " border: 1px solid #E2E8F0; border-radius: 24px; }")
+        self.body_row = QtWidgets.QHBoxLayout(card)
+        self.body_row.setContentsMargins(10, 10, 10, 10)
+        self.body_row.setSpacing(8)
+        sidebar = QtWidgets.QWidget(card)
+        sidebar.setFixedWidth(216)
+        sidebar.setStyleSheet("background: transparent;")
+        _sl = QtWidgets.QVBoxLayout(sidebar)
+        _sl.setContentsMargins(0, 2, 0, 2)
+        _sl.setSpacing(2)
+        # Traffic-light dots at the card's top-left, as in the reference.
+        _dots = QtWidgets.QWidget(sidebar)
+        _dots.setStyleSheet("background: transparent;")
+        _dl = QtWidgets.QHBoxLayout(_dots)
+        _dl.setContentsMargins(12, 2, 0, 2)
+        _dl.setSpacing(8)
+        for _dot_color in ("#FF5F57", "#FEBC2E", "#28C840"):
+            _dot = QtWidgets.QLabel(_dots)
+            _dot.setFixedSize(12, 12)
+            _dot.setStyleSheet(
+                f"background-color: {_dot_color}; border-radius: 6px;")
+            _dl.addWidget(_dot)
+        _dl.addStretch(1)
+        _sl.addWidget(_dots)
+        _sl.addSpacing(8)
+        _sl.addWidget(self.topnav)
+        _sl.addSpacing(6)
+        _div = QtWidgets.QWidget(sidebar)
+        _div.setFixedHeight(1)
+        _div.setStyleSheet("background-color: #E7EBF0;")
+        _sl.addWidget(_div)
+        _sl.addSpacing(6)
+        _sl.addWidget(self.siderail)
+        _sl.addStretch(1)
+        self.body_row.addWidget(sidebar)
+        # Right column inside the card: device status + refresh row on
+        # top, the page stack below it (user order 2026-10-20).
+        right_col = QtWidgets.QWidget(card)
+        right_col.setStyleSheet("background: transparent;")
+        _rc = QtWidgets.QVBoxLayout(right_col)
+        _rc.setContentsMargins(0, 0, 0, 0)
+        _rc.setSpacing(4)
+        _rc.addWidget(self.ui.deviceBar)
+        _rc.addWidget(self.content_stack, 1)
+        self.body_row.addWidget(right_col, 1)
         self._style_device_pill()
-        self.shell_layout.addLayout(self.body_row)
+        self.shell_layout.addWidget(card, 1)
         self.setCentralWidget(shell)
 
         # WorkSlop Desktop branding (the generated .ui still says GoldenNugget;
         # overriding here keeps mainwindow_ui.py untouched).
         self.setWindowTitle("WorkSlop Desktop")
+
+        # Window floor (user report 2026-10-20): at small sizes the app
+        # used to collapse into one tiny cropped box showing only the
+        # menu. Verified empirically with offscreen probes of the Home
+        # hero: below ~1180x740 the Apply row overlaps and the preview
+        # clips; at 1180x740 the layout is pixel-clean. The window may
+        # never go below that; the changeEvent guard below additionally
+        # restores the pre-minimize geometry if a restore comes back
+        # degenerate.
+        self.setMinimumSize(1180, 740)
+        self._pre_minimize_geometry = None
 
         # Animated blue Apple-logo background is instantiated above as
         # the shell underlay (self._sky_bg).
@@ -516,8 +575,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         bar = self.ui.deviceBar
         layout = self.ui.horizontalLayout_4
         layout.setSpacing(10)
-        layout.setContentsMargins(0, 6, 12, 6)
-        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight
+        layout.setContentsMargins(2, 6, 12, 6)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft
                             | QtCore.Qt.AlignmentFlag.AlignVCenter)
         # Title text becomes a plain expanding spacer on the left.
         try:
@@ -585,7 +644,7 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         refresh.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
         refresh.setStyleSheet("""
             QToolButton {
-                background-color: #1A3578;
+                background-color: #2563EB;
                 border: none;
                 border-radius: 18px;
                 min-width: 36px;
@@ -593,8 +652,8 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
                 min-height: 36px;
                 max-height: 36px;
             }
-            QToolButton:hover { background-color: #24448F; }
-            QToolButton:pressed { background-color: #122A6B; }
+            QToolButton:hover { background-color: #1D4ED8; }
+            QToolButton:pressed { background-color: #1E40AF; }
         """)
         try:
             from src.gui.theme import color_icon as _ci
@@ -602,10 +661,42 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
         except Exception:
             pass
 
-        # Refresh moves to the FAR RIGHT corner of the device bar (user
-        # 2026-10-20): reparent it into the bar's own layout AFTER the
-        # titleBar spacer. Its clicked signal survives the reparent.
-        layout.addWidget(refresh)
+        # Device labels beside the refresh button (user order
+        # 2026-10-20): the name + version labels move from the classic
+        # Home header into the shared device bar, stacked, with the
+        # refresh circle immediately to their right. The same label
+        # objects keep working — every flow references them via
+        # self.ui.*, and the device bar is shown in both shells.
+        if getattr(self, "_device_lbl_box", None) is None:
+            _box = QtWidgets.QWidget(bar)
+            _box.setStyleSheet("background: transparent;")
+            # Fixed width = its content, so the refresh button lands
+            # immediately to the right instead of being pushed away by
+            # the box absorbing the bar's free space.
+            _box.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed,
+                               QtWidgets.QSizePolicy.Policy.Preferred)
+            _vl = QtWidgets.QVBoxLayout(_box)
+            _vl.setContentsMargins(0, 0, 0, 0)
+            _vl.setSpacing(1)
+            _vl.addWidget(self.ui.phoneNameLbl)
+            _vl.addWidget(self.ui.phoneVersionLbl)
+            self._device_lbl_box = _box
+            # The labels' old strip on the classic Home page (device
+            # icon + hairline) is now an empty remnant — hide it so
+            # Home starts directly with its content.
+            for _remnant in ("horizontalWidget_13", "line_4"):
+                try:
+                    getattr(self.ui, _remnant).hide()
+                except Exception:
+                    pass
+        layout.insertWidget(0, self._device_lbl_box)
+
+        # Refresh sits immediately right of the device labels (user
+        # order 2026-10-20), not at the far corner. Reparenting keeps
+        # its clicked signal; removeWidget+insert is idempotent across
+        # the repeat calls from apply_theme().
+        layout.removeWidget(refresh)
+        layout.insertWidget(1, refresh)
         # The pill now holds only hidden widgets (phone + picker) — hide
         # the whole container so it takes no space in the bar.
         pill.hide()
@@ -731,6 +822,26 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             page = self.ios_pages.widget(i)
             if page and hasattr(page, '_retheme'):
                 page._retheme()
+
+    def changeEvent(self, event):
+        """Minimize/restore guard (user report 2026-10-20).
+
+        Remember the geometry when the window is minimized; if it comes
+        back smaller than the window floor (the old "one tiny cropped
+        box with only the menu" bug), re-apply the remembered geometry
+        so the app always returns at a normal, usable size.
+        """
+        super().changeEvent(event)
+        if event.type() == QtCore.QEvent.Type.WindowStateChange:
+            if self.isMinimized():
+                g = self.geometry()
+                if (g.width() >= self.minimumWidth()
+                        and g.height() >= self.minimumHeight()):
+                    self._pre_minimize_geometry = g
+            elif self._pre_minimize_geometry is not None:
+                if (self.width() < self.minimumWidth()
+                        or self.height() < self.minimumHeight()):
+                    self.setGeometry(self._pre_minimize_geometry)
 
     def closeEvent(self, event):
         """Guard window close so device threads never get destroyed mid-run.

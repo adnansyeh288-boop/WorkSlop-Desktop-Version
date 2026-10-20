@@ -162,6 +162,16 @@ ICONS = {
         '<circle cx="29.4" cy="16" r="1.6"/><circle cx="16.4" cy="24.5" r="1.6"/>'
         '<circle cx="32.9" cy="33" r="1.6"/></g>'
     ),
+    # internal: Xcode-style app tile with a hammer cut out of it
+    # (user order 2026-10-20). One evenodd path: the rounded tile is
+    # the silhouette, the hammer (head + handle, rotated 45 degrees,
+    # corners precomputed) is knocked out transparent.
+    "ws2-internal": svg(
+        '<path fill-rule="evenodd" fill="{P}" d="'
+        + rrect_path(6, 6, 36, 36, 9)
+        + 'M25.8 6.7L41.3 22.2L35 28.6L19.4 13Z'
+        + 'M25.1 19.4L28.6 22.9L16.9 34.6L13.4 31.1Z"/>'
+    ),
     # liquid glass: droplet with inner gloss and bottom shade
     "ws2-glass": svg(
         '<path d="M24 2.8C24 2.8 9.8 19.6 9.8 29.4a14.2 13.8 0 0 0 28.4 0'

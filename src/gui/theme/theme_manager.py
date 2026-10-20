@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal, QSettings
 from PySide6.QtGui import QColor, QPalette
 
-from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, ACCENT_PRESETS
+from src.gui.theme.colors import ThemeColors, SKY, WS_BLUE, CLEAN, ACCENT_PRESETS
 from src.controllers.settings import migrate_legacy_key
 
 
@@ -163,9 +163,10 @@ class ColorThemeManager(QObject):
         else:
             accent, hover, pressed = ACCENT_PRESETS[self._accent_name]
         # Single-UI rebuild (user order 2026-10-18): the shipped palette is
-        # WS_BLUE — the strong blue-white desktop-tool identity (#0B65D8
-        # header/footer bars, white content, light-grey panels).
-        return WS_BLUE.with_accent(accent, hover, pressed)
+        # CLEAN — the flat light palette of the user-picked Canva
+        # reference (2026-10-20): white window card on a light-grey page,
+        # royal-blue accent #2563EB.
+        return CLEAN.with_accent(accent, hover, pressed)
 
     def accent_hex(self) -> str:
         """Return the ``#rrggbb`` string for the current accent."""
