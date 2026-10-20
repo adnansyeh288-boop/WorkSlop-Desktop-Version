@@ -4,9 +4,10 @@ from PySide6.QtCore import Qt, QSize, QCoreApplication, QUrl
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout,
     QPushButton, QScrollArea, QToolButton, QStackedWidget,
-    QCheckBox, QComboBox, QListWidget, QMessageBox
+    QCheckBox, QComboBox, QListWidget, QMessageBox,
+    QGraphicsDropShadowEffect,
 )
-from PySide6.QtGui import QPixmap, QIcon, QImageReader
+from PySide6.QtGui import QPixmap, QIcon, QImageReader, QColor
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
 from src.gui.ios.components import (
@@ -15,6 +16,16 @@ from src.gui.ios.components import (
 from src.gui.theme import ColorThemeManager, t
 from src.gui.theme.colors import NUGGET_DARK
 from src.tweaks.tweaks import tweaks, TweakID
+
+
+def _pb_shadow(widget):
+    """Soft drop shadow for the page's pills/hero (3D pass 2026-10-20)."""
+    shadow = QGraphicsDropShadowEffect(widget)
+    shadow.setColor(QColor(25, 55, 120, 110))
+    shadow.setBlurRadius(14)
+    shadow.setOffset(0, 4)
+    widget.setGraphicsEffect(shadow)
+    return shadow
 
 
 class TemplatePreviewCard(QLabel):
@@ -30,9 +41,13 @@ class TemplatePreviewCard(QLabel):
         self.setPixmap(pixmap.scaled(190, 190, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def _retheme(self):
-        c = ColorThemeManager.instance().colors
+        # Blue glass frame (user 2026-10-20: no white surfaces left on
+        # the PosterBoard page); the page's _retheme overrides this with
+        # the Nugget dark QSS in the Full Nugget interface.
         self.setStyleSheet(
-            f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 20px; border: 1px solid {c.border}; }}"
+            "QLabel { background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+            " stop:0 rgba(148, 186, 255, 0.9), stop:1 rgba(104, 152, 235, 0.9));"
+            " border-radius: 20px; border: 1px solid rgba(91, 155, 255, 0.82); }"
         )
 
 
@@ -59,7 +74,7 @@ class IOSPosterboardPage(QWidget):
         layout.setSpacing(0)
 
         # ---- 1. IMPORT HERO (primary action, top) ----------------------
-        hero = IOSCard()
+        hero = IOSCard(glass=True)
         hero_layout = QHBoxLayout(hero)
         hero_layout.setContentsMargins(20, 16, 20, 16)
         hero_layout.setSpacing(16)
@@ -84,6 +99,7 @@ class IOSPosterboardPage(QWidget):
         self._import_hero_btn.setFixedHeight(48)
         self._import_hero_btn.setMinimumWidth(200)
         self._import_hero_btn.clicked.connect(self.show_add_tendies_dialog)
+        _pb_shadow(self._import_hero_btn)
         hero_layout.addWidget(self._import_hero_btn, 0, Qt.AlignVCenter)
 
         layout.addWidget(hero)
@@ -95,8 +111,8 @@ class IOSPosterboardPage(QWidget):
         self._tab_bar = QWidget()
         self._tab_bar.setFixedHeight(56)
         tab_layout = QHBoxLayout(self._tab_bar)
-        tab_layout.setContentsMargins(0, 8, 0, 0)
-        tab_layout.setSpacing(0)
+        tab_layout.setContentsMargins(6, 8, 6, 2)
+        tab_layout.setSpacing(8)
 
         self.tendies_tab_btn = self._make_tab_button(
             QCoreApplication.translate("Nugget", "Tendies"),
@@ -155,6 +171,8 @@ class IOSPosterboardPage(QWidget):
         self._mode_configs.clicked.connect(
             lambda: self._on_mode_toggled(True, True))
         mode_layout.addWidget(self._mode_configs)
+        _pb_shadow(self._mode_descriptors)
+        _pb_shadow(self._mode_configs)
         mode_layout.addStretch(1)
         layout.addWidget(mode_bar)
 
@@ -168,7 +186,7 @@ class IOSPosterboardPage(QWidget):
         layout.addWidget(self._mode_caption)
 
         # ---- 5. Database tools (collapsible, Configurations only) ------
-        self._config_card = IOSCard()
+        self._config_card = IOSCard(glass=True)
         config_layout = QVBoxLayout(self._config_card)
         config_layout.setContentsMargins(16, 12, 16, 12)
         config_layout.setSpacing(8)
@@ -210,7 +228,9 @@ class IOSPosterboardPage(QWidget):
         self._refresh_saved_ids()
 
         # ---- 6. Reset (danger zone, bottom) -----------------------------
-        reset_bar = QWidget()
+        # Blue-glass card like the rest of the page (user 2026-10-20);
+        # the danger identity lives on the red button itself.
+        reset_bar = IOSCard(glass=True)
         reset_bar.setObjectName("pbResetBar")
         reset_layout = QHBoxLayout(reset_bar)
         reset_layout.setContentsMargins(16, 8, 16, 12)
@@ -260,14 +280,15 @@ class IOSPosterboardPage(QWidget):
         self.setStyleSheet(
             "background: transparent; border: none;"
             " IOSPosterboardPage QWidget { background: transparent; }")
-        # Hero
+        # Hero — the card is blue glass now, so its text is white in
+        # every interface (the Full Nugget chrome darkens the card).
         if hasattr(self, "_hero_title"):
             self._hero_title.setStyleSheet(
-                f"background: transparent; color: {c.text_primary};"
+                "background: transparent; color: #FFFFFF;"
                 " font-size: 22px; font-weight: 800;")
         if hasattr(self, "_hero_sub"):
             self._hero_sub.setStyleSheet(
-                f"background: transparent; color: {c.text_secondary};"
+                "background: transparent; color: rgba(255, 255, 255, 0.78);"
                 " font-size: 13px;")
         if hasattr(self, "_import_hero_btn"):
             self._import_hero_btn.setStyleSheet(f"""
@@ -287,62 +308,89 @@ class IOSPosterboardPage(QWidget):
                     background-color: {c.accent_pressed};
                 }}
             """)
-        # Mode segmented buttons
+        # Mode segmented buttons — blue fluid pills like the app menus
+        # (user 2026-10-20): active = WorkSlop blue gradient, inactive =
+        # lighter frosted blue, white text, pill corners.
         for btn in (self._mode_descriptors, self._mode_configs):
-            btn.setStyleSheet(f"""
-                QPushButton#pbModeBtn {{
-                    background-color: {c.bg_secondary};
-                    border: 1px solid {c.card_border};
-                    border-radius: 16px;
-                    color: {c.text_secondary};
+            btn.setStyleSheet("""
+                QPushButton#pbModeBtn {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A9C8FF, stop:1 #8FB8F5);
+                    border: none;
+                    border-radius: 20px;
+                    color: #FFFFFF;
                     font-size: 13px;
                     font-weight: 600;
                     padding: 8px 18px;
-                }}
-                QPushButton#pbModeBtn:checked {{
-                    background-color: {c.accent};
-                    border: 1px solid {c.accent};
+                }
+                QPushButton#pbModeBtn:checked {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                    border: none;
                     color: #FFFFFF;
-                }}
-                QPushButton#pbModeBtn:hover {{
-                    background-color: {c.surface_hover};
-                }}
+                }
+                QPushButton#pbModeBtn:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #94BEFF, stop:0.5 #93BFFF, stop:1 #558FF0);
+                }
             """)
-        self._reset_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {c.scrollbar};
+        # Reset: red-toned danger button on the blue-glass card.
+        self._reset_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #F0564F, stop:1 #D63A35);
                 border: none;
                 border-radius: 20px;
-                color: {c.error};
+                color: #FFFFFF;
                 font-size: 15px;
                 font-weight: 600;
                 padding: 12px;
-            }}
-            QPushButton:hover {{ background-color: {c.surface_hover}; }}
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #F56A63, stop:1 #DE4A44);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #D63A35, stop:1 #B92E2A);
+            }
         """)
+        self._reset_caption.setStyleSheet(
+            "background: transparent; color: rgba(255, 255, 255, 0.85);"
+            " font-size: 13px;")
         self._tab_bar.setStyleSheet(
-            f"background-color: {c.bg_primary}; border-top: 1px solid {c.bg_secondary};"
+            "background: transparent; border: none;"
         )
         for btn in (self.tendies_tab_btn, self.templates_tab_btn, self.video_tab_btn):
-            btn.setStyleSheet(f"""
-                QToolButton {{
-                    background: transparent;
-                    color: {c.text_secondary};
-                    font-size: 11px;
-                    padding: 8px 0;
+            btn.setStyleSheet("""
+                QToolButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A9C8FF, stop:1 #8FB8F5);
+                    color: #FFFFFF;
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 4px 0;
                     border: none;
-                }}
-                QToolButton:checked {{
-                    color: {c.accent};
-                }}
+                    border-radius: 20px;
+                }
+                QToolButton:checked {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                    color: #FFFFFF;
+                    border: 2px solid rgba(255, 255, 255, 0.9);
+                }
+                QToolButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #94BEFF, stop:0.5 #93BFFF, stop:1 #558FF0);
+                    color: #FFFFFF;
+                }
             """)
-            # Recolor tab icons to match theme (fixes missing/invisible icons).
+            # Tab icons: white on the blue pills in both states.
             try:
                 from src.gui.theme import theme_icon
                 res = btn.property("_ws_icon_res")
                 if res:
-                    tint = c.accent if btn.isChecked() else c.text_secondary
-                    btn.setIcon(theme_icon(res, tint))
+                    btn.setIcon(theme_icon(res, "#FFFFFF"))
             except Exception:
                 pass
         self._retheme_tendies_tab()
@@ -361,23 +409,32 @@ class IOSPosterboardPage(QWidget):
     def _retheme_config_card(self):
         c = self._palette()
         dark = self._full_nugget
+        # The config card is blue glass (WorkSlop) / dark (Full Nugget):
+        # its labels are white either way.
         lbl_qss = (f"color: {c.text_primary}; font-size: 13px;"
-                   " background-color: transparent;") if dark else ""
+                   " background-color: transparent;") if dark else (
+                   "color: #FFFFFF; font-size: 13px;"
+                   " background-color: transparent;")
         self.pb_db_lbl.setStyleSheet(lbl_qss)
         if hasattr(self, "_saved_ids_lbl"):
             self._saved_ids_lbl.setStyleSheet(lbl_qss)
         for btn in getattr(self, "_pb_db_btns", []):
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: {c.bg_secondary};
-                    border: 1px solid {c.border};
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A9C8FF, stop:1 #8FB8F5);
+                    border: none;
                     border-radius: 20px;
-                    color: {c.text_primary};
+                    color: #FFFFFF;
                     font-size: 13px;
+                    font-weight: 600;
                     padding: 8px 12px;
-                }}
-                QPushButton:hover {{ background-color: {c.surface_hover}; }}
-            """ if dark else "")
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                }
+            """)
         if hasattr(self, "saved_ids_list"):
             self.saved_ids_list.setStyleSheet(f"""
                 QListWidget {{
@@ -391,7 +448,22 @@ class IOSPosterboardPage(QWidget):
                 QListWidget::item {{ padding: 6px; }}
                 QListWidget::item:selected {{
                     background-color: {c.accent}; color: {c.text_inverse}; }}
-            """ if dark else "")
+            """ if dark else """
+                QListWidget {
+                    background-color: rgba(255, 255, 255, 0.16);
+                    border: 1px solid rgba(255, 255, 255, 0.45);
+                    border-radius: 18px;
+                    color: #FFFFFF;
+                    font-size: 13px;
+                    padding: 4px;
+                }
+                QListWidget::item { padding: 6px; }
+                QListWidget::item:selected {
+                    background-color: rgba(59, 130, 246, 0.8);
+                    color: #FFFFFF;
+                }
+                QListWidget:disabled { color: rgba(255, 255, 255, 0.6); }
+            """)
 
     def _retheme_tendies_tab(self):
         c = self._palette()
@@ -406,25 +478,34 @@ class IOSPosterboardPage(QWidget):
             self._download_icon.setStyleSheet(
                 f"QLabel {{ background-color: {c.accent}; border-radius: 20px; font-size: 24px; color: {c.text_inverse}; }}"
             )
+        # Download/add cards are blue glass: text is white (the Full
+        # Nugget chrome darkens the cards, white still reads there).
         if hasattr(self, '_download_title'):
             self._download_title.setStyleSheet(
-                f"font-size: 16px; font-weight: 600; color: {c.text_primary};"
+                "font-size: 16px; font-weight: 600; color: #FFFFFF;"
+                " background: transparent;"
             )
         if hasattr(self, '_download_subtitle'):
             self._download_subtitle.setStyleSheet(
-                f"font-size: 12px; color: {c.text_secondary};"
+                "font-size: 12px; color: rgba(255, 255, 255, 0.78);"
+                " background: transparent;"
             )
         if hasattr(self, '_download_chevron'):
             self._download_chevron.setStyleSheet(
-                f"font-size: 26px; color: {c.text_secondary};"
+                "font-size: 26px; color: rgba(255, 255, 255, 0.85);"
+                " background: transparent;"
             )
         if hasattr(self, '_add_icon'):
+            # File-drop tile: dashed border kept, now on blue glass.
             self._add_icon.setStyleSheet(
-                f"QLabel {{ background-color: {c.bg_secondary}; border-radius: 20px; border: 2px dashed {c.border}; font-size: 36px; color: {c.accent}; }}"
+                "QLabel { background-color: rgba(255, 255, 255, 0.18);"
+                " border-radius: 20px; border: 2px dashed rgba(255, 255, 255, 0.7);"
+                " font-size: 36px; color: #FFFFFF; }"
             )
         if hasattr(self, '_add_label'):
             self._add_label.setStyleSheet(
-                f"font-size: 14px; color: {c.text_secondary}; text-align: center;"
+                "font-size: 14px; color: rgba(255, 255, 255, 0.88);"
+                " text-align: center; background: transparent;"
             )
 
     def _retheme_templates_tab(self):
@@ -454,39 +535,45 @@ class IOSPosterboardPage(QWidget):
             lbl.setStyleSheet(f"font-size: 15px; color: {c.text_primary}; min-width: 100px;")
         for btn in (getattr(self, 'thumb_btn', None), getattr(self, 'video_btn', None)):
             if btn is not None:
-                btn.setStyleSheet(f"""
-                    QPushButton {{
-                        background-color: {c.bg_secondary};
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #A9C8FF, stop:1 #8FB8F5);
                         border-radius: 20px;
-                        color: {c.accent};
+                        color: #FFFFFF;
                         font-size: 15px;
+                        font-weight: 600;
                         padding: 12px 24px;
                         border: none;
-                    }}
-                    QPushButton:hover {{ background-color: {c.surface_hover}; }}
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                    }
                 """)
         for chk in (getattr(self, 'loop_chk', None), getattr(self, 'reverse_chk', None),
                      getattr(self, 'foreground_chk', None)):
             if chk is not None:
                 chk.setStyleSheet(f"color: {c.text_primary}; font-size: 15px;")
         if hasattr(self, 'calc_mode_drp'):
-            self.calc_mode_drp.setStyleSheet(f"""
-                QComboBox {{
-                    background-color: {c.bg_secondary};
+            self.calc_mode_drp.setStyleSheet("""
+                QComboBox {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #A9C8FF, stop:1 #8FB8F5);
                     border: none;
                     border-radius: 20px;
-                    color: {c.text_primary};
+                    color: #FFFFFF;
                     font-size: 10.5pt;
                     padding: 8px 12px;
-                }}
-                QComboBox::drop-down {{ border: none; width: 24px; }}
-                QComboBox QAbstractItemView {{
-                    background-color: {c.surface_hover};
-                    border: 1px solid {c.border};
+                }
+                QComboBox::drop-down { border: none; width: 24px; }
+                QComboBox QAbstractItemView {
+                    background-color: #82B1FF;
+                    border: none;
                     border-radius: 20px;
-                    color: {c.text_primary};
-                    selection-background-color: {c.accent};
-                }}
+                    color: #FFFFFF;
+                    selection-background-color: #5B93F5;
+                }
             """)
 
     def _make_tab_button(self, text: str, icon_path: str, index: int) -> QToolButton:
@@ -507,6 +594,7 @@ class IOSPosterboardPage(QWidget):
         btn.setCheckable(True)
         btn.setAutoExclusive(True)
         btn.setCursor(Qt.PointingHandCursor)
+        _pb_shadow(btn)
         btn.clicked.connect(lambda: self._switch_tab(index))
         return btn
 
@@ -537,7 +625,7 @@ class IOSPosterboardPage(QWidget):
 
     def _create_download_card(self) -> QWidget:
         c = ColorThemeManager.instance().colors
-        card = IOSCard()
+        card = IOSCard(glass=True)
         card.setCursor(Qt.PointingHandCursor)
         card.setMinimumHeight(88)
         card.mousePressEvent = lambda e: self.open_wallpaper_downloader()
@@ -569,7 +657,7 @@ class IOSPosterboardPage(QWidget):
 
     def _create_add_tendies_card(self) -> QWidget:
         c = ColorThemeManager.instance().colors
-        card = IOSCard()
+        card = IOSCard(glass=True)
         card.setFixedSize(140, 160)
         card.setCursor(Qt.PointingHandCursor)
         card.mousePressEvent = lambda e: self.show_add_tendies_dialog()
@@ -970,7 +1058,8 @@ class IOSPosterboardPage(QWidget):
 
     def _create_tendie_card(self, tendie) -> QWidget:
         c = self._palette()
-        card = IOSCard()
+        dark = self._full_nugget
+        card = IOSCard(glass=True)
         card.setFixedSize(140, 160)
         card.setCursor(Qt.PointingHandCursor)
 
@@ -982,21 +1071,32 @@ class IOSPosterboardPage(QWidget):
         icon = QLabel()
         icon.setFixedSize(80, 80)
         icon.setAlignment(Qt.AlignCenter)
+        # Placeholder behind a missing preview: frosted chip on the
+        # glass card (dark chip in the Full Nugget interface).
+        icon_fallback = (
+            f"background-color: {c.surface_hover}; border-radius: 20px;"
+            if dark else
+            "background-color: rgba(255, 255, 255, 0.20);"
+            " border-radius: 20px;")
         try:
             from PySide6.QtGui import QPixmap
             pixmap = QPixmap(tendie.get_icon())
             if not pixmap.isNull():
                 icon.setPixmap(pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
-                icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 20px;")
+                icon.setStyleSheet(icon_fallback)
         except Exception:
-            icon.setStyleSheet(f"background-color: {c.surface_hover}; border-radius: 20px;")
+            icon.setStyleSheet(icon_fallback)
         inner.addWidget(icon, 0, Qt.AlignCenter)
 
         self._load_tendie_preview_by_name(card, icon, tendie.name)
 
         name = QLabel(tendie.name.replace(".tendies", ""))
-        name.setStyleSheet(f"font-size: 13px; color: {c.text_secondary}; text-align: center;")
+        name.setStyleSheet(
+            f"font-size: 13px; color: {c.text_secondary}; text-align: center;"
+            if dark else
+            "font-size: 13px; color: rgba(255, 255, 255, 0.88);"
+            " text-align: center; background: transparent;")
         name.setAlignment(Qt.AlignCenter)
         name.setWordWrap(True)
         inner.addWidget(name)
@@ -1005,17 +1105,36 @@ class IOSPosterboardPage(QWidget):
         actions.setSpacing(6)
         actions.setContentsMargins(0, 0, 0, 0)
 
+        # Action chips on the glass card: frosted white (dark palette
+        # chips in the Full Nugget interface).
+        if dark:
+            chip_qss = (
+                f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.accent}; "
+                f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
+                f"QToolButton:hover {{ background-color: {c.scrollbar_pressed}; }}")
+            del_qss = (
+                f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.error}; "
+                f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
+                f"QToolButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}")
+        else:
+            chip_qss = (
+                "QToolButton { background-color: rgba(255, 255, 255, 0.22);"
+                " border: 1px solid rgba(255, 255, 255, 0.45);"
+                " border-radius: 20px; padding: 7px; }"
+                "QToolButton:hover { background-color: rgba(255, 255, 255, 0.40); }")
+            del_qss = (
+                "QToolButton { background-color: rgba(255, 255, 255, 0.22);"
+                " border: 1px solid rgba(255, 255, 255, 0.45);"
+                " border-radius: 20px; padding: 7px; }"
+                "QToolButton:hover { background-color: rgba(214, 48, 49, 0.55); }")
+
         preview_btn = QToolButton()
         preview_btn.setIconSize(QSize(18, 18))
         preview_btn.setIcon(QIcon(":/icon/wallpaper.svg"))
         preview_btn.setToolTip(QCoreApplication.translate(
             "Nugget", "Lock screen preview"))
         preview_btn.setCursor(Qt.PointingHandCursor)
-        preview_btn.setStyleSheet(
-            f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.accent}; "
-            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
-            f"QToolButton:hover {{ background-color: {c.scrollbar_pressed}; }}"
-        )
+        preview_btn.setStyleSheet(chip_qss)
         preview_btn.clicked.connect(
             lambda: self._show_tendie_preview(tendie))
         actions.addWidget(preview_btn)
@@ -1024,11 +1143,7 @@ class IOSPosterboardPage(QWidget):
         del_btn.setIconSize(QSize(18, 18))
         from PySide6.QtGui import QIcon as _QIcon
         del_btn.setIcon(_QIcon(":/icon/trash.svg"))
-        del_btn.setStyleSheet(
-            f"QToolButton {{ background-color: {c.bg_secondary}; color: {c.error}; "
-            f"border: 1px solid {c.border}; border-radius: 20px; padding: 7px; }}"
-            f"QToolButton:hover {{ background-color: {c.error}; color: {c.text_inverse}; }}"
-        )
+        del_btn.setStyleSheet(del_qss)
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.clicked.connect(lambda: self._delete_tendie(tendie))
         actions.addWidget(del_btn)

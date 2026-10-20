@@ -2,11 +2,11 @@ from PySide6.QtCore import (
     Qt, QCoreApplication, Signal as pyqtSignal, QSize, QRectF,
     QPropertyAnimation, QEasingCurve, Property,
 )
-from PySide6.QtGui import QPainter, QColor, QPen
+from PySide6.QtGui import QPainter, QColor, QPen, QLinearGradient, QPainterPath
 from PySide6.QtWidgets import (
     QWidget, QHBoxLayout, QLabel, QPushButton, QFrame,
     QSizePolicy, QDialog, QDialogButtonBox, QLineEdit, QSpinBox,
-    QDoubleSpinBox, QVBoxLayout,
+    QDoubleSpinBox, QVBoxLayout, QGraphicsDropShadowEffect,
 )
 
 from src.gui.theme import t, ColorThemeManager
@@ -225,7 +225,7 @@ class IOSCard(QFrame):
     Pass glass=True for the WorkSlop blue-glass look used on the tweak
     pages (user order 2026-10-20): a translucent blue fill
     rgba(91,155,255,0.20) with a rgba(91,155,255,0.45) border — the
-    gaussian-blur-style transparent blue of the menu boxes (#5B9BFF),
+    gaussian-blur-style transparent blue of the menu boxes (#82B1FF),
     painted over the page backdrop instead of an opaque white surface.
     """
 
@@ -247,6 +247,18 @@ class IOSCard(QFrame):
         self._border = QColor("#C4D6E8")
         self._retheme()
         _auto_retheme(self)
+        if self._glass:
+            # 3D depth (user order 2026-10-20): soft drop shadow under
+            # every blue-glass card so it lifts off the page backdrop.
+            # _retheme never touches the graphics effect, so the shadow
+            # survives theme changes. Cards sit in scroll areas — the
+            # shadow may clip at viewport edges, which is accepted.
+            shadow = QGraphicsDropShadowEffect(self)
+            shadow.setColor(QColor(25, 55, 120, 110))
+            shadow.setBlurRadius(16)
+            shadow.setOffset(0, 5)
+            self.setGraphicsEffect(shadow)
+            self._glass_shadow = shadow
         # Don't create a default layout - let the caller decide
 
     def set_pill(self, pill: bool):
@@ -286,9 +298,33 @@ class IOSCard(QFrame):
         radius = self.PILL_RADIUS_PX if self._pill else self.CARD_RADIUS_PX
         # Inset by half the pen width so the 1px border stays inside.
         rect = self.rect().adjusted(1, 1, -1, -1)
-        p.setBrush(self._bg)
-        p.setPen(QPen(self._border, 1))
-        p.drawRoundedRect(rect, radius, radius)
+        if self._glass:
+            # 3D depth (user order 2026-10-20): vertical gradient slab in
+            # the same frosted-blue family + bevel (top highlight, bottom
+            # shade). The drop shadow itself is a QGraphicsDropShadowEffect
+            # installed in __init__ (glass cards only).
+            path = QPainterPath()
+            path.addRoundedRect(QRectF(rect), radius, radius)
+            grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+            grad.setColorAt(0, QColor(148, 186, 255, 225))
+            grad.setColorAt(1, QColor(104, 152, 235, 225))
+            p.fillPath(path, grad)
+            p.setPen(QPen(self._border, 1))
+            p.setBrush(Qt.NoBrush)
+            p.drawPath(path)
+            p.save()
+            p.setClipPath(path)
+            top_y = rect.top() + 1
+            p.setPen(QPen(QColor(255, 255, 255, 110), 1))
+            p.drawLine(rect.left(), top_y, rect.right(), top_y)
+            bot_y = rect.bottom() - 1
+            p.setPen(QPen(QColor(20, 50, 120, 60), 1))
+            p.drawLine(rect.left(), bot_y, rect.right(), bot_y)
+            p.restore()
+        else:
+            p.setBrush(self._bg)
+            p.setPen(QPen(self._border, 1))
+            p.drawRoundedRect(rect, radius, radius)
         p.end()
         super().paintEvent(event)
 

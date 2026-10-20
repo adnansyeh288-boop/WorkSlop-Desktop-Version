@@ -8,10 +8,10 @@ Layout (user spec):
 No AI slop. No static stickers.
 """
 from PySide6.QtCore import Qt, QSize, QCoreApplication
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QColor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QSizePolicy,
+    QSizePolicy, QGraphicsDropShadowEffect,
 )
 
 from ..page import Page
@@ -104,20 +104,28 @@ class HomePage(Page):
         apply_btn.setMinimumWidth(220)
         apply_btn.setStyleSheet("""
             QPushButton {
-                background-color: #5B9BFF;
-                border: 1px solid #5B9BFF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
+                border: 1px solid #6B99EC;
                 border-radius: 26px;
                 color: #FFFFFF;
                 font-size: 16px;
                 font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #6BABFF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #94BEFF, stop:0.5 #93BFFF, stop:1 #558FF0);
             }
             QPushButton:pressed {
-                background-color: #3B82F6;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6B99EC, stop:1 #5B93F5);
             }
         """)
+        _apply_shadow = QGraphicsDropShadowEffect(apply_btn)
+        _apply_shadow.setBlurRadius(12)
+        _apply_shadow.setOffset(0, 4)
+        _apply_shadow.setColor(QColor(30, 60, 140, 90))
+        apply_btn.setGraphicsEffect(_apply_shadow)
         apply_btn.clicked.connect(self._on_home_apply)
         apply_row.addWidget(apply_btn)
 
@@ -128,20 +136,28 @@ class HomePage(Page):
         cancel_btn.setMinimumWidth(160)
         cancel_btn.setStyleSheet("""
             QPushButton {
-                background-color: #1A3578;
-                border: 1px solid #1A3578;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2C4E9E, stop:0.5 #1A3578, stop:1 #12265C);
+                border: 1px solid #12265C;
                 border-radius: 26px;
                 color: #FFFFFF;
                 font-size: 16px;
                 font-weight: 700;
             }
             QPushButton:hover {
-                background-color: #24448F;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3A5CA8, stop:0.5 #24448F, stop:1 #1A3578);
             }
             QPushButton:pressed {
-                background-color: #122A6B;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1A3578, stop:1 #0C1F4E);
             }
         """)
+        _cancel_shadow = QGraphicsDropShadowEffect(cancel_btn)
+        _cancel_shadow.setBlurRadius(12)
+        _cancel_shadow.setOffset(0, 4)
+        _cancel_shadow.setColor(QColor(30, 60, 140, 90))
+        cancel_btn.setGraphicsEffect(_cancel_shadow)
         cancel_btn.clicked.connect(self._on_home_cancel_apply)
         apply_row.addWidget(cancel_btn)
         apply_row.addStretch(1)

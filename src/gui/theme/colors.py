@@ -337,7 +337,7 @@ NUGGET_DARK = ThemeColors(
     menu_dim="#b8b8b8",
     menu_active_bg="#2860ca",
     menu_active_text="#FFFFFF",
-    brand="#5B9BFF",
+    brand="#82B1FF",
     brand_dim="#2860ca",
 )
 

@@ -597,10 +597,18 @@ class MainWindow(QtWidgets.QMainWindow, DeviceBarMixin, SettingsMixin,
             QToolButton:pressed { background-color: #122A6B; }
         """)
         try:
-            from src.gui.theme import theme_icon as _ti
-            refresh.setIcon(_ti(":/icon/ws2-refresh.svg", "#FFFFFF"))
+            from src.gui.theme import color_icon as _ci
+            refresh.setIcon(_ci(":/icon/ws2-refresh.svg", 18))
         except Exception:
             pass
+
+        # Refresh moves to the FAR RIGHT corner of the device bar (user
+        # 2026-10-20): reparent it into the bar's own layout AFTER the
+        # titleBar spacer. Its clicked signal survives the reparent.
+        layout.addWidget(refresh)
+        # The pill now holds only hidden widgets (phone + picker) — hide
+        # the whole container so it takes no space in the bar.
+        pill.hide()
 
     def _update_device_circles(self, has_device: bool):
         """Phone circle removed (user 2026-10-20) — refresh button only.

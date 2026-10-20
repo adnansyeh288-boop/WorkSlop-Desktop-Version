@@ -139,9 +139,9 @@ class IOSIconThemesPage(QWidget):
             "Dark": ("#1D1D20", "#3A3A3E",
                      ("#3A3A3E", "#3A3A3E", "#3A3A3E", "#3A3A3E")),
             "Tinted": ("#D9E7FF", "#A9C8F5",
-                       ("#5B9BFF", "#7FB0FF", "#3B82F6", "#9CC2FF")),
+                       ("#82B1FF", "#7FB0FF", "#5B93F5", "#9CC2FF")),
             "More Tints": ("#FFFFFF", "#C9D4E2",
-                           ("#FF5A5A", "#FFB340", "#34C759", "#5B9BFF")),
+                           ("#FF5A5A", "#FFB340", "#34C759", "#82B1FF")),
         }
         bg, border, squares = palettes.get(variant, palettes["Light"])
         size = 144
@@ -219,7 +219,8 @@ class IOSIconThemesPage(QWidget):
         self._hint.setStyleSheet(f"color: {c.text_secondary}; font-size: 13px;")
         self._download_btn.setStyleSheet("""
             QPushButton#downloadIconPacks {
-                background-color: #5B9BFF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
                 border: none;
                 border-radius: 20px;
                 color: #FFFFFF;
@@ -227,12 +228,19 @@ class IOSIconThemesPage(QWidget):
                 font-weight: 600;
                 padding: 12px;
             }
-            QPushButton#downloadIconPacks:hover { background-color: #6FA8FF; }
-            QPushButton#downloadIconPacks:pressed { background-color: #3B82F6; }
+            QPushButton#downloadIconPacks:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+            }
+            QPushButton#downloadIconPacks:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6B99EC, stop:1 #5B93F5);
+            }
         """)
         self._apps_btn.setStyleSheet("""
             QPushButton#appsOnIphone {
-                background-color: #5B9BFF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
                 border: none;
                 border-radius: 20px;
                 color: #FFFFFF;
@@ -240,8 +248,14 @@ class IOSIconThemesPage(QWidget):
                 font-weight: 600;
                 padding: 12px;
             }
-            QPushButton#appsOnIphone:hover { background-color: #6FA8FF; }
-            QPushButton#appsOnIphone:pressed { background-color: #3B82F6; }
+            QPushButton#appsOnIphone:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+            }
+            QPushButton#appsOnIphone:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6B99EC, stop:1 #5B93F5);
+            }
         """)
         self.themes_placeholder.setStyleSheet(
             f"color: {c.text_secondary}; font-size: 15px; padding: 24px 0;")
@@ -260,7 +274,8 @@ class IOSIconThemesPage(QWidget):
                 " background: transparent;")
         self._reset_btn.setStyleSheet("""
             QPushButton#resetIconThemes {
-                background-color: #5B9BFF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #A5C8FF, stop:0.5 #82B1FF, stop:1 #6B99EC);
                 border: none;
                 border-radius: 20px;
                 color: #FFFFFF;
@@ -268,8 +283,14 @@ class IOSIconThemesPage(QWidget):
                 font-weight: 600;
                 padding: 12px;
             }
-            QPushButton#resetIconThemes:hover { background-color: #6FA8FF; }
-            QPushButton#resetIconThemes:pressed { background-color: #3B82F6; }
+            QPushButton#resetIconThemes:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #94BEFF, stop:0.5 #6FA8FF, stop:1 #558FF0);
+            }
+            QPushButton#resetIconThemes:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6B99EC, stop:1 #5B93F5);
+            }
         """)
         # Rebuild the theme cards so their hardcoded label colors follow the
         # current palette too.

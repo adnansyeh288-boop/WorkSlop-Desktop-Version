@@ -14,8 +14,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from PySide6.QtCore import Qt, QRectF, QSize
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QFont
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QFont, QLinearGradient
+from PySide6.QtWidgets import (
+    QWidget, QVBoxLayout, QLabel, QGraphicsDropShadowEffect,
+)
 
 
 @dataclass
@@ -76,6 +78,12 @@ class IPhonePreview(QWidget):
         # 200x420 to fit in 820px window without clipping.
         self.setFixedSize(200, 420)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # 3D depth: one soft drop shadow under the whole phone slab.
+        _shadow = QGraphicsDropShadowEffect(self)
+        _shadow.setBlurRadius(24)
+        _shadow.setOffset(0, 10)
+        _shadow.setColor(QColor(20, 40, 90, 110))
+        self.setGraphicsEffect(_shadow)
 
     # -- public API -----------------------------------------------------
     def set_model(self, identifier: str):
@@ -108,11 +116,14 @@ class IPhonePreview(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        # Layer 1: frame / bezel (dark, rounded per model).
+        # Layer 1: frame / bezel (dark vertical gradient, rounded per model).
         frame_rect = QRectF(ox - bezel, oy - bezel, sw + bezel * 2, sh + bezel * 2)
         frame_path = QPainterPath()
         frame_path.addRoundedRect(frame_rect, radius + bezel, radius + bezel)
-        p.fillPath(frame_path, QColor("#1c1c1e"))
+        frame_grad = QLinearGradient(frame_rect.topLeft(), frame_rect.bottomLeft())
+        frame_grad.setColorAt(0, QColor("#3A3F4A"))
+        frame_grad.setColorAt(1, QColor("#14161A"))
+        p.fillPath(frame_path, frame_grad)
 
         # Layer 2: screen area, clipped to corner radius.
         screen_path = QPainterPath()
@@ -120,11 +131,17 @@ class IPhonePreview(QWidget):
         p.save()
         p.setClipPath(screen_path)
         # Screen gradient: deep blue like the app theme.
-        from PySide6.QtGui import QLinearGradient
         grad = QLinearGradient(ox, oy, ox, oy + sh)
         grad.setColorAt(0, QColor("#1A3578"))
         grad.setColorAt(1, QColor("#0C1C4E"))
         p.fillRect(QRectF(ox, oy, sw, sh), grad)
+
+        # Diagonal glass gloss: white sheen from the top-left, gone by
+        # ~45% of the screen height (still clipped to the screen radius).
+        gloss = QLinearGradient(ox, oy, ox + sw * 0.7, oy + sh * 0.45)
+        gloss.setColorAt(0, QColor(255, 255, 255, 46))
+        gloss.setColorAt(1, QColor(255, 255, 255, 0))
+        p.fillRect(QRectF(ox, oy, sw, sh), gloss)
 
         # Live device info on the screen (not a static sticker).
         p.setPen(QColor("#FFFFFF"))
