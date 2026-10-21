@@ -211,6 +211,7 @@ class IPhonePreview(QWidget):
 
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # Layer 1: frame / bezel (dark vertical gradient, rounded per model).
         frame_rect = QRectF(ox - bezel, oy - bezel, sw + bezel * 2, sh + bezel * 2)

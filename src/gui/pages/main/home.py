@@ -24,6 +24,45 @@ from src.gui.iphone_preview import IPhonePreview
 from src.gui.brand_credits import make_credits_label
 
 
+class _SocialBoxButton(QToolButton):
+    """Home social/link box that scales its text and icon with its own
+    width, so the two-line captions stay proportionate and unclipped at
+    any window size or display resolution (user report 2026-10-21: the
+    fixed 13px text looked messy on other resolutions). The stylesheet
+    is a template containing a {font} placeholder; ws_base_font /
+    ws_base_icon carry the design sizes at the reference width."""
+
+    _REF_WIDTH = 190
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ws_base_font = 13
+        self.ws_base_icon = 26
+        self._sheet_tpl = None
+        self._applied_font = None
+
+    def set_sheet_template(self, tpl: str):
+        self._sheet_tpl = tpl
+        self._apply_scale()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._apply_scale()
+
+    def _apply_scale(self):
+        if self._sheet_tpl is None or self.width() <= 0:
+            return
+        scale = max(0.8, min(1.2, self.width() / self._REF_WIDTH))
+        font_px = round(self.ws_base_font * scale)
+        if font_px != self._applied_font:
+            self._applied_font = font_px
+            self.setStyleSheet(self._sheet_tpl.replace(
+                "{font}", str(font_px)))
+        icon_px = round(self.ws_base_icon * scale)
+        if self.iconSize().width() != icon_px:
+            self.setIconSize(QSize(icon_px, icon_px))
+
+
 class HomePage(Page):
     def __init__(self, window, ui: Ui_Nugget):
         super().__init__()
@@ -202,8 +241,12 @@ class HomePage(Page):
             # in both rows: identical size, color, and behaviour. An
             # empty label makes an icon-only box, an empty resource a
             # text-only box — in both cases the single element sits
-            # centered in the box.
-            _box_btn = QToolButton(hero)
+            # centered in the box. _SocialBoxButton scales its font and
+            # icon with the box width, so the captions stay tidy at any
+            # window size / display resolution (user 2026-10-21).
+            _box_btn = _SocialBoxButton(hero)
+            _box_btn.ws_base_font = _font_px
+            _box_btn.ws_base_icon = _icon_size
             _box_btn.setText(_label)
             _box_btn.setCursor(Qt.PointingHandCursor)
             _box_btn.setMinimumSize(140, 92)
@@ -219,13 +262,13 @@ class HomePage(Page):
                 _box_btn.setIconSize(QSize(_icon_size, _icon_size))
             _box_btn.setAttribute(
                 Qt.WidgetAttribute.WA_StyledBackground, True)
-            _box_btn.setStyleSheet("""
+            _box_btn.set_sheet_template("""
                 QToolButton {
                     background-color: #2563EB;
                     border: 1px solid #2563EB;
                     border-radius: 14px;
                     color: #FFFFFF;
-                    font-size: 13px;
+                    font-size: {font}px;
                     font-weight: 600;
                 }
                 QToolButton:hover {
@@ -236,8 +279,7 @@ class HomePage(Page):
                     background-color: #1E40AF;
                     border-color: #1E40AF;
                 }
-            """.replace("font-size: 13px;",
-                        f"font-size: {_font_px}px;"))
+            """)
             _box_btn.clicked.connect(
                 lambda _checked=False, u=_url:
                     QDesktopServices.openUrl(QUrl(u)))
@@ -360,13 +402,17 @@ class HomePage(Page):
                 and self._stream.isRunning()):
             return
         if self._stream is not None:
-            self._stream.stop_stream()
+            # NEVER wait for the old thread on the GUI thread: a capture
+            # loop parked in a tunnel read can take seconds to notice
+            # the stop flag, and waiting here froze the whole window for
+            # seconds after a failed apply dropped the device (field
+            # report 2026-10-21). Ask it to stop, keep the reference,
+            # and re-check shortly; a second stream must not start while
+            # the old one unwinds (the userspace tunnel is a process
+            # global and would collide).
+            self._stream.request_stop()
             if self._stream.isRunning():
-                # The old capture thread is still unwinding (e.g. a
-                # tunnel close in flight). Starting a second stream now
-                # would collide with the process-global userspace
-                # tunnel, so re-check shortly instead of forcing it.
-                QTimer.singleShot(1200, self._sync_stream)
+                QTimer.singleShot(300, self._sync_stream)
                 return
             self._stream = None
             self._stream_udid = None
@@ -403,9 +449,20 @@ class HomePage(Page):
         img = QImage.fromData(data)
         if img.isNull():
             return
-        if img.width() > 400:
+        # Keep frames near-native (user 2026-10-21: the old 400px cap
+        # made the preview look blurry). 800px wide is ~4x the on-screen
+        # width at DPR 2, so the paint stays crisp without hauling the
+        # full 1179px through every repaint. Log size changes too: a
+        # frame arriving at an unexpected size after a device reboot is
+        # the evidence for the "preview turns half" report.
+        if img.width() > 800:
             img = img.scaledToWidth(
-                400, Qt.TransformationMode.SmoothTransformation)
+                800, Qt.TransformationMode.SmoothTransformation)
+        size = (img.width(), img.height())
+        if size != getattr(self, "_last_frame_size", None):
+            self._last_frame_size = size
+            logging.getLogger("GoldenNugget.home").info(
+                "preview frame size: %dx%d", size[0], size[1])
         self._preview.set_frame(img)
 
     def _on_stream_status(self, status: str):

@@ -251,8 +251,19 @@ class ScreenStreamThread(QThread):
         self._live_announced = False
         self.start()
 
-    def stop_stream(self) -> None:
+    def request_stop(self) -> None:
+        """Ask the capture thread to stop WITHOUT waiting for it.
+
+        GUI callers must use this: the capture loop can sit in a tunnel
+        read for seconds before it notices the flag, and waiting for it
+        on the GUI thread freezes the whole window (the post-apply
+        freeze reported 2026-10-21). Poll isRunning() and only drop the
+        reference once the thread has actually finished.
+        """
         self._stop.set()
+
+    def stop_stream(self) -> None:
+        self.request_stop()
         if self.isRunning():
             self.wait(4000)
 

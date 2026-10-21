@@ -67,6 +67,11 @@ class IOSPosterboardPage(QWidget):
         self.window = window
         self.setObjectName("iosContainer")
         self._full_nugget = False
+        # Text scale driven by the page width (user 2026-10-21: the tab
+        # boxes and import-area text looked messy at other resolutions
+        # because every font size was fixed). _px() applies it; the
+        # resizeEvent below recomputes it and re-runs _retheme().
+        self._ui_scale = 1.0
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -272,6 +277,48 @@ class IOSPosterboardPage(QWidget):
         self._full_nugget = bool(enabled)
         self._retheme()
 
+    # -- resolution-adaptive text --------------------------------------
+    def _px(self, base: int) -> int:
+        """Font size for *base* px at the current page-width scale."""
+        return max(9, round(base * self._ui_scale))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Reference: the page is ~1000px wide in the standard 1240px
+        # window. Scale text 0.88x..1.15x with the actual width and
+        # restyle only when the rounded scale actually changes.
+        scale = max(0.88, min(1.15, self.width() / 1000.0))
+        if abs(scale - self._ui_scale) > 0.02:
+            self._ui_scale = scale
+            if hasattr(self, "tendies_tab_btn"):
+                self._retheme()
+
+    def _tab_sheet(self) -> str:
+        return f"""
+            QToolButton {{
+                background-color: #F1F4F8;
+                color: #374151;
+                font-size: {self._px(12)}px;
+                font-weight: 600;
+                padding: 4px 0;
+                border: 1px solid #DEE5EE;
+                border-radius: 12px;
+            }}
+            QToolButton:checked {{
+                background-color: #2563EB;
+                color: #FFFFFF;
+                border: 1px solid #2563EB;
+            }}
+            QToolButton:hover {{
+                background-color: #E4E9F0;
+                color: #374151;
+            }}
+            QToolButton:checked:hover {{
+                background-color: #1D4ED8;
+                color: #FFFFFF;
+            }}
+        """
+
     def _retheme(self):
         c = self._palette()
         # Redo 2026-10-20: page floats transparent; hero card + controls
@@ -357,30 +404,7 @@ class IOSPosterboardPage(QWidget):
             "background: transparent; border: none;"
         )
         for btn in (self.tendies_tab_btn, self.templates_tab_btn, self.video_tab_btn):
-            btn.setStyleSheet("""
-                QToolButton {
-                    background-color: #F1F4F8;
-                    color: #374151;
-                    font-size: 12px;
-                    font-weight: 600;
-                    padding: 4px 0;
-                    border: 1px solid #DEE5EE;
-                    border-radius: 12px;
-                }
-                QToolButton:checked {
-                    background-color: #2563EB;
-                    color: #FFFFFF;
-                    border: 1px solid #2563EB;
-                }
-                QToolButton:hover {
-                    background-color: #E4E9F0;
-                    color: #374151;
-                }
-                QToolButton:checked:hover {
-                    background-color: #1D4ED8;
-                    color: #FFFFFF;
-                }
-            """)
+            btn.setStyleSheet(self._tab_sheet())
             # Tab icons: white on the active blue pill, slate when idle.
             try:
                 from src.gui.theme import theme_icon
@@ -476,12 +500,13 @@ class IOSPosterboardPage(QWidget):
         # Download/add cards are white slabs now: text is dark.
         if hasattr(self, '_download_title'):
             self._download_title.setStyleSheet(
-                "font-size: 16px; font-weight: 600; color: #111827;"
-                " background: transparent;"
+                f"font-size: {self._px(16)}px; font-weight: 600;"
+                " color: #111827; background: transparent;"
             )
         if hasattr(self, '_download_subtitle'):
             self._download_subtitle.setStyleSheet(
-                "font-size: 12px; color: rgba(17, 24, 39, 0.62);"
+                f"font-size: {self._px(12)}px;"
+                " color: rgba(17, 24, 39, 0.62);"
                 " background: transparent;"
             )
         if hasattr(self, '_download_chevron'):
@@ -498,7 +523,8 @@ class IOSPosterboardPage(QWidget):
             )
         if hasattr(self, '_add_label'):
             self._add_label.setStyleSheet(
-                "font-size: 14px; color: rgba(17, 24, 39, 0.75);"
+                f"font-size: {self._px(14)}px;"
+                " color: rgba(17, 24, 39, 0.75);"
                 " text-align: center; background: transparent;"
             )
 
@@ -650,6 +676,7 @@ class IOSPosterboardPage(QWidget):
         self._download_subtitle = QLabel(QCoreApplication.translate(
             "Nugget",
             "Browse and import wallpapers from Cowabunga and CaPlayground"))
+        self._download_subtitle.setWordWrap(True)
         text_col.addWidget(self._download_subtitle)
         inner.addLayout(text_col, 1)
 
