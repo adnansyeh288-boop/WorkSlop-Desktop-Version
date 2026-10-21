@@ -77,6 +77,12 @@ def _t(id_: TweakID, section: Section, title: str, location: FileLocation,
                      location=location, key=key, **kwargs)
 
 
+def _corner_radius():
+    from .tweak_classes import CornerRadiusTweak
+    return CornerRadiusTweak(FileLocation.globalPreferences,
+                             "SolariumCornerRadius", value=0)
+
+
 def _watchos_compatibility():
     from .tweak_classes import AdvancedPlistTweak
     return AdvancedPlistTweak(
@@ -328,19 +334,19 @@ SPECS: tuple[TweakSpec, ...] = (
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disallow Liquid Glass on the Lock Screen (verified-structure: key found in SpringBoardFoundation binary). The direct answer to glass reflections during the Home Screen to Lock Screen transition. Unverified on device — needs device test.")),
     _t(TweakID.DisableHSGlassExterior, Section.LIQUID_GLASS, "Disable Home Screen Glass Exterior",
        GP, "SolariumEnableHomeScreenExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Home Screen (verified-structure: DesignLibrary binary pattern SolariumEnable<Area>ExteriorEffects). Enabled when the switch is ON. Unverified on device — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Home Screen (verified-structure: DesignLibrary binary pattern SolariumEnable<Area>ExteriorEffects). Enabled when the switch is ON. Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified on device — needs device test.")),
     _t(TweakID.DisableDockGlassExterior, Section.DOCK, "Disable Dock Glass Exterior",
        GP, "SolariumEnableDockExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Dock (verified-structure). Enabled when the switch is ON. Unverified on device — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects (reflections/specular highlights) on the Dock (verified-structure). Enabled when the switch is ON. Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified on device — needs device test.")),
     _t(TweakID.DisableKeyboardGlassExterior, Section.LIQUID_GLASS, "Disable Keyboard Glass Exterior",
        GP, "SolariumEnableKeyboardExteriorEffects", value=False,
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects on the keyboard, making it look like the flat iOS 18 keyboard (verified-structure: DesignLibrary binary). Enabled when the switch is ON. Unverified on device — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Turns off the exterior glass effects on the keyboard, making it look like the flat iOS 18 keyboard (verified-structure: DesignLibrary binary). Enabled when the switch is ON. Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified on device — needs device test.")),
     _t(TweakID.DisableSolariumFocusForeground, Section.LIQUID_GLASS, "Disable Solarium Focus Foreground Effects",
        GP, "SolariumDisableFocusForegroundEffects",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disables the Solarium foreground effects shown while focusing (verified-structure). Unverified on device — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Disables the Solarium foreground effects shown while focusing (verified-structure). Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified on device — needs device test.")),
     _t(TweakID.SolariumForceDarkShadow, Section.LIQUID_GLASS, "Force Dark Glass Shadow",
        GP, "SolariumForceDarkShadow",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Forces dark shadows on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Forces dark shadows on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified — needs device test.")),
     _t(TweakID.SolariumHighlightWhite, Section.LIQUID_GLASS, "White Glass Highlight",
        GP, "SolariumHighlightWhite",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "White highlight on Liquid Glass surfaces (structural-hypothesis: binary-attested key). Unverified — needs device test.")),
@@ -354,7 +360,7 @@ SPECS: tuple[TweakSpec, ...] = (
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the Solarium background filter stage (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
     _t(TweakID.SolariumTextFrost, Section.LIQUID_GLASS, "Solarium Text Frost",
        GP, "SolariumTextFrost",
-       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the frost effect applied to text on Liquid Glass surfaces (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
+       min_version="26.0", max_version="26.9", description=QT_TRANSLATE_NOOP("Nugget", "Toggles the frost effect applied to text on Liquid Glass surfaces (structural-hypothesis: binary-attested Solarium-family key). Key absent from the iOS 27 firmware — blocked on iOS 27. Unverified — needs device test.")),
     _t(TweakID.SolariumUseDisplayAngle, Section.LIQUID_GLASS, "Solarium Use Display Angle",
        GP, "SolariumUseDisplayAngle",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Solarium lighting react to the display viewing angle (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
@@ -402,6 +408,21 @@ SPECS: tuple[TweakSpec, ...] = (
     # v4 set; see tools/test_wave11_blurr_motion.py).
     _t(TweakID.BlurrMotion, Section.LIQUID_GLASS, "Blurr Motion", GP, "SolariumIncreasedDiffusion",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Research candidate for thicker frost blur on Liquid Glass surfaces: its key was found in the DesignLibrary material cluster in the iOS 23G83 binary, but the effect on a real device is not proven yet. Back up fully first, turn Low Power Mode OFF, apply it on its own, reboot, then judge each surface on its own (Dock, Control Center, notifications, folders, App Switcher, Lock Screen clock). Turning it off and applying again removes the key.")),
+    # === iOS 27 scan candidates (2026-10-22, user order) ===
+    # From the full 13-layer iOS 27.0.1 (24A446) scan + per-subcache
+    # verification against 23G82 (~/workspace/riset/ios27/SUPPORT-LISTS.md).
+    # New candidates carry the "(iOS 27)" label per user order; the version
+    # gates follow the firmware evidence, not the label.
+    _t(TweakID.SolariumForceEnhancedSpeculars, Section.LIQUID_GLASS, "Force Enhanced Speculars (iOS 27)",
+       GP, "SolariumForceEnhancedSpeculars",
+       min_version="27.0", description=QT_TRANSLATE_NOOP("Nugget", "Forces enhanced specular highlights on Liquid Glass surfaces. Structure-verified in iOS 27.0.1 (24A446): the forcesEnhancedSpeculars field sits in the DesignLibrary settings struct alongside allowHDR, forceFallback and disableOuterRefraction, read from the same defaults table. New in iOS 27 — the key is absent from the iOS 26 firmware, so this is blocked there. Unverified on device — needs device test.")),
+    _t(TweakID.FloatingContentViewBGFills, Section.LIQUID_GLASS, "Floating Content Background Fills (iOS 27)",
+       GP, "UISolariumFloatingContentViewEnableBackgroundFills",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Enables background fills behind floating Liquid Glass content views. Key verified present in both firmwares (iOS 26.6.1 renderer cluster, iOS 27.0.1 UIKit cluster) by per-subcache scan. Effect unverified — needs device test.")),
+    _t(TweakID.SolariumCornerRadius, Section.LIQUID_GLASS, "Flat Square Corners (iOS 27)",
+       GP, "SolariumCornerRadius", value=0, kind=Kind.NUMBER, min_value=0, max_value=60, step=1,
+       factory=_corner_radius,
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Liquid Glass corners flat and square: writes this corner radius (0 = fully square) together with SolariumInsetsAndCornerRadiusEnabled. Both keys verified present in the iOS 26.6.1 and 27.0.1 firmware. Effect unverified — needs device test: check the keyboard button corners after applying and rebooting.")),
     # === Non-glass candidates (audited) ===
     _t(TweakID.CustomLockDate, Section.SPRINGBOARD, "Custom Lock Screen Date", FileLocation.globalPreferencesHomeDomain, "AppleICUDateTimeSymbols",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Custom Lock Screen date format. Device-proven (iOS 26.0-26.7).")),

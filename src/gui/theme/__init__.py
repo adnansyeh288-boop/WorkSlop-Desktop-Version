@@ -73,18 +73,40 @@ def _svg_file_candidates(resource_path: str):
     return out
 
 
+# Rendered-icon cache: (resource_path, size, dpr) -> raw pixmap.
+# Sidebar/menu icons are re-requested on every page switch and retheme;
+# without this cache each request re-rasterized the SVG, re-ran the
+# full-image empty scan, and — in the frozen build — re-attempted the
+# broken Qt resource first (see _render_svg_raw), which flooded the log
+# with "Cannot open file ':/icon/ws2-*.svg' Input/output error" lines and
+# cost real time on every navigation. QPixmap is implicitly shared, so
+# handing out the cached handle is cheap; the one painter caller
+# (theme_pixmap) deep-copies before its tint pass.
+_RAW_PIXMAP_CACHE: dict = {}
+
+# Resource paths that already failed to open once in this process.
+_DEAD_RESOURCES: set = set()
+
+
 def _render_svg_raw(resource_path: str, size: int, dpr: float) -> QPixmap:
     """Rasterize an SVG untinted, viewBox fit into the square, centered.
 
-    Resource first; when that render comes back invalid or fully
-    transparent, retry from the loose file copy. In the frozen Windows
-    build a few bundled icons (Mobile Gestalt, Status Bar, SpringBoard,
-    Daemons) rendered as empty pixmaps through the resource system —
-    their sidebar rows showed text only, shifted out of line — while
-    the byte-identical file on disk renders fine. The empty check runs
-    per icon, so any icon hit by that failure heals itself; icons that
-    render fine never touch the disk.
+    In the frozen Windows build the Qt resource copy of the bundled
+    ``ws2-*`` icons cannot be opened at all (``QSvgRenderer(':/icon/…')``
+    logs an Input/output error and yields an invalid renderer), while
+    the byte-identical loose file shipped next to the code renders fine —
+    so frozen builds go straight to the loose files and never touch the
+    resource (zero log spam). Source checkouts keep resource-first, with
+    the loose-file retry as before; a resource that fails once is marked
+    dead for the rest of the process. Results are cached per
+    (path, size, dpr), so repeat renders (page switches, rethemes) are
+    free after the first.
     """
+    cache_key = (str(resource_path), int(size), float(dpr))
+    cached = _RAW_PIXMAP_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
     scale = max(1.0, float(dpr))
     px = int(round(size * scale))
 
@@ -116,24 +138,39 @@ def _render_svg_raw(resource_path: str, size: int, dpr: float) -> QPixmap:
                     return False
         return True
 
-    renderer = QSvgRenderer(resource_path)
-    if renderer.isValid():
-        pm = _draw(renderer)
-        if not _is_empty(pm):
-            return pm
-    for path in _svg_file_candidates(resource_path):
-        if os.path.isfile(path):
-            alt = QSvgRenderer(path)
-            if alt.isValid():
-                pm2 = _draw(alt)
-                if not _is_empty(pm2):
-                    return pm2
-    # Nothing rendered anywhere: return a transparent pixmap of the
-    # right size (same as the old failure mode, never a crash).
-    pm = QPixmap(px, px)
-    pm.setDevicePixelRatio(scale)
-    pm.fill(Qt.GlobalColor.transparent)
-    return pm
+    def _from_files():
+        for path in _svg_file_candidates(resource_path):
+            if os.path.isfile(path):
+                alt = QSvgRenderer(path)
+                if alt.isValid():
+                    pm2 = _draw(alt)
+                    if not _is_empty(pm2):
+                        return pm2
+        return None
+
+    def _from_resource():
+        if str(resource_path) in _DEAD_RESOURCES:
+            return None
+        renderer = QSvgRenderer(resource_path)
+        if renderer.isValid():
+            pm = _draw(renderer)
+            if not _is_empty(pm):
+                return pm
+        _DEAD_RESOURCES.add(str(resource_path))
+        return None
+
+    frozen = bool(getattr(sys, "frozen", False)
+                  or getattr(sys, "_MEIPASS", None))
+    result = (_from_files() if frozen else _from_resource()) \
+        or (_from_resource() if frozen else _from_files())
+    if result is None:
+        # Nothing rendered anywhere: a transparent pixmap of the right
+        # size (same as the old failure mode, never a crash).
+        result = QPixmap(px, px)
+        result.setDevicePixelRatio(scale)
+        result.fill(Qt.GlobalColor.transparent)
+    _RAW_PIXMAP_CACHE[cache_key] = result
+    return result
 
 
 def theme_pixmap(resource_path: str, color_hex: str, size: int,
@@ -144,7 +181,11 @@ def theme_pixmap(resource_path: str, color_hex: str, size: int,
     via QSvgRenderer — never stretched. ``dpr`` renders extra device pixels
     on HiDPI screens and sets the pixmap's device pixel ratio accordingly.
     """
-    pm = _render_svg_raw(resource_path, size, dpr)
+    # Deep copy: the raw render is cached and shared with color_icon
+    # callers, and painting on the shared pixmap does NOT reliably
+    # detach — a tint pass here would corrupt the cached raw render
+    # for every later caller.
+    pm = _render_svg_raw(resource_path, size, dpr).copy()
     painter = QPainter(pm)
     painter.setCompositionMode(
         QPainter.CompositionMode.CompositionMode_SourceIn)

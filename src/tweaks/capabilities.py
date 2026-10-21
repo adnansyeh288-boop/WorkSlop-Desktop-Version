@@ -152,6 +152,37 @@ REMOVED_TWEAK_IDS = frozenset({
     TweakID.KioskMode,                    # dead FeatureFlags channel on target
 })
 
+# Firmware-dead registry IDs (user order 2026-10-22): the key string
+# occurs ZERO times in every dyld subcache of BOTH audited firmwares —
+# iOS 26.6.1 RC (23G82) and iOS 27.0.1 (24A446) — per-subcache scans in
+# ~/workspace/riset/ios27/APPLE-INTERNAL-DEEP.md and SUPPORT-LISTS.md.
+# Unlike REMOVED_TWEAK_IDS (structurally wrong entries, hidden history),
+# these stay VISIBLE in the UI but blocked on every version: the shared
+# deliverability predicate below returns FIRMWARE_DEAD for them, so the
+# card renders disabled with the reason and the backend never applies
+# them. The specs stay in the registry so the rows (and their honest
+# state) remain visible, per the user's "tetap muncul tapi diblokir".
+FIRMWARE_DEAD_TWEAK_IDS = frozenset({
+    TweakID.iMessageDiagnosticsEnabled,  # iMessageDiagnosticsEnabled
+    TweakID.IDSDiagnosticsEnabled,       # IDSDiagnosticsEnabled
+    TweakID.VCDiagnosticsEnabled,        # VCDiagnosticsEnabled
+    TweakID.AccessoryDeveloperEnabled,   # AccessoryDeveloperEnabled
+    TweakID.AppStoreDebug,               # debugGestureEnabled
+    TweakID.PlaySoundOnPaste,            # PlaySoundOnPaste
+    TweakID.AnnounceAllPastes,           # AnnounceAllPastes
+    TweakID.KbAutoLists,                 # KeyboardAutocorrectionLists
+    TweakID.SiriDeclined,                # UserHasDeclinedEnable
+})
+
+
+def is_firmware_dead_tweak(tweak_id) -> bool:
+    """True when *tweak_id*'s key is absent from both audited firmwares."""
+    try:
+        return canonical_tweak_id(tweak_id) in FIRMWARE_DEAD_TWEAK_IDS
+    except Exception:
+        return False
+
+
 # Backwards-compatible aliases for the five redundant duplicate rows in
 # AUDIT-FINAL-WAVE10 §4.5. These names are *not* removed tombstones: an old
 # preset naming one resolves to the single canonical writer below, so it
@@ -431,6 +462,10 @@ def tweak_deliverability(tweak_id, device_version: str = "",
     if is_removed_tweak(canonical) or is_removed_tweak(tweak_id):
         return (False, "REMOVED_TWEAK",
                 "Removed from WorkSlop v10 by user order; it is never applied.")
+    if is_firmware_dead_tweak(canonical):
+        return (False, "FIRMWARE_DEAD",
+                "This key is not present in the iOS 26.6.1 or iOS 27 "
+                "firmware, so it cannot work on either — blocked.")
     spec = SPECS_BY_ID.get(canonical)
 
     if spec is not None and device_version:

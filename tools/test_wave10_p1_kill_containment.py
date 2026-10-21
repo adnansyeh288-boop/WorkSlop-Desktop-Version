@@ -91,6 +91,7 @@ except Exception:
 from src.tweaks import tweak_loader
 from src.tweaks.basic_plist_locations import FileLocation
 from src.tweaks.capabilities import (
+    FIRMWARE_DEAD_TWEAK_IDS,
     canonical_tweak_id, clear_audit_research_only_state,
     is_audit_research_only, is_device_test_tweak, is_removed_tweak,
     tweak_deliverability,
@@ -237,8 +238,17 @@ def test_ship_candidates_remain_and_research_is_active():
         check(f"{tid.name} retains a research spec", tid in SPECS_BY_ID)
         check(f"{tid.name} is audit research-only", is_audit_research_only(tid))
         ok, code, msg = tweak_deliverability(tid, **TARGET)
-        check(f"{tid.name} delivers as a normal tweak (Wave 11)",
-              ok and code == "OK" and "UNPROVEN" not in msg, code)
+        if tid in FIRMWARE_DEAD_TWEAK_IDS:
+            # Superseded for these nine by user order 2026-10-22: their
+            # keys occur zero times in every dyld subcache of BOTH the
+            # 23G82 (26.6.1 RC) and 24A446 (27.0.1) firmwares, so they are
+            # visible but blocked everywhere (FIRMWARE_DEAD) instead of
+            # delivering as normal Wave 11 tweaks.
+            check(f"{tid.name} is firmware-dead blocked (2026-10-22)",
+                  not ok and code == "FIRMWARE_DEAD", code)
+        else:
+            check(f"{tid.name} delivers as a normal tweak (Wave 11)",
+                  ok and code == "OK" and "UNPROVEN" not in msg, code)
     for tid in (TweakID.DisableOTAFile,
                 TweakID.CustomResolution, TweakID.StatusBar, TweakID.Daemons,
                 TweakID.PosterBoard, TweakID.Templates):

@@ -129,6 +129,28 @@ class AdvancedPlistTweak(BasicPlistTweak):
         return other_tweaks
 
 
+class CornerRadiusTweak(BasicPlistTweak):
+    """The iOS 27-scan corner pair as ONE tweak (user design 2026-10-21):
+    the user-facing value is the SolariumCornerRadius number (0 = fully
+    square); enabling the tweak also writes the companion flag
+    SolariumInsetsAndCornerRadiusEnabled = True, without which the radius
+    key has no reader path. Both keys are firmware-verified present in
+    iOS 26.6.1 (23G82) and iOS 27.0.1 (24A446)."""
+
+    def apply_tweak(self, other_tweaks: dict) -> dict:
+        if not self.enabled:
+            return other_tweaks
+        payload = {
+            self.key: self.value,
+            "SolariumInsetsAndCornerRadiusEnabled": True,
+        }
+        existing = other_tweaks.get(self.file_location)
+        merged = dict(existing) if isinstance(existing, dict) else {}
+        merged.update(payload)
+        other_tweaks[self.file_location] = merged
+        return other_tweaks
+
+
 # ---------------------------------------------------------------------------
 # RdarFixTweak — ported verbatim from leminlimez/Nugget
 # (src/tweaks/tweak_classes.py). Resolution fix for the Dynamic Island status

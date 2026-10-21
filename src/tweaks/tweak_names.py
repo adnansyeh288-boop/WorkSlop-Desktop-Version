@@ -202,6 +202,11 @@ class TweakID(Enum):
     SolariumBackgroundFilter = auto()
     SolariumTextFrost = auto()
     SolariumUseDisplayAngle = auto()
+    # --- iOS 27 scan candidates (2026-10-22, verified per-subcache in
+    # 23G82 + 24A446; see ~/workspace/riset/ios27/SUPPORT-LISTS.md) ---
+    SolariumForceEnhancedSpeculars = auto()  # 27-only: field forcesEnhancedSpeculars in the DesignLibrary settings struct
+    FloatingContentViewBGFills = auto()      # UISolariumFloatingContentViewEnableBackgroundFills (both firmwares)
+    SolariumCornerRadius = auto()            # corner pair as ONE tweak (radius + SolariumInsetsAndCornerRadiusEnabled)
     # --- structural-hypothesis: Lock Screen menu ---
     SBShowLegalTextOnLockScreen = auto()
     SBDontLockEver = auto()
