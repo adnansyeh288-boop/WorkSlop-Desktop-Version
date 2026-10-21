@@ -44,6 +44,17 @@ logger = logging.getLogger("GoldenNugget.screen_stream")
 _MIN_FRAME_INTERVAL = 0.12
 _RETRY_SECONDS = 3.0
 
+# Hard ceilings for every step that can block forever on a real PC
+# (tunnel handshake, DTX channel open, a single screenshot). The first
+# field version of this stream had NO timeouts: one stuck handshake
+# left the preview on its empty state forever with nothing reported.
+# Every step now either completes, fails, or times out into a named
+# status the user can see on the preview itself.
+_TUNNEL_OPEN_TIMEOUT = 25.0
+_CHANNEL_OPEN_TIMEOUT = 25.0
+_FRAME_TIMEOUT = 12.0
+_TUNNELD_LOOKUP_TIMEOUT = 10.0
+
 
 class _StreamFailure(Exception):
     """Capture failure carrying a user-readable status line."""
@@ -69,17 +80,27 @@ def _friendly_status(exc: Exception) -> str:
 
 
 async def _pump_frames(shot, emit_frame, stop: threading.Event) -> None:
-    """Pull screenshots from an opened DVT Screenshot channel."""
+    """Pull screenshots from an opened DVT Screenshot channel.
+
+    Every single frame is time-boxed: a channel that silently stops
+    answering becomes a named, retryable failure instead of a frozen
+    preview.
+    """
     while not stop.is_set():
-        data = await shot.get_screenshot()
+        try:
+            data = await asyncio.wait_for(
+                shot.get_screenshot(), timeout=_FRAME_TIMEOUT)
+        except asyncio.TimeoutError:
+            raise _StreamFailure(
+                "Live preview: the screen channel stopped answering — "
+                "keep the iPhone unlocked")
         if data:
             emit_frame(data)
         await asyncio.sleep(_MIN_FRAME_INTERVAL)
 
 
-async def _capture_dvt_userspace(udid, emit_frame, stop) -> None:
-    """iOS 17.4+: DVT screenshot over the root-free userspace tunnel."""
-    from pymobiledevice3.remote.userspace_tunnel import UserspaceRsdTunnel
+async def _open_dvt_and_pump(rsd, emit_frame, emit_status, stop) -> None:
+    """Open the DVT screenshot channel on an RSD (time-boxed) and pump."""
     from pymobiledevice3.services.dvt.instruments.dvt_provider import (
         DvtProvider,
     )
@@ -87,33 +108,63 @@ async def _capture_dvt_userspace(udid, emit_frame, stop) -> None:
         Screenshot,
     )
 
+    emit_status("Live preview: starting screen channel…")
+    logger.info("screen stream: opening DVT screenshot channel")
+    dvt = DvtProvider(rsd)
+    await asyncio.wait_for(
+        dvt.__aenter__(), timeout=_CHANNEL_OPEN_TIMEOUT)
+    try:
+        shot = Screenshot(dvt)
+        await asyncio.wait_for(
+            shot.__aenter__(), timeout=_CHANNEL_OPEN_TIMEOUT)
+        try:
+            await _pump_frames(shot, emit_frame, stop)
+        finally:
+            await shot.__aexit__(None, None, None)
+    finally:
+        await dvt.__aexit__(None, None, None)
+
+
+async def _capture_dvt_userspace(udid, emit_frame, emit_status, stop) -> None:
+    """iOS 17.4+: DVT screenshot over the root-free userspace tunnel."""
+    from pymobiledevice3.remote.userspace_tunnel import UserspaceRsdTunnel
+
+    emit_status("Live preview: opening USB tunnel…")
+    logger.info("screen stream: opening userspace tunnel for %s", udid)
     tunnel = UserspaceRsdTunnel(
         serial=udid, autopair=True, remotepairing_fallback=False)
-    rsd = await tunnel.aopen()
     try:
-        async with DvtProvider(rsd) as dvt, Screenshot(dvt) as shot:
-            await _pump_frames(shot, emit_frame, stop)
+        try:
+            rsd = await asyncio.wait_for(
+                tunnel.aopen(), timeout=_TUNNEL_OPEN_TIMEOUT)
+        except asyncio.TimeoutError:
+            raise _StreamFailure(
+                "Live preview: the USB tunnel timed out — unlock the "
+                "iPhone, keep it awake, and make sure Developer Mode "
+                "is ON")
+        await _open_dvt_and_pump(rsd, emit_frame, emit_status, stop)
     finally:
-        await tunnel.aclose()
+        # A stuck close must not wedge the retry loop either.
+        try:
+            await asyncio.wait_for(tunnel.aclose(), timeout=5)
+        except Exception:
+            pass
 
 
-async def _capture_dvt_tunneld(udid, emit_frame, stop) -> None:
+async def _capture_dvt_tunneld(udid, emit_frame, emit_status, stop) -> None:
     """iOS 17.0–17.3: DVT screenshot over an admin tunneld's RSD."""
     from pymobiledevice3.remote.remote_service_discovery import (
         RemoteServiceDiscoveryService,  # noqa: F401  (type anchor)
-    )
-    from pymobiledevice3.services.dvt.instruments.dvt_provider import (
-        DvtProvider,
-    )
-    from pymobiledevice3.services.dvt.instruments.screenshot import (
-        Screenshot,
     )
     from pymobiledevice3.tunneld.api import (
         TUNNELD_DEFAULT_ADDRESS,
         get_tunneld_devices,
     )
 
-    rsds = await get_tunneld_devices(TUNNELD_DEFAULT_ADDRESS)
+    emit_status("Live preview: looking for the tunnel service…")
+    rsds = await asyncio.wait_for(
+        get_tunneld_devices(TUNNELD_DEFAULT_ADDRESS),
+        timeout=_TUNNELD_LOOKUP_TIMEOUT)
     rsd = next((r for r in rsds if r.udid == udid), None)
     for other in rsds:
         if other is not rsd:
@@ -123,21 +174,27 @@ async def _capture_dvt_tunneld(udid, emit_frame, stop) -> None:
             "Live preview: start 'pymobiledevice3 remote tunneld' "
             "(admin) for iOS 17.0–17.3")
     try:
-        async with DvtProvider(rsd) as dvt, Screenshot(dvt) as shot:
-            await _pump_frames(shot, emit_frame, stop)
+        await _open_dvt_and_pump(rsd, emit_frame, emit_status, stop)
     finally:
         await rsd.close()
 
 
-async def _capture_screenshotr(udid, emit_frame, stop) -> None:
+async def _capture_screenshotr(udid, emit_frame, emit_status, stop) -> None:
     """iOS < 17: screenshotr over the normal lockdown session."""
     from pymobiledevice3.services.screenshot import ScreenshotService
 
+    emit_status("Live preview: connecting…")
     async with lockdown_session(udid) as lockdown:
         svc = ScreenshotService(lockdown)
         try:
             while not stop.is_set():
-                data = await svc.take_screenshot()
+                try:
+                    data = await asyncio.wait_for(
+                        svc.take_screenshot(), timeout=_FRAME_TIMEOUT)
+                except asyncio.TimeoutError:
+                    raise _StreamFailure(
+                        "Live preview: the screen channel stopped "
+                        "answering — keep the iPhone unlocked")
                 if data:
                     emit_frame(data)
                 await asyncio.sleep(_MIN_FRAME_INTERVAL)
@@ -145,7 +202,8 @@ async def _capture_screenshotr(udid, emit_frame, stop) -> None:
             await svc.close()
 
 
-async def _capture_once(udid: str, version: str, emit_frame, stop) -> None:
+async def _capture_once(udid: str, version: str, emit_frame, emit_status,
+                        stop) -> None:
     """Run one capture session on the route the iOS version dictates."""
     try:
         ver = Version(version or "0")
@@ -153,16 +211,18 @@ async def _capture_once(udid: str, version: str, emit_frame, stop) -> None:
         ver = Version("0")
     if ver >= Version("17.4"):
         try:
-            await _capture_dvt_userspace(udid, emit_frame, stop)
+            await _capture_dvt_userspace(
+                udid, emit_frame, emit_status, stop)
         except Exception as exc:
             if type(exc).__name__ == "UserspaceTunnelUnavailableError":
-                await _capture_dvt_tunneld(udid, emit_frame, stop)
+                await _capture_dvt_tunneld(
+                    udid, emit_frame, emit_status, stop)
             else:
                 raise
     elif ver >= Version("17.0"):
-        await _capture_dvt_tunneld(udid, emit_frame, stop)
+        await _capture_dvt_tunneld(udid, emit_frame, emit_status, stop)
     else:
-        await _capture_screenshotr(udid, emit_frame, stop)
+        await _capture_screenshotr(udid, emit_frame, emit_status, stop)
 
 
 class ScreenStreamThread(QThread):
@@ -194,12 +254,14 @@ class ScreenStreamThread(QThread):
     def stop_stream(self) -> None:
         self._stop.set()
         if self.isRunning():
-            self.wait(2500)
+            self.wait(4000)
 
     # -- worker -----------------------------------------------------------
     def _emit_frame(self, data: bytes) -> None:
         if not self._live_announced:
             self._live_announced = True
+            logger.info(
+                "screen stream: LIVE — first frame (%d bytes)", len(data))
             self.status_changed.emit("live")
         self.frame_ready.emit(data)
 
@@ -207,7 +269,8 @@ class ScreenStreamThread(QThread):
         while not self._stop.is_set():
             try:
                 await _capture_once(
-                    self._udid, self._version, self._emit_frame, self._stop)
+                    self._udid, self._version, self._emit_frame,
+                    self.status_changed.emit, self._stop)
             except _StreamFailure as exc:
                 self.status_changed.emit(exc.status)
                 logger.info("screen stream: %s", exc.status)

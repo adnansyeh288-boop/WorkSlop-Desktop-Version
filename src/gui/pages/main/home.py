@@ -7,7 +7,9 @@ Layout (user spec):
 
 No AI slop. No static stickers.
 """
-from PySide6.QtCore import Qt, QSize, QCoreApplication, QUrl
+import logging
+
+from PySide6.QtCore import Qt, QSize, QCoreApplication, QUrl, QTimer
 from PySide6.QtGui import QIcon, QColor, QDesktopServices, QImage
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QToolButton,
@@ -350,24 +352,50 @@ class HomePage(Page):
             version = dm.get_current_device_version() or ""
         except Exception:
             udid, version = None, ""
-        if udid is None:
-            if self._stream is not None:
-                self._stream.stop_stream()
-                self._stream = None
-                self._stream_udid = None
-            if self._preview is not None:
-                self._preview.clear_frame()
-            return
-        if self._stream is not None and self._stream_udid == udid:
+        # A healthy stream already pointed at this device stays untouched
+        # (updatePhoneInfo fires on every refresh; restarting the tunnel
+        # each time would keep the preview dark forever).
+        if (udid is not None and self._stream is not None
+                and self._stream_udid == udid
+                and self._stream.isRunning()):
             return
         if self._stream is not None:
             self._stream.stop_stream()
+            if self._stream.isRunning():
+                # The old capture thread is still unwinding (e.g. a
+                # tunnel close in flight). Starting a second stream now
+                # would collide with the process-global userspace
+                # tunnel, so re-check shortly instead of forcing it.
+                QTimer.singleShot(1200, self._sync_stream)
+                return
+            self._stream = None
+            self._stream_udid = None
+        if udid is None:
+            if self._preview is not None:
+                self._preview.clear_frame()
+            return
         from src.devicemanagement.screen_stream import ScreenStreamThread
-        self._stream = ScreenStreamThread(self)
-        self._stream.frame_ready.connect(self._on_stream_frame)
-        self._stream.status_changed.connect(self._on_stream_status)
-        self._stream_udid = udid
-        self._stream.start_stream(udid, version)
+        try:
+            # The thread's parent must be a QObject: the WINDOW, not this
+            # page — Page is a plain Python class, and parenting the
+            # QThread to it raised TypeError, which updatePhoneInfo()'s
+            # blanket except swallowed. The live stream therefore never
+            # started on any machine and the preview sat on its empty
+            # state forever (field reports 2026-10-21).
+            self._stream = ScreenStreamThread(self.window)
+            self._stream.frame_ready.connect(self._on_stream_frame)
+            self._stream.status_changed.connect(self._on_stream_status)
+            self._stream_udid = udid
+            self._stream.start_stream(udid, version)
+        except Exception:
+            # Never fail silently again: log it and say it on the preview.
+            self._stream = None
+            self._stream_udid = None
+            logging.getLogger("GoldenNugget.home").exception(
+                "live screen stream failed to start")
+            if self._preview is not None:
+                self._preview.set_stream_status(
+                    "Live preview unavailable: failed to start")
 
     def _on_stream_frame(self, data):
         if self._preview is None:
