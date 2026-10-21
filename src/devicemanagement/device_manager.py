@@ -35,7 +35,8 @@ _sc.DEFAULT_SSL_HANDSHAKE_TIMEOUT = 60
 MAX_TENDIES_PER_RESTORE = 5
 
 from src.devicemanagement.constants import (
-    Device, Version, is_device_supported, mobilegestalt_decision,
+    Device, Version, device_support_level, is_device_supported,
+    mobilegestalt_decision,
 )
 from src.tweaks.capabilities import (
     canonical_tweak_id,
@@ -446,6 +447,14 @@ class DeviceManager:
             return False
         return is_device_supported(device.build, device.version)
 
+    def get_current_device_support_level(self) -> str:
+        """"supported", "partial" (newer than iOS 27.0.1 — usable with a
+        risk warning) or "unsupported" for the selected device."""
+        device = self.data_singleton.current_device
+        if device == None:
+            return "unsupported"
+        return device_support_level(device.build, device.version)
+
     def get_current_device_partially_supported(self) -> bool:
         """iOS 27 devices use the experimental three-phase protective restore."""
         device = self.data_singleton.current_device
@@ -536,10 +545,11 @@ class DeviceManager:
     def _raise_if_unsupported(self):
         if not self.get_current_device_is_supported_by_fork():
             raise NuggetException(QCoreApplication.tr(
-                "This iOS version is not supported by this fork.\n\n"
-                "WorkSlop Desktop supports iOS 16.0 -> 27.x (detected from "
-                "the device over the cable). Please use the original Nugget "
-                "for other versions."))
+                "This iOS version is not supported by WorkSlop Desktop.\n\n"
+                "WorkSlop Desktop supports iOS 16.0 -> 27.0.1 (detected "
+                "from the device over the cable). Versions newer than "
+                "27.0.1 are partially supported and ask for confirmation "
+                "before applying."))
 
     def get_current_mobilegestalt_decision(self):
         """Shared MobileGestalt decision for the selected device.

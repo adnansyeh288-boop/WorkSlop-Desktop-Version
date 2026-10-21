@@ -226,6 +226,38 @@ class DeviceBarMixin:
         # run a modal loop from inside it.
         QtCore.QTimer.singleShot(0, lambda: self._show_dev_beta_warning(txt))
 
+    def warn_for_partial_support(self):
+        """Warn once per app session per device on a partially supported iOS.
+
+        Partial = newer than iOS 27.0.1, the newest fully supported
+        version (user matrix, 2026-10-21). Same delivery pattern as the
+        developer-beta warning: deferred until the device-switch flow
+        has finished, non-modal, once per session per device. The text
+        is English by the user's order.
+        """
+        try:
+            if self.device_manager.get_current_device_support_level() != "partial":
+                return
+        except Exception:
+            return
+        warned = getattr(self, "_partial_warned_devices", None)
+        if warned is None:
+            warned = self._partial_warned_devices = set()
+        device_key = (self.device_manager.get_current_device_udid()
+                      or self.device_manager.get_current_device_build())
+        if device_key in warned:
+            return
+        warned.add(device_key)
+        ver = self.device_manager.get_current_device_version()
+        txt = self.tr(
+            "Warning: This device is on iOS %1, which is newer than the "
+            "latest fully supported version (iOS 27.0.1).\n\n"
+            "This iOS version is only partially supported. Tweaks may "
+            "fail, do nothing, or behave unexpectedly, and could cause "
+            "problems up to a bootloop.\n\nUse at your own risk!").replace(
+                "%1", ver)
+        QtCore.QTimer.singleShot(0, lambda: self._show_dev_beta_warning(txt))
+
     def _show_dev_beta_warning(self, txt):
         """Show the developer-beta warning non-modally (see above)."""
         box = QtWidgets.QMessageBox(self)
@@ -469,6 +501,7 @@ class DeviceBarMixin:
         self.ios_home.update_status()
         if index > -1:
             self.warn_for_dev_beta()
+            self.warn_for_partial_support()
 
 
 

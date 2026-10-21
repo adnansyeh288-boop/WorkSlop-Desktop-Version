@@ -402,12 +402,12 @@ class IOSHomePage(QWidget):
             if self.window.device_manager.get_current_device_udid():
                 self._detection_note = ""
                 if not self.window.device_manager.get_current_device_is_supported_by_fork():
-                    # the fork only supports iOS 26.2+; anything older cannot
-                    # be tweaked, so never show it as supported
+                    # below iOS 16.0 cannot be tweaked, so never show it
+                    # as supported
                     status_text = QCoreApplication.translate(
                         "QCoreApplication", "Not Supported.")
                     color = c.error
-                elif self.window.device_manager.get_current_device_partially_supported():
+                elif self.window.device_manager.get_current_device_support_level() == "partial":
                     status_text = QCoreApplication.translate("Nugget", "Partially Supported")
                     color = c.warning
                 else:

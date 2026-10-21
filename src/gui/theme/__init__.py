@@ -1,3 +1,6 @@
+import os
+import sys
+
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QColor, QIcon, QImage, QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
@@ -49,6 +52,90 @@ def theme_icon(resource_path: str, color_hex: str) -> QIcon:
     return QIcon(QPixmap.fromImage(img))
 
 
+def _svg_file_candidates(resource_path: str):
+    """Loose-file locations for a ``:/icon/...`` resource.
+
+    The frozen build ships ``src/qt`` as loose files (PyInstaller
+    --add-data), so every bundled SVG also exists on disk next to the
+    code; in a source checkout they sit in ``src/qt/icon`` as usual.
+    """
+    name = os.path.basename(str(resource_path))
+    if not name:
+        return []
+    out = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        out.append(os.path.join(meipass, "src", "qt", "icon", name))
+    here = os.path.dirname(os.path.abspath(__file__))  # src/gui/theme
+    out.append(os.path.normpath(
+        os.path.join(here, "..", "..", "qt", "icon", name)))
+    out.append(os.path.join(os.getcwd(), "src", "qt", "icon", name))
+    return out
+
+
+def _render_svg_raw(resource_path: str, size: int, dpr: float) -> QPixmap:
+    """Rasterize an SVG untinted, viewBox fit into the square, centered.
+
+    Resource first; when that render comes back invalid or fully
+    transparent, retry from the loose file copy. In the frozen Windows
+    build a few bundled icons (Mobile Gestalt, Status Bar, SpringBoard,
+    Daemons) rendered as empty pixmaps through the resource system —
+    their sidebar rows showed text only, shifted out of line — while
+    the byte-identical file on disk renders fine. The empty check runs
+    per icon, so any icon hit by that failure heals itself; icons that
+    render fine never touch the disk.
+    """
+    scale = max(1.0, float(dpr))
+    px = int(round(size * scale))
+
+    def _draw(renderer):
+        pm = QPixmap(px, px)
+        pm.setDevicePixelRatio(scale)
+        pm.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pm)
+        # Fit the viewBox into the square, centered, keeping the aspect
+        # ratio. (QIcon.pixmap() also keeps aspect, but
+        # drawPixmap(rect, pixmap) would stretch the result to fill the
+        # square — that squished the 3:4 Apple logo ~33% wider.)
+        vb = renderer.viewBoxF()
+        if vb.isValid() and vb.width() > 0 and vb.height() > 0:
+            s = min(size / vb.width(), size / vb.height())
+            w, h = vb.width() * s, vb.height() * s
+            target = QRectF((size - w) / 2.0, (size - h) / 2.0, w, h)
+        else:
+            target = QRectF(0, 0, size, size)
+        renderer.render(painter, target)
+        painter.end()
+        return pm
+
+    def _is_empty(pm):
+        img = pm.toImage()
+        for y in range(img.height()):
+            for x in range(img.width()):
+                if img.pixelColor(x, y).alpha() > 0:
+                    return False
+        return True
+
+    renderer = QSvgRenderer(resource_path)
+    if renderer.isValid():
+        pm = _draw(renderer)
+        if not _is_empty(pm):
+            return pm
+    for path in _svg_file_candidates(resource_path):
+        if os.path.isfile(path):
+            alt = QSvgRenderer(path)
+            if alt.isValid():
+                pm2 = _draw(alt)
+                if not _is_empty(pm2):
+                    return pm2
+    # Nothing rendered anywhere: return a transparent pixmap of the
+    # right size (same as the old failure mode, never a crash).
+    pm = QPixmap(px, px)
+    pm.setDevicePixelRatio(scale)
+    pm.fill(Qt.GlobalColor.transparent)
+    return pm
+
+
 def theme_pixmap(resource_path: str, color_hex: str, size: int,
                  dpr: float = 1.0) -> QPixmap:
     """Rasterize a monochrome SVG at *size* logical pixels, tinted to a color.
@@ -57,25 +144,8 @@ def theme_pixmap(resource_path: str, color_hex: str, size: int,
     via QSvgRenderer — never stretched. ``dpr`` renders extra device pixels
     on HiDPI screens and sets the pixmap's device pixel ratio accordingly.
     """
-    scale = max(1.0, float(dpr))
-    px = int(round(size * scale))
-    pm = QPixmap(px, px)
-    pm.setDevicePixelRatio(scale)
-    pm.fill(Qt.GlobalColor.transparent)
+    pm = _render_svg_raw(resource_path, size, dpr)
     painter = QPainter(pm)
-    # Fit the viewBox into the square, centered, keeping the aspect ratio.
-    # (QIcon.pixmap() also keeps aspect, but drawPixmap(rect, pixmap) would
-    # stretch the result to fill the square — that squished the 3:4 Apple
-    # logo ~33% wider.)
-    renderer = QSvgRenderer(resource_path)
-    vb = renderer.viewBoxF()
-    if vb.isValid() and vb.width() > 0 and vb.height() > 0:
-        s = min(size / vb.width(), size / vb.height())
-        w, h = vb.width() * s, vb.height() * s
-        target = QRectF((size - w) / 2.0, (size - h) / 2.0, w, h)
-    else:
-        target = QRectF(0, 0, size, size)
-    renderer.render(painter, target)
     painter.setCompositionMode(
         QPainter.CompositionMode.CompositionMode_SourceIn)
     painter.fillRect(pm.rect(), QColor(color_hex))
@@ -92,23 +162,7 @@ def color_icon(resource_path: str, size: int, dpr: float = 1.0) -> QIcon:
     ``theme_icon``/``theme_pixmap`` would flatten to a single color via
     their SourceIn tint pass.
     """
-    scale = max(1.0, float(dpr))
-    px = int(round(size * scale))
-    pm = QPixmap(px, px)
-    pm.setDevicePixelRatio(scale)
-    pm.fill(Qt.GlobalColor.transparent)
-    painter = QPainter(pm)
-    renderer = QSvgRenderer(resource_path)
-    vb = renderer.viewBoxF()
-    if vb.isValid() and vb.width() > 0 and vb.height() > 0:
-        s = min(size / vb.width(), size / vb.height())
-        w, h = vb.width() * s, vb.height() * s
-        target = QRectF((size - w) / 2.0, (size - h) / 2.0, w, h)
-    else:
-        target = QRectF(0, 0, size, size)
-    renderer.render(painter, target)
-    painter.end()
-    return QIcon(pm)
+    return QIcon(_render_svg_raw(resource_path, size, dpr))
 
 
 __all__ = [

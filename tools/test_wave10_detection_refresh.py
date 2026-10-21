@@ -222,6 +222,15 @@ class _FakeManager:
     def get_current_device_partially_supported(self):
         return False
 
+    def get_current_device_support_level(self):
+        # Mirror DeviceManager: delegate to the real matrix so the stub
+        # can never drift from the shipped support rules again.
+        from src.devicemanagement.constants import device_support_level
+        if not self.devices:
+            return "unsupported"
+        dev = self.devices[0]
+        return device_support_level(dev.build, dev.version)
+
 
 class _StubUI:
     def __init__(self):

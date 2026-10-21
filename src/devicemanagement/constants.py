@@ -40,15 +40,44 @@ def _parse_version(version):
         return None
 
 
+# Newest iOS version with full support (user matrix, 2026-10-21):
+# everything up to and including 27.0.1 — the whole iOS 27.0 train
+# (developer betas 1-8, public betas, RC, stable) plus 27.0.1 itself.
+# Anything newer is partially supported: usable, but warned + untested.
+LATEST_FULL_VERSION = Version("27.0.1")
+
+
 def is_version_supported(version: str) -> bool:
     # Cable-based detection (user decision 2026-09-30): the iOS version is
     # read straight from the device over the cable (lockdown ProductVersion).
-    # Any 16.0 -> 26.x version is supported for the tweak flow even when its
-    # exact build number is not in the allowlist (RC variants, new patches).
+    # Any 16.0 -> 27.0.1 version is fully supported for the tweak flow even
+    # when its exact build number is not in the allowlist (RC variants, new
+    # patches). Newer than 27.0.1 -> see device_support_level ("partial").
     v = _parse_version(version)
     if v is None:
         return False
-    return Version("16.0") <= v < Version("27.0")
+    return Version("16.0") <= v <= LATEST_FULL_VERSION
+
+
+def device_support_level(build: str, version: str) -> str:
+    """Support level for a device: "supported", "partial" or "unsupported".
+
+    User matrix (2026-10-21): iOS 16.0 through 27.0.1 is fully supported
+    (the whole 27.0 train — developer betas 1-8, public betas, RC and
+    stable — plus 27.0.1). Anything NEWER than 27.0.1 is partially
+    supported: the device stays usable, but the user is warned it is
+    untested and proceeds at their own risk. Below 16.0 is unsupported.
+    When the version cannot be parsed, the build allowlist decides
+    between supported and unsupported (the legacy rule).
+    """
+    v = _parse_version(version)
+    if v is None:
+        return "supported" if is_build_supported(build) else "unsupported"
+    if v < Version("16.0"):
+        return "unsupported"
+    if v > LATEST_FULL_VERSION:
+        return "partial"
+    return "supported"
 
 
 # REAUDIT FIX: is_version_ios27() was dead code — zero callers (the codebase
@@ -57,9 +86,11 @@ def is_version_supported(version: str) -> bool:
 
 
 def is_device_supported(build: str, version: str) -> bool:
-    # A device is usable when EITHER its build is allowlisted OR its
-    # cable-reported iOS version is in the supported range.
-    return is_build_supported(build) or is_version_supported(version)
+    # A device is usable when its support level is not "unsupported":
+    # fully supported (allowlisted build, or cable-reported version in
+    # the 16.0 -> 27.0.1 range) OR partially supported (newer than
+    # 27.0.1 — usable after the risk warning).
+    return device_support_level(build, version) != "unsupported"
 
 
 def is_gestalt_supported_build(build: str) -> bool:
