@@ -20,7 +20,7 @@ from PySide6.QtGui import (
     QColor, QImage, QPainter, QPainterPath, QFont, QLinearGradient,
 )
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QGraphicsDropShadowEffect,
+    QWidget, QVBoxLayout, QLabel, QGraphicsDropShadowEffect, QSizePolicy,
 )
 
 
@@ -151,11 +151,16 @@ class IPhonePreview(QWidget):
         # the stream's honest one-line status ("" = nothing to show).
         self._frame: QImage | None = None
         self._stream_status = ""
-        # Fixed preview size; internal drawing scales the spec proportionally
-        # with explicit padding so the whole phone (frame + home button)
-        # is always fully visible, never cut (user 2026-10-20).
-        # 200x420 to fit in 820px window without clipping.
-        self.setFixedSize(200, 420)
+        # Internal drawing scales the spec proportionally with explicit
+        # padding so the whole phone (frame + home button) is always
+        # fully visible, never cut (user 2026-10-20). The widget itself
+        # is no longer pinned to the old small 200x420 (user
+        # 2026-10-22: HD like 3uTools) — it takes the room the window
+        # offers, between the floor that always fits and a sane cap.
+        self.setMinimumSize(210, 420)
+        self.setMaximumSize(320, 640)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred,
+                           QSizePolicy.Policy.Preferred)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # 3D depth: one soft drop shadow under the whole phone slab.
         _shadow = QGraphicsDropShadowEffect(self)
@@ -163,6 +168,9 @@ class IPhonePreview(QWidget):
         _shadow.setOffset(0, 10)
         _shadow.setColor(QColor(20, 40, 90, 110))
         self.setGraphicsEffect(_shadow)
+
+    def sizeHint(self):  # noqa: N802
+        return QSize(252, 524)
 
     # -- public API -----------------------------------------------------
     def set_model(self, identifier: str):
@@ -173,6 +181,10 @@ class IPhonePreview(QWidget):
         self._device_name = name or "No Device"
         self._device_info = info or "Please connect a device."
         self.update()
+
+    def spec_aspect(self) -> float:
+        """Width/height ratio of the current model's real screen."""
+        return self._spec.width_pt / self._spec.height_pt
 
     def set_frame(self, image: QImage | None):
         """Show a live screenshot frame (None returns to empty state)."""
@@ -196,17 +208,28 @@ class IPhonePreview(QWidget):
         spec = self._spec
         w, h = self.width(), self.height()
 
-        # PAD reserves room for the bezel + home button on ALL sides, so the
-        # whole phone is always 1 utuh (fully visible), never cut off.
+        # PAD reserves room for the frame on ALL sides, so the whole
+        # phone is always 1 utuh (fully visible), never cut off.
+        # Home-button models carry a tall forehead and chin around the
+        # screen — the button lives IN the chin (user 2026-10-22: the
+        # frame and size follow the model) — so the fit reserves those
+        # extensions instead of squeezing the button into the thin
+        # bezel, where it used to spill outside the frame.
         PAD = 14
-        aspect = spec.width_pt / spec.height_pt
-        sw = min(w - PAD * 2, (h - PAD * 2) * aspect)
-        sh = sw / aspect
-        ox = (w - sw) / 2
-        oy = (h - sh) / 2
-        scale = sw / spec.width_pt
-
+        ext_pt = (spec.cutout_height + 30) if spec.cutout == "home-button" else 0
+        total_w_pt = spec.width_pt + spec.bezel * 2
+        total_h_pt = spec.height_pt + spec.bezel * 2 + ext_pt * 2
+        scale = min((w - PAD * 2) / total_w_pt, (h - PAD * 2) / total_h_pt)
+        sw = spec.width_pt * scale
+        sh = spec.height_pt * scale
         bezel = spec.bezel * scale
+        ext = ext_pt * scale
+        frame_w = total_w_pt * scale
+        frame_h = total_h_pt * scale
+        fx = (w - frame_w) / 2
+        fy = (h - frame_h) / 2
+        ox = fx + bezel
+        oy = fy + bezel + ext
         radius = spec.corner_radius * scale
 
         p = QPainter(self)
@@ -214,7 +237,7 @@ class IPhonePreview(QWidget):
         p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # Layer 1: frame / bezel (dark vertical gradient, rounded per model).
-        frame_rect = QRectF(ox - bezel, oy - bezel, sw + bezel * 2, sh + bezel * 2)
+        frame_rect = QRectF(fx, fy, frame_w, frame_h)
         frame_path = QPainterPath()
         frame_path.addRoundedRect(frame_rect, radius + bezel, radius + bezel)
         frame_grad = QLinearGradient(frame_rect.topLeft(), frame_rect.bottomLeft())
@@ -228,18 +251,26 @@ class IPhonePreview(QWidget):
         p.save()
         p.setClipPath(screen_path)
         if self._frame is not None and not self._frame.isNull():
-            # LIVE device screen: cover-fit the real screenshot into
-            # the screen rect (center-crop the longer dimension).
+            # LIVE device screen: draw the WHOLE screenshot, never
+            # cropped (user report 2026-10-22: the preview showed only
+            # half the phone). The old cover-fit center-cropped the
+            # longer dimension, so a frame whose size deviated — e.g.
+            # the odd sizes a device sends right after a restart — lost
+            # its top/bottom or sides. Contain-fit keeps every pixel;
+            # when the frame matches the model (the normal case) fit
+            # and cover are identical, and a deviating frame letterboxes
+            # on black inside the screen area instead of being cut.
+            p.fillRect(QRectF(ox, oy, sw, sh), QColor("#000000"))
             iw, ih = self._frame.width(), self._frame.height()
             src_aspect = iw / ih
             dst_aspect = sw / sh
             if src_aspect > dst_aspect:
-                crop_w = ih * dst_aspect
-                src = QRectF((iw - crop_w) / 2, 0, crop_w, ih)
+                dh = sw / src_aspect
+                dst = QRectF(ox, oy + (sh - dh) / 2, sw, dh)
             else:
-                crop_h = iw / dst_aspect
-                src = QRectF(0, (ih - crop_h) / 2, iw, crop_h)
-            p.drawImage(QRectF(ox, oy, sw, sh), self._frame, src)
+                dw = sh * src_aspect
+                dst = QRectF(ox + (sw - dw) / 2, oy, dw, sh)
+            p.drawImage(dst, self._frame, QRectF(0, 0, iw, ih))
         else:
             # Empty state: app backdrop + real device-connection text.
             # This is a placeholder, NOT a picture of a phone screen.
@@ -305,7 +336,9 @@ class IPhonePreview(QWidget):
         elif spec.cutout == "home-button":
             d = spec.cutout_width * scale
             cx = ox + sw / 2
-            cy = oy + sh + bezel / 2
+            # Centered in the chin band below the screen (bezel + the
+            # reserved extension), fully inside the frame.
+            cy = oy + sh + (bezel + ext) / 2
             btn = QPainterPath()
             btn.addEllipse(QRectF(cx - d / 2, cy - d / 2, d, d))
             p.setBrush(QColor("#2c2c2e"))

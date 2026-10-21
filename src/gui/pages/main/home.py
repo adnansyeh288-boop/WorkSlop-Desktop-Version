@@ -61,6 +61,26 @@ class _SocialBoxButton(QToolButton):
         icon_px = round(self.ws_base_icon * scale)
         if self.iconSize().width() != icon_px:
             self.setIconSize(QSize(icon_px, icon_px))
+        # The box HEIGHT follows the same scale (user report 2026-10-22:
+        # with the height pinned at 92 px, a scaled-up font/icon stack
+        # overflowed and Qt clipped the captions top and bottom). Size
+        # the box from the real content — icon + gap + the caption's
+        # actual line heights + breathing room — so the text can never
+        # be clipped at any window size or display resolution.
+        from PySide6.QtGui import QFont, QFontMetrics
+        text = self.text()
+        lines = text.count("\n") + 1 if text else 0
+        font = QFont()
+        font.setPixelSize(font_px)
+        font.setWeight(QFont.Weight.DemiBold)
+        text_h = QFontMetrics(font).height() * lines
+        icon_h = icon_px if (self.icon() is not None
+                             and not self.icon().isNull()) else 0
+        gap = 6 if (icon_h and text_h) else 0
+        need = icon_h + gap + text_h + 20
+        height = max(92, need)
+        if self.minimumHeight() != height or self.maximumHeight() != height:
+            self.setFixedHeight(height)
 
 
 class HomePage(Page):
@@ -250,7 +270,10 @@ class HomePage(Page):
             _box_btn.setText(_label)
             _box_btn.setCursor(Qt.PointingHandCursor)
             _box_btn.setMinimumSize(140, 92)
-            _box_btn.setMaximumSize(220, 92)
+            # Width capped; the HEIGHT is set by _SocialBoxButton itself
+            # from its scaled content (see _apply_scale) — capping it
+            # here at 92 clipped the captions (user report 2026-10-22).
+            _box_btn.setMaximumWidth(220)
             _box_btn.setSizePolicy(QSizePolicy.Policy.Expanding,
                                    QSizePolicy.Policy.Fixed)
             _box_btn.setToolButtonStyle(
@@ -262,9 +285,27 @@ class HomePage(Page):
                 _box_btn.setIconSize(QSize(_icon_size, _icon_size))
             _box_btn.setAttribute(
                 Qt.WidgetAttribute.WA_StyledBackground, True)
+            # 3D layer (user order 2026-10-22, "3D UI belum terlihat"):
+            # the boxes take a clear vertical gradient — lit top, deep
+            # bottom — while the 3D layer is on; WORKSLOP_3D_UI=0 keeps
+            # the flat blue exactly as before.
+            from src.gui.theme import threedee as _threedee
+            if _threedee.enabled():
+                _bg = ("background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                       " stop:0 #63A0F8, stop:0.45 #2B6BEF, stop:1 #1D4ED8);")
+                _bg_hover = (
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                    " stop:0 #548FF2, stop:0.45 #2563EB, stop:1 #1E40AF);")
+                _bg_pressed = (
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                    " stop:0 #2563EB, stop:0.45 #1D4ED8, stop:1 #1E3A8A);")
+            else:
+                _bg = "background-color: #2563EB;"
+                _bg_hover = "background-color: #1D4ED8;"
+                _bg_pressed = "background-color: #1E40AF;"
             _box_btn.set_sheet_template("""
                 QToolButton {
-                    background-color: #2563EB;
+                    {bg}
                     border: 1px solid #2563EB;
                     border-radius: 14px;
                     color: #FFFFFF;
@@ -272,14 +313,16 @@ class HomePage(Page):
                     font-weight: 600;
                 }
                 QToolButton:hover {
-                    background-color: #1D4ED8;
+                    {bg_hover}
                     border-color: #1D4ED8;
                 }
                 QToolButton:pressed {
-                    background-color: #1E40AF;
+                    {bg_pressed}
                     border-color: #1E40AF;
                 }
-            """)
+            """.replace("{bg_hover}", _bg_hover)
+               .replace("{bg_pressed}", _bg_pressed)
+               .replace("{bg}", _bg))
             _box_btn.clicked.connect(
                 lambda _checked=False, u=_url:
                     QDesktopServices.openUrl(QUrl(u)))
@@ -419,6 +462,9 @@ class HomePage(Page):
         if udid is None:
             if self._preview is not None:
                 self._preview.clear_frame()
+            # New session: the next frame is a first frame again, so
+            # the hold-the-good-frame guard starts from scratch.
+            self._last_frame_size = None
             return
         from src.devicemanagement.screen_stream import ScreenStreamThread
         try:
@@ -449,20 +495,36 @@ class HomePage(Page):
         img = QImage.fromData(data)
         if img.isNull():
             return
-        # Keep frames near-native (user 2026-10-21: the old 400px cap
-        # made the preview look blurry). 800px wide is ~4x the on-screen
-        # width at DPR 2, so the paint stays crisp without hauling the
-        # full 1179px through every repaint. Log size changes too: a
-        # frame arriving at an unexpected size after a device reboot is
-        # the evidence for the "preview turns half" report.
-        if img.width() > 800:
+        # Keep frames at native resolution (user 2026-10-22: the
+        # preview must look HD like 3uTools). The screenshot arrives
+        # full-size from the device; the old 800px cap threw away a
+        # third of it before the paint, which is exactly what made the
+        # preview look soft. 1200px covers every current iPhone at
+        # native width (1170/1290-class) — no upscale, no blur.
+        if img.width() > 1200:
             img = img.scaledToWidth(
-                800, Qt.TransformationMode.SmoothTransformation)
+                1200, Qt.TransformationMode.SmoothTransformation)
         size = (img.width(), img.height())
         if size != getattr(self, "_last_frame_size", None):
-            self._last_frame_size = size
             logging.getLogger("GoldenNugget.home").info(
                 "preview frame size: %dx%d", size[0], size[1])
+        # Hold-the-good-frame guard (user report 2026-10-22: after an
+        # apply + device restart the preview went half). While a device
+        # reboots, its screenshot service can hand out frames at odd
+        # sizes; a frame whose aspect is far from the model's real
+        # screen never replaces a good frame already on screen — the
+        # stream self-heals on the next honest frame. The first frame
+        # of a session is always accepted (nothing to protect yet).
+        if getattr(self, "_last_frame_size", None) is not None:
+            aspect = img.width() / img.height()
+            model_aspect = self._preview.spec_aspect()
+            if abs(aspect - model_aspect) > 0.08:
+                logging.getLogger("GoldenNugget.home").warning(
+                    "preview frame rejected: %dx%d aspect %.3f vs model "
+                    "%.3f — keeping last good frame",
+                    size[0], size[1], aspect, model_aspect)
+                return
+        self._last_frame_size = size
         self._preview.set_frame(img)
 
     def _on_stream_status(self, status: str):

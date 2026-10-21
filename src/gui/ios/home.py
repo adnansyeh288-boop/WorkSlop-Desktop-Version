@@ -507,6 +507,26 @@ class IOSHomePage(QWidget):
         card = _TileCard()
         card.setSizePolicy(QSizePolicy.Policy.Expanding,
                            QSizePolicy.Policy.Preferred)
+        # Floor the card at its real content height (user report
+        # 2026-10-22: tile subtitles were sliced at the card's bottom
+        # edge). QWidget does not forward the wrapping labels'
+        # height-for-width through the grid, so the row was sized for
+        # single-line text and a wrapped second line overflowed.
+        # Compute the worst case — title/subtitle wrapped at the
+        # narrowest tile width — from the actual font metrics.
+        from PySide6.QtGui import QFont, QFontMetrics
+        text_w = _CardGrid.MIN_CARD_WIDTH - 24  # card side margins 12+12
+        tf = QFont()
+        tf.setPixelSize(16)
+        tf.setWeight(QFont.Weight.DemiBold)
+        sf = QFont()
+        sf.setPixelSize(12)
+        tfm, sfm = QFontMetrics(tf), QFontMetrics(sf)
+        title_lines = min(2, max(1, -(-tfm.horizontalAdvance(title) // text_w)))
+        sub_lines = min(2, max(1, -(-sfm.horizontalAdvance(subtitle) // text_w)))
+        card.setMinimumHeight(
+            12 + self.TILE_ICON_PX + 8 + tfm.height() * title_lines
+            + 8 + sfm.height() * sub_lines + 14)
 
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(12, 12, 12, 14)

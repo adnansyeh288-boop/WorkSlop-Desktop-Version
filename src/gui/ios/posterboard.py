@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtCore import Qt, QSize, QCoreApplication, QUrl
+from PySide6.QtCore import Qt, QSize, QRect, QCoreApplication, QUrl
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout,
     QPushButton, QScrollArea, QToolButton, QStackedWidget,
@@ -688,7 +688,8 @@ class IOSPosterboardPage(QWidget):
     def _create_add_tendies_card(self) -> QWidget:
         c = ColorThemeManager.instance().colors
         card = IOSCard(glass=True)
-        card.setFixedSize(140, 160)
+        # Same size as the tendie cards so the grid rows stay even.
+        card.setFixedSize(self._tendie_card_size()[0])
         card.setCursor(Qt.PointingHandCursor)
         card.mousePressEvent = lambda e: self.show_add_tendies_dialog()
 
@@ -1087,11 +1088,38 @@ class IOSPosterboardPage(QWidget):
 
         self.tendies_grid.addWidget(self.add_tendies_card, row, col)
 
+    def _tendie_card_size(self, name_text: str = ""):
+        """(card size, name-label height) for the Tendies grid.
+
+        The height is computed from the real content — 80 px icon, the
+        name wrapped at the card's real text width (measured with the
+        label's own font metrics, up to three lines), the action-chip
+        row — instead of the old fixed 140x160 box, whose contents
+        added up to ~182 px and clipped the names (user report
+        2026-10-22: the Tendies/Templates/Video box text looked
+        broken).
+        """
+        from PySide6.QtGui import QFont, QFontMetrics
+        font = QFont()
+        font.setPixelSize(13)
+        fm = QFontMetrics(font)
+        if name_text:
+            rect = fm.boundingRect(
+                QRect(0, 0, 150 - 16, 10000),
+                int(Qt.TextFlag.TextWordWrap), name_text)
+            name_h = min(rect.height(), fm.height() * 3)
+        else:
+            name_h = fm.height() * 2
+        height = 8 + 80 + 8 + name_h + 8 + 34 + 8
+        return QSize(150, height), name_h
+
     def _create_tendie_card(self, tendie) -> QWidget:
         c = self._palette()
         dark = self._full_nugget
         card = IOSCard(glass=True)
-        card.setFixedSize(140, 160)
+        display_name = tendie.name.replace(".tendies", "")
+        card_size, name_h = self._tendie_card_size(display_name)
+        card.setFixedSize(card_size)
         card.setCursor(Qt.PointingHandCursor)
 
         inner = QVBoxLayout(card)
@@ -1122,14 +1150,26 @@ class IOSPosterboardPage(QWidget):
 
         self._load_tendie_preview_by_name(card, icon, tendie.name)
 
-        name = QLabel(tendie.name.replace(".tendies", ""))
+        name = QLabel(display_name)
         name.setStyleSheet(
             f"font-size: 13px; color: {c.text_secondary}; text-align: center;"
             if dark else
             "font-size: 13px; color: #374151;"
             " text-align: center; background: transparent;")
-        name.setAlignment(Qt.AlignCenter)
+        # Top-anchored: AlignCenter also centers VERTICALLY in Qt, so
+        # an over-long name overflowed the label's top AND bottom.
+        name.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         name.setWordWrap(True)
+        # Pin the label to the card's content width: left to the box
+        # layout it collapses to its own sizeHint (measured live: 80 px
+        # — the icon's width), so names wrapped far too early and the
+        # measured two lines were really four. The card height above
+        # was computed for exactly this width.
+        name.setFixedWidth(card_size.width() - 16)
+        # The card height was computed for exactly this label height,
+        # so the name wraps inside its slot instead of pushing the
+        # action chips out of the card.
+        name.setFixedHeight(name_h)
         inner.addWidget(name)
 
         actions = QHBoxLayout()

@@ -35,6 +35,14 @@ class IOSSettingsPage(QWidget):
         # time, as (widget, qss_fn) pairs: set_full_nugget re-runs the
         # same style builders with the Nugget dark palette (and back).
         self._fn_styled = []
+        # Navigation-lag guards (user report 2026-10-22: opening Settings
+        # stalled for seconds): refresh() used to rebuild the device rows
+        # and re-run ~96 setStyleSheet calls on EVERY visit. The device
+        # signature skips the rebuild when nothing changed, and
+        # _retheme_pending defers a palette restyle that arrived while
+        # the page was hidden until the page is actually shown.
+        self._device_sig = None
+        self._retheme_pending = True
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -71,7 +79,17 @@ class IOSSettingsPage(QWidget):
         self.content_layout.addStretch()
 
         self._retheme()
-        self._tm.theme_changed.connect(self._retheme)
+        self._tm.theme_changed.connect(self._on_theme_changed)
+
+    def _on_theme_changed(self):
+        """Palette changed: restyle now when the page is on screen;
+        when hidden, just flag it — refresh() applies the pending
+        restyle on the next visit instead of stalling that visit with
+        work the user never saw happen."""
+        if self.isVisible():
+            self._retheme()
+        else:
+            self._retheme_pending = True
 
     # ---------- Full Nugget palette (third interface) ----------
 
@@ -100,7 +118,14 @@ class IOSSettingsPage(QWidget):
         live = []
         for widget, qss_fn in self._fn_styled:
             try:
-                widget.setStyleSheet(qss_fn(c))
+                qss = qss_fn(c)
+                # Qt re-polishes the whole subtree on EVERY setStyleSheet
+                # call, even with an identical string — that was ~0.9 s
+                # of the Settings open stall. Skip unchanged widgets;
+                # a real palette change produces different strings and
+                # still applies everywhere.
+                if widget.styleSheet() != qss:
+                    widget.setStyleSheet(qss)
                 live.append((widget, qss_fn))
             except Exception:
                 pass  # widget was rebuilt away (device rows refresh)
@@ -358,12 +383,35 @@ class IOSSettingsPage(QWidget):
 
     # (_style_interface_buttons removed 2026-10-18 with the 3-UI system.)
 
+    def _current_device_sig(self):
+        """Identity of what the 'This device' rows display, so refresh()
+        can tell a real device change from a plain re-visit."""
+        try:
+            dev = self.window.device_manager.data_singleton.current_device
+        except Exception:
+            return None
+        if dev is None:
+            return None
+        return (dev.model, dev.version, dev.build)
+
     def refresh(self):
-        """Called when navigating to Settings — picks up device changes."""
-        self._build_device_rows()
-        # Rows rebuilt above (and any card created since the last pass)
-        # take the palette of the interface currently active.
-        self._retheme()
+        """Called when navigating to Settings — picks up device changes.
+
+        Cheap on a plain re-visit (user report 2026-10-22: the old
+        unconditional rebuild + full restyle stalled the navigation):
+        rows rebuild only when the device actually changed, and the
+        palette pass runs only when rows were rebuilt or a theme change
+        arrived while the page was hidden.
+        """
+        sig = self._current_device_sig()
+        rebuilt = sig != self._device_sig
+        if rebuilt:
+            self._build_device_rows()
+            self._device_sig = sig
+        if rebuilt or self._retheme_pending:
+            # Rows rebuilt above (and any card created since the last
+            # pass) take the palette of the interface currently active.
+            self._retheme()
 
     def _build_settings_ui(self):
         tr = lambda s: QCoreApplication.translate("Nugget", s)
@@ -675,6 +723,7 @@ class IOSSettingsPage(QWidget):
             self._retheme_preset_list()
         if hasattr(self, 'update_channel_drp'):
             self._retheme_update_combo()
+        self._retheme_pending = False
 
     def _retheme_update_combo(self):
         # Full Nugget dark palette and the blue-glass themed look both

@@ -43,9 +43,9 @@ def card_gradient(rect, base: QColor) -> QLinearGradient:
     no-op and the bottom shade (#F0F0F0-ish) carries the depth.
     """
     grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-    grad.setColorAt(0.0, base.lighter(104))
+    grad.setColorAt(0.0, base.lighter(108))
     grad.setColorAt(0.5, base)
-    grad.setColorAt(1.0, base.darker(106))
+    grad.setColorAt(1.0, base.darker(110))
     return grad
 
 
@@ -70,7 +70,7 @@ def _qss_grad(top_hex: str, bottom_hex: str) -> str:
 
 def _shades(hex_str: str):
     col = QColor(hex_str)
-    return col.lighter(112).name(), col.darker(108).name()
+    return col.lighter(118).name(), col.darker(112).name()
 
 
 def render_qss_override(style_key: str, payload: dict):
@@ -101,7 +101,7 @@ def render_qss_override(style_key: str, payload: dict):
         base = QColor(payload["bg_secondary"])
         return f"""
         IOSCard {{
-            background: {_qss_grad(base.lighter(103).name(), base.darker(104).name())};
+            background: {_qss_grad(base.lighter(106).name(), base.darker(108).name())};
             border-radius: 18px;
             border: 1px solid {payload['card_border']};
         }}
