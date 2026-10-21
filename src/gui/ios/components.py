@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox, QVBoxLayout, QGraphicsDropShadowEffect,
 )
 
-from src.gui.theme import t, ColorThemeManager
+from src.gui.theme import t, ColorThemeManager, threedee
 
 
 def _auto_retheme(widget):
@@ -304,15 +304,23 @@ class IOSCard(QFrame):
             # No blue glass, no bevels.
             path = QPainterPath()
             path.addRoundedRect(QRectF(rect), radius, radius)
-            grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-            grad.setColorAt(0, QColor(255, 255, 255, 255))
-            grad.setColorAt(1, QColor(250, 251, 253, 255))
+            if threedee.enabled():
+                # 3D layer: full raised-slab gradient over the white base
+                # (the drop shadow in __init__ carries the lift).
+                grad = threedee.card_gradient(rect, QColor(255, 255, 255))
+            else:
+                grad = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+                grad.setColorAt(0, QColor(255, 255, 255, 255))
+                grad.setColorAt(1, QColor(250, 251, 253, 255))
             p.fillPath(path, grad)
             p.setPen(QPen(self._border, 1))
             p.setBrush(Qt.NoBrush)
             p.drawPath(path)
         else:
-            p.setBrush(self._bg)
+            if threedee.enabled():
+                p.setBrush(threedee.card_gradient(rect, self._bg))
+            else:
+                p.setBrush(self._bg)
             p.setPen(QPen(self._border, 1))
             p.drawRoundedRect(rect, radius, radius)
         p.end()
@@ -601,6 +609,19 @@ class IOSSwitch(QPushButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(Qt.PenStyle.NoPen)
+        if threedee.enabled():
+            # 3D layer: shaded track, soft knob shadow, domed knob.
+            track_rect = QRectF(0, 0, self.width(), self.height())
+            painter.setBrush(threedee.switch_track_gradient(track_rect, track))
+            painter.drawRoundedRect(
+                track_rect, self.height() / 2.0, self.height() / 2.0)
+            knob_rect = QRectF(knob_x, inset, knob, knob)
+            painter.setBrush(QColor(15, 23, 42, 42))
+            painter.drawEllipse(knob_rect.translated(0, 1.5))
+            painter.setBrush(threedee.knob_gradient(knob_rect))
+            painter.drawEllipse(knob_rect)
+            painter.end()
+            return
         painter.setBrush(track)
         painter.drawRoundedRect(
             QRectF(0, 0, self.width(), self.height()),
