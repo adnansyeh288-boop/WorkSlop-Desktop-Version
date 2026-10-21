@@ -175,6 +175,18 @@ def main() -> int:
 
     app = CrashHandlerApp(sys.argv)
 
+    # Single-instance guard (user bug report 2026-10-22: three windows
+    # after repeated double-clicks during the slow cold start). A later
+    # launch asks the running instance to raise its window and exits
+    # here, before any device work — two instances would fight over the
+    # settings store, the backup cache and the connected device.
+    from src.single_instance import SingleInstanceGuard
+    _instance_guard = SingleInstanceGuard()
+    if not _instance_guard.try_become_primary():
+        print("[init] Another WorkSlop Desktop instance is already "
+              "running; asked it to come forward, exiting.", flush=True)
+        return 0
+
     # Fusion style is required for a custom QPalette to take effect on all
     # platforms (native styles ignore palette tweaks).  The palette is now
     # managed by ColorThemeManager so it can switch between dark/light.
@@ -311,6 +323,17 @@ def main() -> int:
     widget.setMinimumSize(1180, 740)
     widget.show()
 
+    # Later launches knock on the single-instance guard: bring the one
+    # real window forward instead of opening another.
+    def _raise_main_window():
+        if widget.isMinimized():
+            widget.showNormal()
+        widget.show()
+        widget.raise_()
+        widget.activateWindow()
+
+    _instance_guard.on_raise_requested = _raise_main_window
+
     # First-launch dialogs (interface picker + backup reminder) are deferred
     # to the first event-loop iteration so the window is fully mapped and
     # ACTIVE before the modal opens. Running them synchronously right after
@@ -333,7 +356,7 @@ def main() -> int:
 
         def _show_update_dialog(result):
             from src.gui.dialogs import UpdateAppDialog
-            UpdateAppDialog(result).exec()
+            UpdateAppDialog(result, widget).exec()
 
         def _on_update_result(result):
             # Startup notification: only on update_available, and only
