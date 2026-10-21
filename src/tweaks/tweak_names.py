@@ -106,6 +106,9 @@ class TweakID(Enum):
     SolariumForceFallback = auto()
     # Deprecated alias for backward compat with old presets (pre-4.0)
     ForceSolariumFallback = SolariumForceFallback
+    # UIKit variant — re-added 2026-10-21 per user order: key string verified
+    # present in iOS 27.0.1 (24A446); device-negative on 26.6.1, untested on 27.
+    UISolariumForceFallback = auto()
     DisableSolariumSwiftUI = auto()
     GlassLegibility2 = auto()
     SolariumFeatureFlags = auto()

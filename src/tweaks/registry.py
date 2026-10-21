@@ -360,6 +360,8 @@ SPECS: tuple[TweakSpec, ...] = (
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Makes Solarium lighting react to the display viewing angle (structural-hypothesis: binary-attested Solarium-family key). Unverified — needs device test.")),
     _t(TweakID.SolariumForceFallback, Section.LIQUID_GLASS, "Force Solarium Fallback", GP, "SolariumForceFallback",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Force iOS to use Liquid Glass fallback mode. Unverified — needs device test.")),
+    _t(TweakID.UISolariumForceFallback, Section.LIQUID_GLASS, "Force Solarium Fallback (UIKit)", GP, "UISolariumForceFallback",
+       min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "UIKit variant of Force Solarium Fallback. Device-tested on 26.6.1: no effect. Key string verified present in iOS 27.0.1 (24A446) firmware — untested on 27.")),
     _t(TweakID.DisableSolariumSwiftUI, Section.LIQUID_GLASS, "Disable Solarium (SwiftUI)", GP, "com.apple.SwiftUI.DisableSolarium",
        min_version="26.0", description=QT_TRANSLATE_NOOP("Nugget", "Disable Solarium for SwiftUI. Reader removed in 26.1 — likely non-functional.")),
     _t(TweakID.GlassLegibility2, Section.LIQUID_GLASS, "Glass Legibility Value 2", FileLocation.uikit, "UIViewGlassLegibilitySetting", value=2,
