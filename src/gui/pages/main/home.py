@@ -285,24 +285,13 @@ class HomePage(Page):
                 _box_btn.setIconSize(QSize(_icon_size, _icon_size))
             _box_btn.setAttribute(
                 Qt.WidgetAttribute.WA_StyledBackground, True)
-            # 3D layer (user order 2026-10-22, "3D UI belum terlihat"):
-            # the boxes take a clear vertical gradient — lit top, deep
-            # bottom — while the 3D layer is on; WORKSLOP_3D_UI=0 keeps
-            # the flat blue exactly as before.
-            from src.gui.theme import threedee as _threedee
-            if _threedee.enabled():
-                _bg = ("background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-                       " stop:0 #63A0F8, stop:0.45 #2B6BEF, stop:1 #1D4ED8);")
-                _bg_hover = (
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-                    " stop:0 #548FF2, stop:0.45 #2563EB, stop:1 #1E40AF);")
-                _bg_pressed = (
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-                    " stop:0 #2563EB, stop:0.45 #1D4ED8, stop:1 #1E3A8A);")
-            else:
-                _bg = "background-color: #2563EB;"
-                _bg_hover = "background-color: #1D4ED8;"
-                _bg_pressed = "background-color: #1E40AF;"
+            # FLAT blue, exactly like the pre-3D Home (user order
+            # 2026-10-22 07:19: the Home page takes NO 3D treatment —
+            # the gradient read as a gimmick. The 3D layer still
+            # applies on the other pages; here it is always flat).
+            _bg = "background-color: #2563EB;"
+            _bg_hover = "background-color: #1D4ED8;"
+            _bg_pressed = "background-color: #1E40AF;"
             _box_btn.set_sheet_template("""
                 QToolButton {
                     {bg}
