@@ -8,7 +8,6 @@ from PySide6.QtSvg import QSvgRenderer
 from src.gui.theme.theme_manager import ColorThemeManager
 from src.gui.theme.colors import DARK, SKY, WORKBENCH, WS_BLUE, ACCENT_PRESETS
 from src.gui.theme.styles import STYLES, FONT_FAMILY, mono_family
-from src.gui.theme import threedee
 from src.gui.theme.accent_picker import AccentPicker
 
 
@@ -16,12 +15,6 @@ def t(style_key: str) -> str:
     """Render a named stylesheet template with the current theme colors."""
     payload = dict(ColorThemeManager.instance().colors.__dict__)
     payload["font_family"] = mono_family()
-    # Opt-in 3D layer (WORKSLOP_3D_UI=1): gradient variants of a few
-    # templates, rendered here so callers still only ever call t().
-    if threedee.enabled():
-        override = threedee.render_qss_override(style_key, payload)
-        if override is not None:
-            return override
     return STYLES[style_key].format_map(payload)
 
 

@@ -274,6 +274,10 @@ class _GestaltContent(QWidget):
         rdar_sw.toggled.connect(lambda c: self._on_switch(TweakID.RdarFix, c))
         rdar_lay.addWidget(rdar_sw)
         self._tweaks_layout.addWidget(rdar_card)
+        # Hidden until _update_rdar_label() finds an RDAR mode for the
+        # connected model — otherwise the row renders as an empty card
+        # with a lone switch (user photo 2026-10-22: "menu hilang").
+        rdar_card.hide()
         self._rdar_card = rdar_card
         self._switches[TweakID.RdarFix] = rdar_sw
 
