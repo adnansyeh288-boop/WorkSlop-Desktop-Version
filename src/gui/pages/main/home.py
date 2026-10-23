@@ -145,10 +145,11 @@ class HomePage(Page):
         # "WorkSlop Desktop" text sits right beside the app icon).
         brand_row = QHBoxLayout()
         brand_row.setSpacing(18)
-        icon_lbl = QLabel(hero)
-        icon_lbl.setPixmap(QIcon(":/credits/workslop.png").pixmap(QSize(120, 120)))
-        icon_lbl.setStyleSheet("background: transparent;")
-        brand_row.addWidget(icon_lbl, 0, Qt.AlignVCenter)
+        self.brand_icon = QIcon(":/credits/workslop.png")
+        self.brand_icon_lbl = QLabel(hero)
+        self.brand_icon_lbl.setStyleSheet("background: transparent;")
+        self._refresh_brand_icon()
+        brand_row.addWidget(self.brand_icon_lbl, 0, Qt.AlignVCenter)
 
         title = QLabel(hero)
         title.setTextFormat(Qt.TextFormat.RichText)
@@ -373,6 +374,28 @@ class HomePage(Page):
         credits = getattr(self.ui, "verticalWidget_6", None)
         if credits is not None:
             credits.setVisible(False)
+
+    def _refresh_brand_icon(self):
+        # Render the hero app icon at the display's real pixel density.
+        # The source PNG is 512x512, but the old code asked QIcon for a
+        # fixed 120x120 pixmap once at build time: on scaled displays
+        # (125%/150% Windows scaling, Retina) that bitmap is stretched
+        # and stays blurry, and it never adapts when the window moves
+        # to a screen with a different density. Ask for 120 logical px
+        # times the current ratio, tag the pixmap with that ratio, and
+        # re-render from showEvent so the icon re-adjusts itself.
+        lbl = getattr(self, "brand_icon_lbl", None)
+        if lbl is None or self.brand_icon.isNull():
+            return
+        dpr = lbl.devicePixelRatioF()
+        px = max(1, round(120 * dpr))
+        pm = self.brand_icon.pixmap(QSize(px, px))
+        pm.setDevicePixelRatio(dpr)
+        lbl.setPixmap(pm)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_brand_icon()
 
     def _on_home_apply(self):
         """Apply Tweaks from the home page."""
